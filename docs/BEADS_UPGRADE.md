@@ -80,15 +80,15 @@ Files to update based on changelog review:
 
 | File | Update when |
 |------|-------------|
-| `pt-rebuild/AGENTS.md` | New commands, flags, or workflow changes |
-| `pt-rebuild/docs/BEADS_WORKFLOW.md` | Lifecycle or workflow changes |
-| `pt-rebuild/docs/BEADS_OPERATIONS.md` | Command syntax, install method, Dolt changes |
-| `pt-rebuild/.beads/.gitignore` | New runtime files added by the release |
+| `AGENTS.md` | New commands, flags, or workflow changes |
+| `docs/BEADS_WORKFLOW.md` | Lifecycle or workflow changes |
+| `docs/BEADS_OPERATIONS.md` | Command syntax, install method, Dolt changes |
+| `.gitignore` | New runtime files added by the release |
 
 ### 7. Regenerate BEADS_QUICKREF
 
 ```bash
-cd pt-rebuild
+cd .
 npm run beads:quickref
 ```
 
@@ -97,7 +97,7 @@ Verify the output looks correct before committing.
 ### 8. Verify bd still works
 
 ```bash
-cd pt-rebuild
+cd .
 bd dolt start
 bd ready --json
 bd stats
@@ -108,7 +108,7 @@ bd stats
 ```bash
 bd close <id> --reason "Upgraded bd to vX.Y.Z via go install. Dolt: vA.B.C. Docs updated: [list]. Mirror refreshed."
 
-git add pt-rebuild/docs/ pt-rebuild/AGENTS.md pt-rebuild/.beads/.gitignore
+git add docs/ AGENTS.md .gitignore
 PT_README_OK=1 git commit -m "docs: upgrade bd to vX.Y.Z and sync docs (<bead-id>)"
 git push
 bd dolt push

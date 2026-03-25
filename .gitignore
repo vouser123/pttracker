@@ -1,5 +1,11 @@
 .vercel
 .env*.local
+.beadhub
+.beadhub-cache/
+.aw/
+.claude/
+.serena/
+.beads/
 
 .next/
 .playwright-cli/
@@ -11,3 +17,5 @@ test-results/
 .beads/*.sock
 .beads/*.lock
 scripts/bd-doctor-once.ps1
+
+.vercel

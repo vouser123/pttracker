@@ -13,13 +13,13 @@ This design document is for agents who need to rebuild or delta-check the static
 
 It is intentionally shorter and more ordered than the source harvest. The source harvest still exists and should be treated as supporting evidence:
 
-- [design-extract.md](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/openspec/changes/nextjs-parity-governance/design-extract.md)
-- [index-reconstruction-guide.md](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/openspec/changes/nextjs-parity-governance/index-reconstruction-guide.md)
-- [legacy-parity-governance/spec.md](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/openspec/changes/nextjs-parity-governance/specs/legacy-parity-governance/spec.md)
-- [tracker-shell-and-context-parity/spec.md](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/openspec/changes/nextjs-parity-governance/specs/tracker-shell-and-context-parity/spec.md)
-- [tracker-logging-and-pocket-parity/spec.md](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/openspec/changes/nextjs-parity-governance/specs/tracker-logging-and-pocket-parity/spec.md)
-- [tracker-messages-and-history-parity/spec.md](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/openspec/changes/nextjs-parity-governance/specs/tracker-messages-and-history-parity/spec.md)
-- [tracker-offline-and-timing-parity/spec.md](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/openspec/changes/nextjs-parity-governance/specs/tracker-offline-and-timing-parity/spec.md)
+- [design-extract.md](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/openspec/changes/nextjs-parity-governance/design-extract.md)
+- [index-reconstruction-guide.md](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/openspec/changes/nextjs-parity-governance/index-reconstruction-guide.md)
+- [legacy-parity-governance/spec.md](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/openspec/changes/nextjs-parity-governance/specs/legacy-parity-governance/spec.md)
+- [tracker-shell-and-context-parity/spec.md](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/openspec/changes/nextjs-parity-governance/specs/tracker-shell-and-context-parity/spec.md)
+- [tracker-logging-and-pocket-parity/spec.md](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/openspec/changes/nextjs-parity-governance/specs/tracker-logging-and-pocket-parity/spec.md)
+- [tracker-messages-and-history-parity/spec.md](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/openspec/changes/nextjs-parity-governance/specs/tracker-messages-and-history-parity/spec.md)
+- [tracker-offline-and-timing-parity/spec.md](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/openspec/changes/nextjs-parity-governance/specs/tracker-offline-and-timing-parity/spec.md)
 
 This file preserves the earlier baseline-focused design surface. `design-extract.md` is the large harvest record.
 
@@ -492,8 +492,8 @@ Accepted sets are explicit writes into `currentSession.sets`. Live progress alon
 
 This preserved baseline design is supported by:
 
-- [design-extract.md](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/openspec/changes/nextjs-parity-governance/design-extract.md)
-- [index-reconstruction-guide.md](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/openspec/changes/nextjs-parity-governance/index-reconstruction-guide.md)
+- [design-extract.md](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/openspec/changes/nextjs-parity-governance/design-extract.md)
+- [index-reconstruction-guide.md](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/openspec/changes/nextjs-parity-governance/index-reconstruction-guide.md)
 
 The supporting harvest was taken from a full sequential read of the current static source in this checkout:
 

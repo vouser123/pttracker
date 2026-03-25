@@ -2,9 +2,9 @@
 
 Use this file for migration status, phase history, and rollout decisions.
 
-Do not use this file as the live codebase map. Use [`../README.md`](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/README.md) for that.
-Do not use this file for Next.js file-structure rules. Use [`NEXTJS_CODE_STRUCTURE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/docs/NEXTJS_CODE_STRUCTURE.md) for that.
-Do not use this file for verification checklists. Use [`TESTING_CHECKLISTS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/docs/TESTING_CHECKLISTS.md).
+Do not use this file as the live codebase map. Use [`../README.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/README.md) for that.
+Do not use this file for Next.js file-structure rules. Use [`NEXTJS_CODE_STRUCTURE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/NEXTJS_CODE_STRUCTURE.md) for that.
+Do not use this file for verification checklists. Use [`TESTING_CHECKLISTS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/TESTING_CHECKLISTS.md).
 
 ## Current Strategy
 

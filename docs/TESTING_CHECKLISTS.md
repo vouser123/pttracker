@@ -1,6 +1,6 @@
 # PT Rebuild Testing Checklists
 
-Canonical checklist reference for `pt-rebuild/`. Loaded by `AGENTS.md`. New checklists are added here.
+Canonical checklist reference for ``. Loaded by `AGENTS.md`. New checklists are added here.
 
 ---
 

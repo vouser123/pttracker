@@ -1,15 +1,15 @@
-# Beads Operations for PT Rebuild
+# Beads Operations for PT Tracker
 
-Operational guide for using Beads in `pt-rebuild/`.
+Operational guide for using Beads in this repo.
 
 This document exists so `AGENTS.md` can stay short and policy-focused while this file carries the detailed Beads operating rules.
 
-Use [`BEADS_WORKFLOW.md`](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/docs/BEADS_WORKFLOW.md) for the canonical lifecycle order. This operations guide assumes that finished scoped work is closed promptly, including verification-only beads.
+Use [`BEADS_WORKFLOW.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/BEADS_WORKFLOW.md) for the canonical lifecycle order. This operations guide assumes that finished scoped work is closed promptly, including verification-only beads.
 
 ## Purpose
 
 <!-- QUICKREF:BEGIN -->
-Use Beads for all `NextJS migration/workstream` tracking in `pt-rebuild/`.
+Use Beads for all `NextJS migration/workstream` tracking in this repo.
 <!-- QUICKREF:END -->
 
 Beads is designed for concurrent multi-agent use, but safe concurrency still depends on work boundaries and ownership discipline.
@@ -71,7 +71,7 @@ Use dependency types deliberately:
 
 ## Workspace Restrictions
 
-- For `pt-rebuild`, use normal Beads issues only.
+- For this repo, use normal Beads issues only.
 - Do not use `bd close --claim-next`.
 - Do not use `bd create --no-history`, `bd create --ephemeral`, `bd create --wisp-type`, or `bd mol wisp` flows for project tracking.
 - If work matters for coordination, handoff, parity tracking, or audit, it must be a normal Beads issue with Dolt history.
@@ -244,7 +244,7 @@ Quick decision guide:
 
 ## PT-Rebuild Issue Template
 
-Canonical template: `pt-rebuild/docs/BEADS_ISSUE_TEMPLATE.md`
+Canonical template: `docs/BEADS_ISSUE_TEMPLATE.md`
 
 All new Beads issues in this repo should include:
 
@@ -426,7 +426,7 @@ Because `.beads/hooks` is git-ignored, the local commit hooks are installed from
 npm run beads:install-commit-hook
 ```
 
-This writes `.beads/hooks/commit-msg` and `.beads/hooks/pre-commit` for the current clone. The commit-msg hook rejects commit messages that do not include a Beads ID in parentheses. The pre-commit hook blocks commits that touch shared ownership or route-shape files without either staging `pt-rebuild/README.md` or using the explicit bypass when the README is still accurate:
+This writes `.beads/hooks/commit-msg` and `.beads/hooks/pre-commit` for the current clone. The commit-msg hook rejects commit messages that do not include a Beads ID in parentheses. The pre-commit hook blocks commits that touch shared ownership or route-shape files without either staging `README.md` or using the explicit bypass when the README is still accurate:
 
 ```bash
 PT_README_OK=1 git commit ...
@@ -500,7 +500,7 @@ bd ready --json
 Dolt server check at session start:
 
 ```bash
-cd pt-rebuild
+cd .
 bd dolt status
 ```
 

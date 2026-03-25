@@ -1,9 +1,9 @@
 # Beads Workflow
 
-Canonical bead lifecycle for `pt-rebuild/`.
+Canonical bead lifecycle for ``.
 
 Use this file for the required order of operations.
-Use [`BEADS_OPERATIONS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/docs/BEADS_OPERATIONS.md) for command details, Dolt sync, and recovery steps.
+Use [`BEADS_OPERATIONS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/BEADS_OPERATIONS.md) for command details, Dolt sync, and recovery steps.
 
 ## Why This Matters
 
@@ -127,7 +127,7 @@ If code is implemented but another agent still needs to validate it:
 - `decision` = work whose main purpose is to get or record user input, approval, or cutover direction before execution
   Example: determine when to cut over, or capture a required user approval before continuing
 
-Use [`BEADS_OPERATIONS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/docs/BEADS_OPERATIONS.md) for the fuller command-and-relationship reference.
+Use [`BEADS_OPERATIONS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/BEADS_OPERATIONS.md) for the fuller command-and-relationship reference.
 
 ## Custom Statuses
 

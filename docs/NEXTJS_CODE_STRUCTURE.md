@@ -1,10 +1,10 @@
 # Next.js Code Structure Guidelines
 
-Authoritative rules for `pt-rebuild/` code organization during the Next.js migration. Apply to all Next.js pages. Do not re-evaluate these decisions per session.
+Authoritative rules for `` code organization during the Next.js migration. Apply to all Next.js pages. Do not re-evaluate these decisions per session.
 
 **Loaded by:** `AGENTS.md`, `NEXTJS_MIGRATION_STATUS.md`
 
-**Companion reference:** `pt-rebuild/README.md` is the maintained map of the live codebase shape. Use this file for rules; use the README for what currently exists and where shared files belong.
+**Companion reference:** `README.md` is the maintained map of the live codebase shape. Use this file for rules; use the README for what currently exists and where shared files belong.
 
 ---
 
@@ -85,7 +85,7 @@ An import outside these rules signals misplaced responsibility. Fix the placemen
 ## Folder Structure
 
 ```
-pt-rebuild/
+
 ├── pages/              # Next.js pages — one file per route
 │   ├── _app.js         # Global wrapper — do not modify except to add global imports
 │   ├── rehab.js        # /rehab — Coverage Analysis (Phase 1)
@@ -124,9 +124,9 @@ pt-rebuild/
 
 ## README Maintenance (Required)
 
-`pt-rebuild/README.md` is the landing reference for the current architecture. Keep it aligned with the live codebase.
+`README.md` is the landing reference for the current architecture. Keep it aligned with the live codebase.
 
-Update `pt-rebuild/README.md` in the same change when any of the following happen:
+Update `README.md` in the same change when any of the following happen:
 
 - A shared Next.js file is added, removed, renamed, or repurposed in `pages/`, `components/`, `hooks/`, or the Next.js-layer files in `lib/`
 - A page-to-legacy mapping changes, including cutover, retirement of an old HTML page, or a new redirect path
@@ -169,8 +169,8 @@ Examples for agents:
 
 Concrete repo example:
 
-- [`pages/index.js`](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/pages/index.js) is the model to follow. It stays as the route orchestrator while substantial UI and workflow concerns live in focused hooks and components.
-- [`pages/program.js`](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/pages/program.js) should follow the same pattern: route orchestration in the page, substantial editor workspaces in `components/`, and focused mutation/state concerns in `hooks/`.
+- [`pages/index.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/index.js) is the model to follow. It stays as the route orchestrator while substantial UI and workflow concerns live in focused hooks and components.
+- [`pages/program.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/program.js) should follow the same pattern: route orchestration in the page, substantial editor workspaces in `components/`, and focused mutation/state concerns in `hooks/`.
 
 **Reusable subsystem rule:** If a feature can be hosted from more than one route, keep the feature subsystem extracted even when one route is its primary home. For example, the exercise editor should stay in shared components/hooks because it historically appears from both the tracker flow and the dedicated editor flow. Do not move that subsystem back into a page file just because one route currently hosts it most often.
 

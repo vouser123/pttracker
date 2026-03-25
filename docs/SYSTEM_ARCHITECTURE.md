@@ -1,9 +1,9 @@
 # PT Tracker System Architecture
 
-Use this file for the live system shape of `pt-rebuild/`.
+Use this file for the live system shape of ``.
 
-Use [`../README.md`](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/README.md) for the current file-ownership map.
-Use [`NEXTJS_CODE_STRUCTURE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/docs/NEXTJS_CODE_STRUCTURE.md) for Next.js organization rules.
+Use [`../README.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/README.md) for the current file-ownership map.
+Use [`NEXTJS_CODE_STRUCTURE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/NEXTJS_CODE_STRUCTURE.md) for Next.js organization rules.
 
 ## System Overview
 
@@ -76,7 +76,7 @@ Core domains still in active use:
 
 - Legacy UI changes belong in `public/*.html`, `public/js`, and `public/css` when the legacy surface still owns that behavior.
 - Next.js UI changes belong in `pages/`, `components/`, `hooks/`, and Next.js-layer `lib/` files when the migrated surface owns that behavior.
-- Keep file ownership boundaries aligned with [`../README.md`](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/README.md).
+- Keep file ownership boundaries aligned with [`../README.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/README.md).
 
 ### API Work
 
@@ -102,5 +102,5 @@ Core domains still in active use:
 
 - Update docs when architecture, route ownership, data contracts, or operational workflows materially change.
 - Keep active workflow docs small in number and clear in purpose.
-- Use [`README.md`](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/README.md) as the live file map, not as a catch-all architecture narrative.
-- The retired dev-notes system now lives under [`archive/dev-notes/`](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/docs/archive/dev-notes); do not treat it as the active tracker.
+- Use [`README.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/README.md) as the live file map, not as a catch-all architecture narrative.
+- The retired dev-notes system now lives under [`archive/dev-notes/`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/archive/dev-notes); do not treat it as the active tracker.

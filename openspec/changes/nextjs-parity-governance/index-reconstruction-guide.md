@@ -6,13 +6,13 @@ This is a companion document, not a replacement for the canonical OpenSpec artif
 
 Use it when you need one clear reading order for rebuilding static `index.html` behavior. Use the canonical files for full evidence, scenario requirements, and governance:
 
-- [proposal.md](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/openspec/changes/nextjs-parity-governance/proposal.md)
-- [design.md](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/openspec/changes/nextjs-parity-governance/design.md)
-- [legacy-parity-governance/spec.md](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/openspec/changes/nextjs-parity-governance/specs/legacy-parity-governance/spec.md)
-- [tracker-shell-and-context-parity/spec.md](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/openspec/changes/nextjs-parity-governance/specs/tracker-shell-and-context-parity/spec.md)
-- [tracker-logging-and-pocket-parity/spec.md](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/openspec/changes/nextjs-parity-governance/specs/tracker-logging-and-pocket-parity/spec.md)
-- [tracker-messages-and-history-parity/spec.md](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/openspec/changes/nextjs-parity-governance/specs/tracker-messages-and-history-parity/spec.md)
-- [tracker-offline-and-timing-parity/spec.md](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/openspec/changes/nextjs-parity-governance/specs/tracker-offline-and-timing-parity/spec.md)
+- [proposal.md](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/openspec/changes/nextjs-parity-governance/proposal.md)
+- [design.md](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/openspec/changes/nextjs-parity-governance/design.md)
+- [legacy-parity-governance/spec.md](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/openspec/changes/nextjs-parity-governance/specs/legacy-parity-governance/spec.md)
+- [tracker-shell-and-context-parity/spec.md](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/openspec/changes/nextjs-parity-governance/specs/tracker-shell-and-context-parity/spec.md)
+- [tracker-logging-and-pocket-parity/spec.md](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/openspec/changes/nextjs-parity-governance/specs/tracker-logging-and-pocket-parity/spec.md)
+- [tracker-messages-and-history-parity/spec.md](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/openspec/changes/nextjs-parity-governance/specs/tracker-messages-and-history-parity/spec.md)
+- [tracker-offline-and-timing-parity/spec.md](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/openspec/changes/nextjs-parity-governance/specs/tracker-offline-and-timing-parity/spec.md)
 
 Read this guide top to bottom if `public/index.html` is unavailable. It is organized in the order an implementation agent would need to reconstruct the page.
 
@@ -595,5 +595,5 @@ Current source length used for this companion guide:
 
 For contiguous source-chunk evidence and live carry-forward mapping, see:
 
-- [design-extract.md](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/openspec/changes/nextjs-parity-governance/design-extract.md)
-- [coverage-matrix.md](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/openspec/changes/nextjs-parity-governance/coverage-matrix.md)
+- [design-extract.md](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/openspec/changes/nextjs-parity-governance/design-extract.md)
+- [coverage-matrix.md](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/openspec/changes/nextjs-parity-governance/coverage-matrix.md)

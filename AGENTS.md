@@ -1,21 +1,21 @@
-# Agent Instructions for PT Rebuild (`/pt-rebuild`)
+# Agent Instructions for PT Tracker
 
-This file governs agent behavior for work inside `pt-rebuild/`.
+This file governs agent behavior for work in this repo.
 
 ## Canonical References
 
-- `pt-rebuild/docs/README.md` - docs index that explains which doc to open and when
-- `pt-rebuild/README.md` - landing reference for the live codebase shape, shared components/hooks/utilities, timer/audio wiring, and legacy-to-Next.js page mapping
-- `pt-rebuild/docs/NEXTJS_CODE_STRUCTURE.md` - file size limits, split rules, cohesion checks, folder structure, naming conventions
-- `pt-rebuild/docs/SYSTEM_ARCHITECTURE.md` - current hybrid architecture and implementation guardrails
-- `pt-rebuild/docs/IMPLEMENTATION_PATTERNS.md` - approved shared helpers, components, and do-this-not-that implementation guidance
-- `pt-rebuild/docs/DATA_VOCABULARIES.md` - canonical field names and data contracts
-- `pt-rebuild/docs/TESTING_CHECKLISTS.md` - all regression, parity, and verification checklists for pt-rebuild/
-- `pt-rebuild/docs/BEADS_WORKFLOW.md` - required bead lifecycle, including when to close work and how to handle verification-only beads
-- `pt-rebuild/docs/BEADS_OPERATIONS.md` - canonical Beads operating rules, parallel-thread guidance, and Dolt troubleshooting
-- `pt-rebuild/docs/BEADS_QUICKREF.md` - generated quick reference derived from `BEADS_OPERATIONS.md` for agent session startup and recovery
-- `pt-rebuild/docs/archive/dev-notes/dev_notes.json` - legacy tracking archive; no longer the active intake queue
-- `pt-rebuild/docs/archive/dev-notes/DEV_NOTES.md` - generated legacy archive view derived from `dev_notes.json`
+- `docs/README.md` - docs index that explains which doc to open and when
+- `README.md` - landing reference for the live codebase shape, shared components/hooks/utilities, timer/audio wiring, and legacy-to-Next.js page mapping
+- `docs/NEXTJS_CODE_STRUCTURE.md` - file size limits, split rules, cohesion checks, folder structure, naming conventions
+- `docs/SYSTEM_ARCHITECTURE.md` - current hybrid architecture and implementation guardrails
+- `docs/IMPLEMENTATION_PATTERNS.md` - approved shared helpers, components, and do-this-not-that implementation guidance
+- `docs/DATA_VOCABULARIES.md` - canonical field names and data contracts
+- `docs/TESTING_CHECKLISTS.md` - all regression, parity, and verification checklists for this repo
+- `docs/BEADS_WORKFLOW.md` - required bead lifecycle, including when to close work and how to handle verification-only beads
+- `docs/BEADS_OPERATIONS.md` - canonical Beads operating rules, parallel-thread guidance, and Dolt troubleshooting
+- `docs/BEADS_QUICKREF.md` - generated quick reference derived from `BEADS_OPERATIONS.md` for agent session startup and recovery
+- `docs/archive/dev-notes/dev_notes.json` - legacy tracking archive; no longer the active intake queue
+- `docs/archive/dev-notes/DEV_NOTES.md` - generated legacy archive view derived from `dev_notes.json`
 
 ## Local Memory Files (Outside GitHub Repo)
 
@@ -63,8 +63,8 @@ Before writing to a page file:
 ## Core Rules
 
 - Use a docs-first workflow: check the canonical references before editing code.
-- Review `pt-rebuild/README.md` at session start as the first-stop map for what currently exists in the old and new app structures.
-- Use `pt-rebuild/README.md` as the practical guide for what shared files own, when to use them, where they fit in the stack, and where adjacent logic should not go.
+- Review `README.md` at session start as the first-stop map for what currently exists in the old and new app structures.
+- Use `README.md` as the practical guide for what shared files own, when to use them, where they fit in the stack, and where adjacent logic should not go.
 - Treat the static legacy surface as frozen unless the work is user-approved or a security issue. Default all routine feature, cleanup, and pattern-alignment work to the Next.js surface.
 - Do not invent new field names when existing vocabulary/schema terms are available.
 - Prefer plain JavaScript and browser APIs unless explicitly instructed otherwise.
@@ -97,13 +97,13 @@ This project is operated by a non-technical user. Agents must not assume technic
 ## iOS PWA Interaction Rules
 
 - Preserve iOS-safe interaction patterns.
-- Use `pt-rebuild/docs/IMPLEMENTATION_PATTERNS.md` for the detailed touch and interaction rules instead of duplicating them here.
+- Use `docs/IMPLEMENTATION_PATTERNS.md` for the detailed touch and interaction rules instead of duplicating them here.
 
 ## Active Tracker Policy (Required)
 
-- Use Beads for active work tracking in `pt-rebuild`, including intake, execution, handoff, and closure.
+- Use Beads for active work tracking in this repo, including intake, execution, handoff, and closure.
 - Do not create new `DN-*` items in `dev_notes.json`.
-- Treat `pt-rebuild/docs/archive/dev-notes/dev_notes.json` and `pt-rebuild/docs/archive/dev-notes/DEV_NOTES.md` as legacy history only.
+- Treat `docs/archive/dev-notes/dev_notes.json` and `docs/archive/dev-notes/DEV_NOTES.md` as legacy history only.
 - If a legacy `DN-*` reference matters to current work, link it in Beads with `--external-ref DN-###` instead of reviving dev_notes as an active queue.
 - If you need to review historical deferred items, consult the legacy archive and then create or update a Beads issue rather than reopening `dev_notes`.
 
@@ -114,8 +114,8 @@ This project is operated by a non-technical user. Agents must not assume technic
 
 ### Legacy Dev Notes Archive
 
-- `pt-rebuild/docs/archive/dev-notes/dev_notes.json` is retained for historical reference.
-- `pt-rebuild/docs/archive/dev-notes/DEV_NOTES.md` is generated from the JSON and should never be hand-edited.
+- `docs/archive/dev-notes/dev_notes.json` is retained for historical reference.
+- `docs/archive/dev-notes/DEV_NOTES.md` is generated from the JSON and should never be hand-edited.
 - If the legacy archive is updated for documentation reasons, run `npm run dev-notes:build` and `npm run dev-notes:check`.
 - Do not use the archive for active intake, assignment, or status management.
 
@@ -134,17 +134,17 @@ Codex cannot live-test on preview, but it can read code and reason about behavio
 
 ## Testing Checklists
 
-See [`pt-rebuild/docs/TESTING_CHECKLISTS.md`](docs/TESTING_CHECKLISTS.md) for all regression and parity testing checklists, including the Activity Log Testing Checklist (exercise types, set variables, side variables, log paths, idempotency, DB verification query).
+See [`docs/TESTING_CHECKLISTS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/TESTING_CHECKLISTS.md) for all regression and parity testing checklists, including the Activity Log Testing Checklist (exercise types, set variables, side variables, log paths, idempotency, DB verification query).
 
 ## Change Hygiene
 
 - Keep instructions concise and avoid duplicating detailed architecture from docs.
-- Update `pt-rebuild/README.md` in the same change whenever you create, remove, rename, repurpose, or materially change a file in a way that another agent would need to know to find it, understand what it owns, or wire it in correctly.
-- Update `pt-rebuild/docs/IMPLEMENTATION_PATTERNS.md` in the same change whenever you add, replace, or retire an approved shared helper/component/pattern, or whenever a do-this-not-that implementation rule changes.
-- When a legacy HTML page is replaced, retired, redirected, or re-mapped, update the page mapping in `pt-rebuild/README.md` in the same change.
-- Update `pt-rebuild/README.md` in the same change whenever a behavior change alters how a file should be used, what layer owns a concern, or which file another agent should touch for future work.
-- Do not bypass the README pre-commit guard unless the staged changes leave `pt-rebuild/README.md` fully accurate as written.
-- If guidance conflicts within `pt-rebuild/`, `AGENTS.md` is the operational source of truth.
+- Update `README.md` in the same change whenever you create, remove, rename, repurpose, or materially change a file in a way that another agent would need to know to find it, understand what it owns, or wire it in correctly.
+- Update `docs/IMPLEMENTATION_PATTERNS.md` in the same change whenever you add, replace, or retire an approved shared helper/component/pattern, or whenever a do-this-not-that implementation rule changes.
+- When a legacy HTML page is replaced, retired, redirected, or re-mapped, update the page mapping in `README.md` in the same change.
+- Update `README.md` in the same change whenever a behavior change alters how a file should be used, what layer owns a concern, or which file another agent should touch for future work.
+- Do not bypass the README pre-commit guard unless the staged changes leave `README.md` fully accurate as written.
+- If guidance conflicts within this repo, `AGENTS.md` is the operational source of truth.
 
 ## Agent Ops Friction Logging
 
@@ -170,10 +170,10 @@ An unclaimed bead looks untouched to the next agent. That agent will repeat your
 2. **Noting discoveries in conversation only** → lost on compaction → rediscovered and repeated. Use `bd create --discovered-from <id>` immediately, not later.
 3. **Leaving a passing verification bead open** → re-run by next agent. Close it in the same pass it passes.
 
-Full rules: `pt-rebuild/docs/BEADS_WORKFLOW.md`.
+Full rules: `docs/BEADS_WORKFLOW.md`.
 
-- Required lifecycle rules live in `pt-rebuild/docs/BEADS_WORKFLOW.md`.
-- Detailed operating rules live in `pt-rebuild/docs/BEADS_OPERATIONS.md`.
+- Required lifecycle rules live in `docs/BEADS_WORKFLOW.md`.
+- Detailed operating rules live in `docs/BEADS_OPERATIONS.md`.
 - Keep `AGENTS.md` as the policy surface; use the workflow doc for command patterns, parallel-thread rules, and Dolt cleanup steps.
 - Check `bd dolt status` before trying to start Dolt; only run `bd dolt start` when the server is not already running.
 - Do not use `bd edit` from agent sessions; use `bd update` flags instead.
@@ -204,7 +204,7 @@ Full rules: `pt-rebuild/docs/BEADS_WORKFLOW.md`.
 - Install the repo-local commit hooks when setting up a clone:
   - `npm run beads:install-commit-hook`
 - The hook install writes both `.beads/hooks/commit-msg` and `.beads/hooks/pre-commit`.
-- When the pre-commit hook flags shared ownership or route-shape changes, either stage `pt-rebuild/README.md` in the same commit or use the explicit bypass only if the README remains accurate:
+- When the pre-commit hook flags shared ownership or route-shape changes, either stage `README.md` in the same commit or use the explicit bypass only if the README remains accurate:
   - PowerShell: `$env:PT_README_OK="1"; git commit ...`
 - Use dependency types correctly:
   - Only `blocks` should gate readiness
@@ -326,7 +326,7 @@ bd automatically syncs via Dolt:
 - Each write auto-commits to Dolt history
 - Use `bd dolt push`/`bd dolt pull` for remote sync
 - No manual export/import needed
-- If sync fails on Windows, see `pt-rebuild/docs/BEADS_OPERATIONS.md` for metadata / working-set cleanup
+- If sync fails on Windows, see `docs/BEADS_OPERATIONS.md` for metadata / working-set cleanup
 
 ### Important Rules
 
@@ -338,7 +338,7 @@ bd automatically syncs via Dolt:
 - ❌ Do NOT use external issue trackers
 - ❌ Do NOT duplicate tracking systems
 
-For repo structure and shared-file guidance, see `pt-rebuild/README.md`. For tracker workflow details, see `pt-rebuild/docs/BEADS_OPERATIONS.md` and `pt-rebuild/docs/BEADS_QUICKREF.md`.
+For repo structure and shared-file guidance, see `README.md`. For tracker workflow details, see `docs/BEADS_OPERATIONS.md` and `docs/BEADS_QUICKREF.md`.
 
 ### PT-Rebuild Beads Template (Required)
 
@@ -380,9 +380,9 @@ Execution caveat for this environment:
 
 - In this workspace, `bd` commands may require elevated execution from Codex sessions even when local VS Code terminal commands work.
 
-Canonical template: `pt-rebuild/docs/BEADS_ISSUE_TEMPLATE.md`.
+Canonical template: `docs/BEADS_ISSUE_TEMPLATE.md`.
 
-Detailed workflow and troubleshooting: `pt-rebuild/docs/BEADS_OPERATIONS.md`.
+Detailed workflow and troubleshooting: `docs/BEADS_OPERATIONS.md`.
 
 ## Landing the Plane (Session Completion)
 

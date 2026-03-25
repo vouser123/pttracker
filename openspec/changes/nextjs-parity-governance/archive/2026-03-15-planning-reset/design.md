@@ -13,11 +13,11 @@ The current problem is not only missing parity in the Next.js tracker. It is als
 
 This design assumes the baseline artifacts now have distinct roles:
 
-- [proposal.md](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/openspec/changes/nextjs-parity-governance/proposal.md): why this baseline change exists
-- [specs/index-logging-parity/spec.md](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/openspec/changes/nextjs-parity-governance/specs/index-logging-parity/spec.md): what the static tracker must do
-- [specs/legacy-parity-governance/spec.md](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/openspec/changes/nextjs-parity-governance/specs/legacy-parity-governance/spec.md): governance rules for source-first parity work
-- [design-extract.md](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/openspec/changes/nextjs-parity-governance/design-extract.md): source-harvest evidence from static index
-- [index-reconstruction-guide.md](C:/Users/cindi/OneDrive/Documents/GitHub/rukuba/pt-rebuild/openspec/changes/nextjs-parity-governance/index-reconstruction-guide.md): ordered legacy-baseline reading guide
+- [proposal.md](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/openspec/changes/nextjs-parity-governance/proposal.md): why this baseline change exists
+- [specs/index-logging-parity/spec.md](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/openspec/changes/nextjs-parity-governance/specs/index-logging-parity/spec.md): what the static tracker must do
+- [specs/legacy-parity-governance/spec.md](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/openspec/changes/nextjs-parity-governance/specs/legacy-parity-governance/spec.md): governance rules for source-first parity work
+- [design-extract.md](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/openspec/changes/nextjs-parity-governance/design-extract.md): source-harvest evidence from static index
+- [index-reconstruction-guide.md](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/openspec/changes/nextjs-parity-governance/index-reconstruction-guide.md): ordered legacy-baseline reading guide
 
 The design question for this file is: how should later Next.js migration work be structured so those baseline artifacts actually reduce late parity discovery?
 
