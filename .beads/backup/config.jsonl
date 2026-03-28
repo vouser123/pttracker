@@ -1,0 +1,17 @@
+{"key":"auto_compact_enabled","value":"false"}
+{"key":"compact_batch_size","value":"50"}
+{"key":"compact_parallel_workers","value":"5"}
+{"key":"compact_tier1_days","value":"30"}
+{"key":"compact_tier1_dep_levels","value":"2"}
+{"key":"compact_tier2_commits","value":"100"}
+{"key":"compact_tier2_days","value":"90"}
+{"key":"compact_tier2_dep_levels","value":"5"}
+{"key":"compaction_enabled","value":"false"}
+{"key":"issue_prefix","value":"pt"}
+{"key":"kv.memory.beads-workflow-mandatory-rules-violation-wasted-tokens-dupli","value":"BEADS WORKFLOW — MANDATORY RULES (violation = wasted tokens/duplicate work for user):\n1. BEFORE any work: bd update \u003cid\u003e --claim --status in_progress\n2. When a new issue is found mid-work: bd create --discovered-from \u003ccurrent-id\u003e IMMEDIATELY — not in conversation, not later\n3. BEFORE any commit: run bd list --status=in_progress, close every bead whose scope is done, narrow unfinished ones with exact remaining scope — THEN commit\n4. Commit order: close bead → commit → never the reverse\n5. Verification beads have no commit — must be closed in the same pass they pass, or left open with exact failure note\n6. SESSION END: close all done beads, narrow all open ones, commit, git push, bd dolt push\n7. An untouched-looking open bead WILL be repeated by the next agent. That costs the user real money."}
+{"key":"kv.memory.browser-automation-mcp-guide-1-vercel-mcp-mcp","value":"Browser automation MCP guide: (1) Vercel MCP (mcp__0bd10557) — use for all Vercel dashboard data: logs, deployments, speed insights, runtime cache. Already authenticated. No browser needed. (2) Playwright MCP (mcp__Claude_Preview__) — use for PT Tracker E2E testing, cross-browser verification. Lowest token cost. (3) Chrome DevTools MCP — use for performance traces, network inspection, console debug, Core Web Vitals. Token cost ~19k. (4) Claude in Chrome — backup only when others fail, conflicts with user extensions. Rule: Vercel data = Vercel MCP; PT Tracker testing = Playwright; performance/network debug = Chrome DevTools; Claude in Chrome = last resort only."}
+{"key":"kv.memory.browser-automation-mcp-selection-guide-1-vercel-mcp","value":"Browser automation MCP selection guide: (1) Vercel MCP (mcp__0bd10557) — use for all Vercel dashboard data: logs, deployments, runtime cache, speed insights. Already authenticated. No browser needed. (2) Playwright MCP — use for PT Tracker E2E testing, cross-browser verification, headless use. Lowest token cost ~13.7k. Accessibility-tree selectors are reliable. Installed in mcp.json via npx @playwright/mcp@latest --headless. (3) Chrome DevTools MCP — use for performance traces, network request inspection, console debugging, Core Web Vitals. Token cost ~19k but best for deep debugging. (4) Claude in Chrome — backup only, use when other tools fail. Extensions may cause issues. Rule: Vercel dashboard = Vercel MCP; PT Tracker testing = Playwright MCP; performance/network debug = Chrome DevTools MCP; Claude in Chrome = last resort backup."}
+{"key":"schema_version","value":"9"}
+{"key":"status.custom","value":"browser_verify:active"}
+{"key":"team.enabled","value":"true"}
+{"key":"team.sync_branch","value":"main"}
