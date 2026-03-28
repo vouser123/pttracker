@@ -19,3 +19,6 @@ test-results/
 scripts/bd-doctor-once.ps1
 
 .vercel
+
+# Beads / Dolt files (added by bd init)
+.beads-credential-key
