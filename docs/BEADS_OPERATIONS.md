@@ -546,6 +546,29 @@ bd dolt start
 
 After starting, verify with `bd ready` or `bd stats`.
 
+### "Port 0" / Database Locked Error
+
+If any `bd` command fails with:
+
+```
+Dolt server unreachable at 127.0.0.1:0 and auto-start failed
+```
+
+or:
+
+```
+database "dolt" is locked by another dolt process
+```
+
+This means stale Dolt lock files are blocking startup. Fix:
+
+```bash
+find .beads/dolt -name "*.lock" | xargs rm -f
+bd close <id> ...   # or whatever command failed — retry now
+```
+
+Do NOT try `bd dolt start` or `bd dolt stop` first — they will also fail while the lock files exist. Remove the lock files first, then retry the original command directly. `bd` will auto-start Dolt as part of the command.
+
 To check server logs for startup issues:
 
 ```bash

@@ -1,8 +1,5 @@
 .vercel
 .env*.local
-.beadhub
-.beadhub-cache/
-.aw/
 .claude/
 .serena/
 .beads/

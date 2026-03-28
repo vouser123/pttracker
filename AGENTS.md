@@ -247,10 +247,10 @@ Reference docs (local mirror for agents):
 - `C:\Users\cindi\OneDrive\Documents\PT_Backup\beads\docs\TROUBLESHOOTING.md`
 - `C:\Users\cindi\OneDrive\Documents\PT_Backup\beads\docs\PLUGIN.md`
 
-<!-- BEGIN BEADS INTEGRATION -->
+<!-- BEGIN BEADS INTEGRATION v:1 profile:full hash:f65d5d33 -->
 ## Issue Tracking with bd (beads)
 
-**IMPORTANT**: This project uses **bd (beads)** for all NextJS migration/workstream issue tracking. Do NOT use markdown TODOs, task lists, or other tracking methods.
+**IMPORTANT**: This project uses **bd (beads)** for ALL issue tracking. Do NOT use markdown TODOs, task lists, or other tracking methods.
 
 ### Why bd?
 
@@ -306,18 +306,21 @@ bd close bd-42 --reason "Completed" --json
 ### Workflow for AI Agents
 
 1. **Check ready work**: `bd ready` shows unblocked issues
-2. **Claim your task atomically and mark it in progress**: `bd update <id> --claim --status in_progress`
-3. **Work on it**: Implement, test, document, and keep notes current while you work
+2. **Claim your task atomically**: `bd update <id> --claim`
+3. **Work on it**: Implement, test, document
 4. **Discover new work?** Create linked issue:
    - `bd create "Found bug" --description="Details about what was found" -p 1 --deps discovered-from:<parent-id>`
-5. **Close the bead when the scoped work is finished**: `bd close <id> --reason "Done"`
-6. **Commit after the bead is closed**
+5. **Complete**: `bd close <id> --reason "Done"`
 
-Required discipline:
+### Quality
+- Use `--acceptance` and `--design` fields when creating issues
+- Use `--validate` to check description completeness
 
-- Bead closure comes before commit creation.
-- Verification-only beads must be closed in the same pass once they pass.
-- If a bead is not being closed, leave an explicit note naming the unfinished scope so another agent does not repeat completed work.
+### Lifecycle
+- `bd defer <id>` / `bd supersede <id>` for issue management
+- `bd stale` / `bd orphans` / `bd lint` for hygiene
+- `bd human <id>` to flag for human decisions
+- `bd formula list` / `bd mol pour <name>` for structured workflows
 
 ### Auto-Sync
 
@@ -325,12 +328,11 @@ bd automatically syncs via Dolt:
 
 - Each write auto-commits to Dolt history
 - Use `bd dolt push`/`bd dolt pull` for remote sync
-- No manual export/import needed
-- If sync fails on Windows, see `docs/BEADS_OPERATIONS.md` for metadata / working-set cleanup
+- No manual export/import needed!
 
 ### Important Rules
 
-- ✅ Use bd for all NextJS migration/workstream task tracking
+- ✅ Use bd for ALL task tracking
 - ✅ Always use `--json` flag for programmatic use
 - ✅ Link discovered work with `discovered-from` dependencies
 - ✅ Check `bd ready` before asking "what should I work on?"
@@ -338,55 +340,11 @@ bd automatically syncs via Dolt:
 - ❌ Do NOT use external issue trackers
 - ❌ Do NOT duplicate tracking systems
 
-For repo structure and shared-file guidance, see `README.md`. For tracker workflow details, see `docs/BEADS_OPERATIONS.md` and `docs/BEADS_QUICKREF.md`.
+For more details, see README.md and docs/QUICKSTART.md.
 
-### PT-Rebuild Beads Template (Required)
+## Session Completion
 
-All new Beads issues in this repo must include the following sections in the description body:
-
-1. `Source Reference` (Beads ID; DN optional)
-2. `Status`
-3. `Priority`
-4. `Risk`
-5. `Scope`
-6. `Agent Owner`
-7. `Agent Eligible`
-8. `Tags`
-9. `File Scope`
-10. `Issue`
-11. `Context`
-12. `Constraints/Caveats`
-13. `Validation Checklist`
-14. `Dependencies`
-15. `Reactivation Trigger` (if deferred)
-
-For closure notes, include:
-
-1. `Problem`
-2. `Root Cause`
-3. `Change Made`
-4. `Files Touched`
-5. `Validation`
-6. `Follow-ups`
-
-Agent assignment convention:
-
-- Use Beads `assignee` for the active owner (`codex` or `claude`).
-- Add labels: `agent:codex`, `agent:claude`, or `agent:shared`.
-- Use Beads IDs as primary references in chat, commits, and handoffs.
-- If a legacy DN exists, keep it only as optional `external-ref` during transition.
-
-Execution caveat for this environment:
-
-- In this workspace, `bd` commands may require elevated execution from Codex sessions even when local VS Code terminal commands work.
-
-Canonical template: `docs/BEADS_ISSUE_TEMPLATE.md`.
-
-Detailed workflow and troubleshooting: `docs/BEADS_OPERATIONS.md`.
-
-## Landing the Plane (Session Completion)
-
-**When ending a work session that included code changes**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
 
 **MANDATORY WORKFLOW:**
 
@@ -396,7 +354,6 @@ Detailed workflow and troubleshooting: `docs/BEADS_OPERATIONS.md`.
 4. **PUSH TO REMOTE** - This is MANDATORY:
    ```bash
    git pull --rebase
-   bd dolt pull
    bd dolt push
    git push
    git status  # MUST show "up to date with origin"
