@@ -44,10 +44,17 @@ export function useAuth() {
             if (sess) {
                 const { error: userError } = await supabase.auth.getUser();
                 if (userError) {
-                    // Session is stored but token is invalid (revoked, password changed, etc.)
-                    // Sign out to clear stale IndexedDB state and prompt re-login.
-                    await supabase.auth.signOut();
-                    setSession(null);
+                    if (isOfflineSignInError(userError)) {
+                        // Network is down — trust the locally-stored session.
+                        // getSession() already validated it from IndexedDB; no server
+                        // round-trip needed for a warmed session when offline.
+                        setSession(sess);
+                    } else {
+                        // Token is actually invalid (revoked, password changed, etc.)
+                        // Sign out to clear stale IndexedDB state and prompt re-login.
+                        await supabase.auth.signOut();
+                        setSession(null);
+                    }
                 } else {
                     setSession(sess);
                 }
