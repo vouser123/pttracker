@@ -195,6 +195,9 @@ Practical notes:
 - `bd init` now warns when the git remote already appears to contain a Beads database.
 - `bd doctor` now auto-starts Dolt more reliably on cold standalone checks.
 - `--format json` is now accepted as an alias for `--json`, but the repo examples should keep using `--json` for consistency.
+- This repo also tracks a local `.beads/hooks/commit-msg` warning hook for AI contribution trailers. It does not block commits. To bypass the warning for one commit:
+  - PowerShell: `$env:PT_AI_TRAILER_OK="1"; git commit ...`
+  - sh/bash: `PT_AI_TRAILER_OK=1 git commit ...`
 
 ### Repo formula for large migration graphs
 

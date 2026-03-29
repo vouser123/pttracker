@@ -5,6 +5,9 @@
 .beads/*
 !.beads/formulas/
 !.beads/formulas/*.formula.json
+!.beads/hooks/
+.beads/hooks/*
+!.beads/hooks/commit-msg
 
 .next/
 .playwright-cli/

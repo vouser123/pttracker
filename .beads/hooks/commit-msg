@@ -1,0 +1,33 @@
+#!/usr/bin/env sh
+
+# Non-blocking reminder for agent-attributed commits in this shared repo.
+# This hook warns if a commit message does not include a recognized AI
+# contribution trailer, but it never fails the commit.
+#
+# Bypass:
+#   PowerShell: $env:PT_AI_TRAILER_OK="1"; git commit ...
+#   sh/bash:    PT_AI_TRAILER_OK=1 git commit ...
+
+set -eu
+
+msg_file="${1:-}"
+
+if [ -z "$msg_file" ] || [ ! -f "$msg_file" ]; then
+  exit 0
+fi
+
+if [ "${PT_AI_TRAILER_OK:-0}" = "1" ]; then
+  exit 0
+fi
+
+if grep -Eiq '^Co-[Aa]uthored-[Bb]y: .*<(codex@openai\.com|noreply@anthropic\.com)>[[:space:]]*$' "$msg_file"; then
+  exit 0
+fi
+
+printf '%s\n' >&2 "warning: commit message has no recognized AI contribution trailer"
+printf '%s\n' >&2 "warning: bypass once with PT_AI_TRAILER_OK=1 if this commit should not carry agent attribution"
+printf '%s\n' >&2 "warning: if an agent materially contributed, add one of these footers:"
+printf '%s\n' >&2 "warning:   Co-Authored-By: codex <codex@openai.com>"
+printf '%s\n' >&2 "warning:   Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+
+exit 0
