@@ -21,7 +21,7 @@ Use [`docs/NEXTJS_MIGRATION_STATUS.md`](C:/Users/cindi/OneDrive/Documents/GitHub
 
 Current visible page mapping:
 
-- [`pages/index.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/index.js) — tracker (session logging, history, messages). Legacy parity baseline: `public/index.html` (on `static` branch / `legacy.pttracker.app`).
+- [`app/page.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/page.js) + [`app/TrackerPage.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/TrackerPage.js) — tracker (session logging, history, messages). `page.js` is the App Router server entry and metadata owner; `TrackerPage.js` is the current client route host. Legacy parity baseline: `public/index.html` (on `static` branch / `legacy.pttracker.app`).
   - Owns the tracker header shell, including the legacy-style online/offline connectivity glyph (`🛜` when online, `🚫` when offline). Keep that tiny parity indicator at the route level instead of burying it in queue hooks or banners.
 - [`app/pt-view/page.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/pt-view/page.js) + [`app/pt-view/PtViewPage.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/pt-view/PtViewPage.js) — PT view (therapist-facing patient view). `page.js` is the App Router server entry and metadata owner; `PtViewPage.js` is the current client route host. Replaced `public/pt_view.html`.
 - [`app/rehab/page.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/rehab/page.js) + [`app/rehab/RehabPage.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/rehab/RehabPage.js) — rehab coverage report. `page.js` is the App Router server entry and metadata owner; `RehabPage.js` is the current client route host. Replaced `public/rehab_coverage.html`.
