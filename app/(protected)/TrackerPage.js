@@ -7,7 +7,7 @@
  * reconnect recovery, history, logger modals, and messaging together.
  */
 import dynamic from 'next/dynamic';
-import { useMemo, useState, useCallback, useEffect, useRef, useDeferredValue, useTransition } from 'react';
+import { useMemo, useState, useCallback, useEffect, useRef, useDeferredValue } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useIndexData } from '../../hooks/useIndexData';
 import { useIndexOfflineQueue } from '../../hooks/useIndexOfflineQueue';
@@ -62,7 +62,6 @@ export default function TrackerPage() {
     });
 
     const [activeTab, setActiveTab] = useState('exercises');
-    const [, startTabTransition] = useTransition();
     const [isMessagesOpen, setIsMessagesOpen] = useState(false);
     const [emailEnabled, setEmailEnabled] = useState(true);
 
@@ -168,11 +167,6 @@ export default function TrackerPage() {
     const logger = useSessionLogging(token, trackerPatientId, reload, enqueue);
     const msgs = useMessages(token, userCtx.profileId);
     const deferredAllLogs = useDeferredValue(allLogs);
-    const setActiveTabDeferred = useCallback((nextTab) => {
-        startTabTransition(() => {
-            setActiveTab(nextTab);
-        });
-    }, [startTabTransition]);
     const pickerPrograms = useMemo(() => {
         const buildHistoryState = (exerciseId, canonicalName = null) => {
             if (historyLoading && logs.length === 0) {
@@ -212,8 +206,8 @@ export default function TrackerPage() {
 
     const handleSaveAndShowHistory = useCallback(() => {
         const didSave = handleSaveFinishedSession();
-        if (didSave) setActiveTabDeferred('exercises');
-    }, [handleSaveFinishedSession, setActiveTabDeferred]);
+        if (didSave) setActiveTab('exercises');
+    }, [handleSaveFinishedSession]);
 
     const handleEditLog = useCallback((log) => {
         const byId = pickerExercises.find((exercise) => exercise.id === log.exercise_id);
@@ -363,7 +357,7 @@ export default function TrackerPage() {
                 )}
             </main>
 
-            <BottomNav activeTab={activeTab} onTabChange={setActiveTabDeferred} pendingSync={pendingCount} />
+            <BottomNav activeTab={activeTab} onTabChange={setActiveTab} pendingSync={pendingCount} />
 
             {isSessionLoggerOpen && (
                 <SessionLoggerModal
