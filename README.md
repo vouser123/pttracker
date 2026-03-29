@@ -7,7 +7,7 @@ PT Rebuild is the physical therapy session logging app for `pttracker.app`. It i
 This repo contains two active code surfaces that agents must distinguish before editing:
 
 - Legacy surface: [`public/`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/public) and [`api/`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/api). Some HTML pages in `public/` still define live or parity-relevant behavior.
-- Next.js surface: [`pages/`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages), [`components/`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/components), [`hooks/`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks), and the Next.js-layer files in [`lib/`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib).
+- Next.js surface: [`app/`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app), [`pages/`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages), [`components/`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/components), [`hooks/`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks), and the Next.js-layer files in [`lib/`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib).
 
 Default routing rule:
 
@@ -24,7 +24,7 @@ Current visible page mapping:
 - [`pages/index.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/index.js) — tracker (session logging, history, messages). Legacy parity baseline: `public/index.html` (on `static` branch / `legacy.pttracker.app`).
   - Owns the tracker header shell, including the legacy-style online/offline connectivity glyph (`🛜` when online, `🚫` when offline). Keep that tiny parity indicator at the route level instead of burying it in queue hooks or banners.
 - [`pages/pt-view.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/pt-view.js) — PT view (therapist-facing patient view). Replaced `public/pt_view.html`.
-- [`pages/rehab.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/rehab.js) — rehab coverage report. Replaced `public/rehab_coverage.html`.
+- [`app/rehab/page.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/rehab/page.js) + [`app/rehab/RehabPage.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/rehab/RehabPage.js) — rehab coverage report. `page.js` is the App Router server entry and metadata owner; `RehabPage.js` is the current client route host. Replaced `public/rehab_coverage.html`.
 - [`pages/program.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/program.js) — exercise editor (therapist/admin only). Replaced `public/pt_editor.html`.
 - [`pages/reset-password.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/reset-password.js) — Supabase password recovery route. Replaced `public/reset-password.html`. Handles `PASSWORD_RECOVERY` auth event from email link.
 
@@ -34,7 +34,8 @@ This is the current top-level structure that matters for app work:
 
 ```text
 pttracker/
-|- pages/        Next.js routes and page-level orchestration
+|- app/          App Router shell and migrated route entries
+|- pages/        Remaining Pages Router routes and page-level orchestration during migration
 |- components/   Reusable React UI pieces and modal/panel building blocks
 |- hooks/        Shared React hooks for auth, data, logging, timers, and messaging
 |- lib/          Pure helpers and page-domain adapters used by Next.js code
@@ -49,7 +50,9 @@ pttracker/
 |- scripts/      Local project scripts
 ```
 
-- [`pages/_document.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/_document.js): Shared document-level head ownership for the Next.js surface. Use it for global favicon and apple-touch-icon tags instead of repeating those links in individual route pages.
+- [`app/layout.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/layout.js): App Router root shell. Owns shared metadata, manifest/icon links, analytics, Speed Insights, and the client-side service-worker registrar for routes that already live under `app/`.
+- [`app/components/ServiceWorkerRegistrar.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/components/ServiceWorkerRegistrar.js): Client-only service-worker registration bridge used by the App Router shell. Use it instead of duplicating registration logic in route files.
+- [`pages/_document.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/_document.js): Shared document-level head ownership for the remaining Pages Router surface. Use it for legacy `pages/` routes until those routes migrate into `app/`.
 
 Pointers:
 
