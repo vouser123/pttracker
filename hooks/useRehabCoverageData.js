@@ -18,11 +18,27 @@ export function useRehabCoverageData(accessToken) {
     const reload = useCallback(async () => {
         if (!accessToken) return;
 
+        let cachedSnapshot = null;
+
         setLoading(true);
         setError(null);
         setOfflineNotice(null);
 
         try {
+            await offlineCache.init();
+            const [cachedLogs, cachedRoles] = await Promise.all([
+                offlineCache.getCachedLogs(),
+                offlineCache.getCachedRolesData(),
+            ]);
+            if (cachedRoles) {
+                cachedSnapshot = {
+                    userRole: cachedRoles.user_role || 'patient',
+                    coverageResult: buildCoverageData(cachedLogs || [], cachedRoles.roles || []),
+                };
+                setUserRole(cachedSnapshot.userRole);
+                setCoverageResult(cachedSnapshot.coverageResult);
+            }
+
             const headers = { Authorization: `Bearer ${accessToken}` };
             const [logsRes, rolesRes] = await Promise.all([
                 fetch('/api/logs?limit=1000', { headers }),
@@ -44,14 +60,21 @@ export function useRehabCoverageData(accessToken) {
         } catch (err) {
             console.error('useRehabCoverageData load failed:', err);
             try {
-                await offlineCache.init();
-                const [cachedLogs, cachedRoles] = await Promise.all([
-                    offlineCache.getCachedLogs(),
-                    offlineCache.getCachedRolesData(),
-                ]);
-                if (!cachedRoles) throw new Error('No cached coverage data available offline.');
-                setUserRole(cachedRoles.user_role || 'patient');
-                setCoverageResult(buildCoverageData(cachedLogs || [], cachedRoles.roles || []));
+                if (!cachedSnapshot) {
+                    await offlineCache.init();
+                    const [cachedLogs, cachedRoles] = await Promise.all([
+                        offlineCache.getCachedLogs(),
+                        offlineCache.getCachedRolesData(),
+                    ]);
+                    if (!cachedRoles) throw new Error('No cached coverage data available offline.');
+                    cachedSnapshot = {
+                        userRole: cachedRoles.user_role || 'patient',
+                        coverageResult: buildCoverageData(cachedLogs || [], cachedRoles.roles || []),
+                    };
+                }
+
+                setUserRole(cachedSnapshot.userRole);
+                setCoverageResult(cachedSnapshot.coverageResult);
                 setOfflineNotice('Offline — showing cached data.');
             } catch (cacheError) {
                 console.error('useRehabCoverageData cache fallback failed:', cacheError);
