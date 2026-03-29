@@ -13,7 +13,7 @@ This file governs agent behavior for work in this repo.
 - `docs/IMPLEMENTATION_PATTERNS.md` - approved shared helpers, components, and do-this-not-that implementation guidance
 - `docs/DATA_VOCABULARIES.md` - canonical field names and data contracts
 - `docs/TESTING_CHECKLISTS.md` - all regression, parity, and verification checklists for this repo
-- `docs/BEADS_WORKFLOW.md` - required bead lifecycle, including when to close work and how to handle verification-only beads
+- `docs/BEADS_WORKFLOW.md` - required bead lifecycle, including when to close work and how to handle verification-focused task beads
 - `docs/BEADS_OPERATIONS.md` - canonical Beads operating rules, parallel-thread guidance, and Dolt troubleshooting
 - `docs/BEADS_QUICKREF.md` - generated quick reference derived from `BEADS_OPERATIONS.md` for agent session startup and recovery
 - `docs/archive/dev-notes/dev_notes.json` - legacy tracking archive; no longer the active intake queue
@@ -180,7 +180,7 @@ An unclaimed bead looks untouched to the next agent. That agent will repeat your
 **The three failures that cause work to be repeated (read these):**
 1. **Starting without claiming** → bead looks untouched → next agent repeats it. Claim first, always.
 2. **Noting discoveries in conversation only** → lost on compaction → rediscovered and repeated. Use `bd create --discovered-from <id>` immediately, not later.
-3. **Leaving a passing verification bead open** → re-run by next agent. Close it in the same pass it passes.
+3. **Leaving a passing verification-focused task open** → re-run by next agent. Close it in the same pass it passes.
 
 Full rules: `docs/BEADS_WORKFLOW.md`.
 
@@ -206,20 +206,19 @@ Full rules: `docs/BEADS_WORKFLOW.md`.
   - `bd ready --exclude-type chore --json`
   - `bd list --exclude-type chore --json`
 - Use issue types deliberately:
-  - `verification` = browser checks, parity confirmation, acceptance validation, or other proof-gathering work whose main purpose is to verify behavior rather than change it
-    Example: test a flow on iOS before closing, or confirm a parity bead passes on preview
+  - `task` = necessary implementation, investigation, refactor, setup, follow-through, or verification work that is not best described as a bug, feature, or chore
+    Example: split an oversized file, set up Playwright, implement an agreed migration slice, or run browser/parity checks when the current Beads release does not support the custom `verification` type
   - `bug` = broken behavior, regressions, or parity mismatches that need repair
     Example: tracker history prefilter is wrong, or a queued write uses the wrong patient id
   - `feature` = additive capability that is not just a fix or migration follow-through
     Example: add a genuinely new app capability or new operator-facing workflow that did not exist before
-  - `task` = necessary implementation, investigation, refactor, setup, or follow-through that is not best described as a bug, feature, or chore
-    Example: split an oversized file, set up Playwright, or implement an agreed migration slice
   - `chore` = low-product-impact maintenance or housekeeping
     Example: clean up stale tracker/admin items or perform low-risk tooling upkeep
   - `epic` = parent container for related child beads
     Example: a parent bead for a parity domain, cutover track, or multi-step migration stream
   - `decision` = work whose main purpose is to get or record user input, approval, or cutover direction before execution
     Example: determine when to cut over to Next.js, or capture a user approval needed before continuing
+  - Temporary limitation: do not use the custom `verification` issue type in this repo until the upstream Beads custom-type fix lands; use `task` for browser checks, parity confirmation, and other proof-gathering work.
 - Install the repo-local commit hooks when setting up a clone:
   - `npm run beads:install-commit-hook`
 - The hook install writes both `.beads/hooks/commit-msg` and `.beads/hooks/pre-commit`.
@@ -252,13 +251,13 @@ Full rules: `docs/BEADS_WORKFLOW.md`.
 - Hard rule:
   - Manual closure is required. Commits do not close beads automatically in the current Dolt-based workflow.
   - Do not leave a bead open when its scoped work is done.
-  - Do not leave a verification-only bead open after the verification passes.
+  - Do not leave a verification-focused task bead open after the verification passes.
   - If a parent bead stays open, close the completed child bead anyway and note the exact remaining open scope on the parent.
-- If code is implemented but waiting on another thread's verification:
+- If code is implemented but waiting on another thread's verification-focused task:
   - update the bead immediately with the pushed commit id and an explicit note that the status is `implemented, awaiting verification`
   - do not leave the bead looking untouched or ambiguously open
 - Concurrency rule:
-  - Beads supports multi-agent coordination, but shared-file implementation still needs one owner at a time. Use parallel threads for review/verification or clearly separate file domains, not for the same helper/state path.
+  - Beads supports multi-agent coordination, but shared-file implementation still needs one owner at a time. Use parallel threads for review or verification-focused task work, or clearly separate file domains, not for the same helper/state path.
 
 Reference docs (local mirror for agents):
 - `C:\Users\cindi\OneDrive\Documents\PT_Backup\beads\AGENT_INSTRUCTIONS.md`

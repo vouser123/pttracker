@@ -268,7 +268,7 @@ bd ready --json
 
 **Rules:**
 - Manual closure is required. Commits do not close beads automatically in the current Dolt-based workflow.
-- Close beads when their scoped work is done. For code beads, that means commit after bead state is accurate. For verification beads, close them in the same pass once they pass.
+- Close beads when their scoped work is done. For code beads, that means commit after bead state is accurate. For verification-focused task beads, close them in the same pass once they pass.
 - NEVER stop before `git push` completes — stranded local work breaks multi-agent coordination
 - NEVER say "ready to push when you are" — push it yourself
 - If push fails, resolve and retry until it succeeds

@@ -4,7 +4,7 @@ Operational guide for using Beads in this repo.
 
 This document exists so `AGENTS.md` can stay short and policy-focused while this file carries the detailed Beads operating rules.
 
-Use [`BEADS_WORKFLOW.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/BEADS_WORKFLOW.md) for the canonical lifecycle order. This operations guide assumes that finished scoped work is closed promptly, including verification-only beads.
+Use [`BEADS_WORKFLOW.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/BEADS_WORKFLOW.md) for the canonical lifecycle order. This operations guide assumes that finished scoped work is closed promptly, including verification-focused task beads.
 
 ## Purpose
 
@@ -80,14 +80,14 @@ The core workflow rule is:
 
 Manual closure is required. Commits do not close beads automatically in the current Dolt-based workflow.
 
-That applies to all bead types, including verification-only beads.
+That applies to all bead types, including verification-focused task beads.
 
 For code beads, the practical consequence is:
 
 - bead state must be accurate before the commit is created
 - manually close the bead before the commit if the scoped work is complete
 
-For verification beads, there may be no commit at all, so the rule is still closure on completion, not closure-before-commit as a general slogan.
+For verification-focused task beads, there may be no commit at all, so the rule is still closure on completion, not closure-before-commit as a general slogan.
 
 ## Dependency Rules
 
@@ -101,6 +101,12 @@ Use dependency types deliberately:
   - for associated work that should not gate readiness
 - `discovered-from`
   - for provenance when a new issue was found during another issue's investigation
+
+## Temporary Type Limitation
+
+- Until the upstream Beads custom-type issue is fixed, do not create repo work with the custom `verification` issue type.
+- Use the supported `task` type for browser checks, parity confirmation, acceptance validation, and other proof-gathering work.
+- Keep the lifecycle expectation the same: close a verification-focused task bead in the same pass once it passes, or leave an explicit failure note if it does not.
 
 ## Workspace Restrictions
 
@@ -539,7 +545,7 @@ bd ready --json
 
 **Rules:**
 - Manual closure is required. Commits do not close beads automatically in the current Dolt-based workflow.
-- Close beads when their scoped work is done. For code beads, that means commit after bead state is accurate. For verification beads, close them in the same pass once they pass.
+- Close beads when their scoped work is done. For code beads, that means commit after bead state is accurate. For verification-focused task beads, close them in the same pass once they pass.
 - NEVER stop before `git push` completes — stranded local work breaks multi-agent coordination
 - NEVER say "ready to push when you are" — push it yourself
 - If push fails, resolve and retry until it succeeds

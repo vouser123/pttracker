@@ -25,9 +25,9 @@ An agent does real work but never sets the bead to `in_progress`. The bead looks
 An agent finds a new issue mid-work and mentions it in chat. After context compaction, the discovery is gone. The next agent finds the same issue and creates a new bead — or worse, never finds it and ships broken code.
 → **You must run `bd create --discovered-from <current-id>` immediately when any new issue is found. Not in conversation. Not "later." Immediately.**
 
-**Failure 3: Leaving a verification bead open after it passes.**
-Verification beads rarely have commits. If the verification passes but the bead stays open, the next agent re-runs it — spending tokens and time re-verifying something that was already confirmed.
-→ **You must close verification beads in the same pass they pass. If it fails, leave an explicit failure note. Either way, the bead must be updated before you move on.**
+**Failure 3: Leaving a verification-focused task open after it passes.**
+Verification-focused tasks rarely have commits. If the verification passes but the bead stays open, the next agent re-runs it — spending tokens and time re-verifying something that was already confirmed.
+→ **You must close verification-focused task beads in the same pass they pass. If it fails, leave an explicit failure note. Either way, the bead must be updated before you move on.**
 
 ## Required Lifecycle
 
@@ -60,7 +60,7 @@ git commit -m "Your change (<id>)"
 - **You must claim and set `in_progress` before touching any bead's scope.** An untouched-looking open bead will be assigned to another agent and repeated.
 - **You must close the bead before the commit.** Not after. Not "later." Before.
 - **You must not leave a bead open because the remaining work feels small.** Small unclosed beads accumulate and become invisible debt.
-- **You must not leave a verification bead open after it passes.** There is no commit to catch it. If you don't close it in the same pass, it will be re-run.
+- **You must not leave a verification-focused task bead open after it passes.** There is no commit to catch it. If you don't close it in the same pass, it will be re-run.
 - **You must not leave a child bead open just because its parent is still open.** Close it when its own scope is done.
 - **If a bead is staying open, you must leave an explicit note naming the exact unfinished scope.** "In progress" with no note is not acceptable.
 
@@ -71,14 +71,14 @@ git commit -m "Your change (<id>)"
 - The commit message must include the bead ID
 - Do not commit and plan to close the bead afterward — the bead will be left open
 
-## Verification Beads
+## Verification-Focused Task Beads
 
-Verification beads rarely have a commit. The lifecycle is identical:
+Until the upstream Beads custom-type issue is fixed, verification work in this repo should use the supported `task` issue type. The lifecycle is identical:
 
 - Claim and set `in_progress` before running the verification
 - If it passes: close the bead in that same pass with what was verified
 - If it fails: leave an explicit note with the exact failing condition, keep the bead open
-- **Do not leave a verification bead open with no failure note.** Another agent will re-run it.
+- **Do not leave a verification-focused task bead open with no failure note.** Another agent will re-run it.
 
 ## Discovered Issues
 
@@ -138,7 +138,7 @@ This project uses one custom status beyond the built-in set:
 | `browser_verify` | active | ✅ | Needs a live browser test on the Vercel preview. No code change required — open a browser, run the check, close the bead if it passes. |
 
 **When to use `browser_verify`:**
-- Parity verification beads (pt-spg, pt-eg2, pt-s2d, pt-780 "Verify..." items)
+- Parity verification-focused task beads (pt-spg, pt-eg2, pt-s2d, pt-780 "Verify..." items)
 - Any bead whose only remaining work is confirming behavior in a real browser
 
 **Do not use it for:**

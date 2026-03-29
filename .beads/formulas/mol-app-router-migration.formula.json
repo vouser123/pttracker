@@ -174,7 +174,7 @@
     {
       "id": "run-app-router-parity-and-regression-verification",
       "title": "Run App Router parity and regression verification",
-      "description": "Verification lane for the App Router migration. Scope: route-by-route verification for rehab, pt-view, program, and index; confirm auth, messaging, offline/PWA, service worker registration, metadata, and key mobile behaviors still work on preview before final cut-over cleanup. File scope: docs/TESTING_CHECKLISTS.md, route files migrated under app/, shared hooks/components touched by migration, and any verification notes/screenshots/logs captured during preview checks. Deliverable: explicit verification record of what passed, what failed, and what must be fixed before final cut-over cleanup.",
+      "description": "Verification-focused task lane for the App Router migration. Scope: route-by-route verification for rehab, pt-view, program, and index; confirm auth, messaging, offline/PWA, service worker registration, metadata, and key mobile behaviors still work on preview before final cut-over cleanup. File scope: docs/TESTING_CHECKLISTS.md, route files migrated under app/, shared hooks/components touched by migration, and any verification notes/screenshots/logs captured during preview checks. Deliverable: explicit verification record of what passed, what failed, and what must be fixed before final cut-over cleanup.",
       "type": "task",
       "priority": 1,
       "depends_on": [
