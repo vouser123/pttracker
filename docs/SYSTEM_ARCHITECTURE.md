@@ -57,7 +57,7 @@ Current responsibilities:
 - `app/(protected)/program/page.js` + `app/(protected)/program/ProgramPage.js` own `/program`
 - `app/(protected)/rehab/page.js` + `app/(protected)/rehab/RehabPage.js` own `/rehab`
 - `app/(protected)/pt-view/page.js` + `app/(protected)/pt-view/PtViewPage.js` own `/pt-view`
-- `proxy.js` (Next.js 16 convention, previously `middleware.js`) refreshes the Supabase session cookie on every request via `@supabase/ssr`
+- `proxy.js` (Next.js 16 convention, previously `middleware.js`) refreshes the Supabase session cookie on every request via `@supabase/ssr`; uses `getClaims()` (local JWT check, no network) **not** `getUser()` — see Auth Call Hierarchy below
 
 Use the App Router surface when:
 
@@ -115,7 +115,25 @@ The auth architecture target before cut-over is a **hybrid SSR-capable foundatio
 - Not fully client-only auth (which blocks server participation — an explicit architectural limitation, not a best practice)
 - Not fully server-first (wrong fit for a PWA with offline requirements)
 
-Implementation tracked in **pt-8whf** (Claude owns). Do not implement server-side data fetching for auth-gated surfaces until pt-8whf lands.
+Implementation complete in **pt-8whf** (closed 2026-03-29).
+
+### Auth Call Hierarchy (do not change without reading this)
+
+Every agent must understand why three different auth calls exist and why they cannot be collapsed:
+
+| Location | Method | Network? | Purpose |
+|---|---|---|---|
+| `proxy.js` | `supabase.auth.getClaims()` | **No** — local JWT | Refresh expired tokens; propagate fresh cookie to request + response. Must run on every request or users get randomly logged out. |
+| `app/(protected)/layout.js` | `supabase.auth.getUser()` | **Yes** — Supabase auth server | Verify user identity for the auth gate. Only `getUser()` detects server-side revocation (banned user, password reset, manual session deletion). |
+| `lib/auth.js` — `authenticateRequest()` | `supabase.auth.getUser(token)` | **Yes** — Supabase auth server | Verify the Bearer token on every API request. Same reason as layout: must detect revocation. Cannot be replaced with local JWT verification. |
+| `hooks/useAuth.js` — mount | `getSession()` then `getUser()` | getSession=no, getUser=yes | Client-side session hydration. `getSession()` reads local cookie synchronously; `getUser()` validates against server to catch stale/revoked sessions. |
+
+**Rules derived from Supabase SSR docs (verified 2026-03-29):**
+- `getClaims()` = local JWT validation only. Fast, no network. Cannot detect revocation. Use in proxy only.
+- `getUser()` = network call to Supabase auth server. Use wherever user identity matters for security decisions.
+- Do NOT replace `getUser()` with `getClaims()` or local JWT libraries in `layout.js` or `lib/auth.js` — you would lose revocation detection.
+- Do NOT replace `getClaims()` with `getUser()` in `proxy.js` — you add a network round-trip on every request for no security benefit (the proxy is not an auth gate).
+- The proxy and layout calls are intentionally separate: proxy = cookie refresh, layout = security gate.
 
 Core domains still in active use:
 
