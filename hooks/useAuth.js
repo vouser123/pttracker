@@ -95,9 +95,10 @@ export function useAuth() {
         return error.message;
     }
 
-    /** Sign out the current user. */
+    /** Sign out the current user and redirect to sign-in. */
     async function signOut() {
         await supabase.auth.signOut();
+        window.location.href = '/sign-in';
     }
 
     return { session, loading, signIn, signOut };
