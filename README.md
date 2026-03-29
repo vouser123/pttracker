@@ -23,9 +23,9 @@ Current visible page mapping:
 
 - [`pages/index.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/index.js) — tracker (session logging, history, messages). Legacy parity baseline: `public/index.html` (on `static` branch / `legacy.pttracker.app`).
   - Owns the tracker header shell, including the legacy-style online/offline connectivity glyph (`🛜` when online, `🚫` when offline). Keep that tiny parity indicator at the route level instead of burying it in queue hooks or banners.
-- [`pages/pt-view.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/pt-view.js) — PT view (therapist-facing patient view). Replaced `public/pt_view.html`.
+- [`app/pt-view/page.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/pt-view/page.js) + [`app/pt-view/PtViewPage.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/pt-view/PtViewPage.js) — PT view (therapist-facing patient view). `page.js` is the App Router server entry and metadata owner; `PtViewPage.js` is the current client route host. Replaced `public/pt_view.html`.
 - [`app/rehab/page.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/rehab/page.js) + [`app/rehab/RehabPage.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/rehab/RehabPage.js) — rehab coverage report. `page.js` is the App Router server entry and metadata owner; `RehabPage.js` is the current client route host. Replaced `public/rehab_coverage.html`.
-- [`pages/program.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/program.js) — exercise editor (therapist/admin only). Replaced `public/pt_editor.html`.
+- [`app/program/page.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/program/page.js) + [`app/program/ProgramPage.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/program/ProgramPage.js) — exercise editor (therapist/admin only). `page.js` is the App Router server entry and metadata owner; `ProgramPage.js` is the current client route host. Replaced `public/pt_editor.html`.
 - [`pages/reset-password.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/reset-password.js) — Supabase password recovery route. Replaced `public/reset-password.html`. Handles `PASSWORD_RECOVERY` auth event from email link.
 
 ## Folder Structure
