@@ -2,10 +2,13 @@
 .env*.local
 .claude/
 .serena/
-.beads/
+.beads/*
+!.beads/formulas/
+!.beads/formulas/*.formula.json
 
 .next/
 .playwright-cli/
+.playwright-mcp/
 test-results/
 # Dolt database files (added by bd init)
 .beads/dolt/config.yaml

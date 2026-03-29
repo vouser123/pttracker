@@ -92,6 +92,23 @@ Practical notes:
 - `bd doctor` now auto-starts Dolt more reliably on cold standalone checks.
 - `--format json` is now accepted as an alias for `--json`, but the repo examples should keep using `--json` for consistency.
 
+### Repo formula for large migration graphs
+
+For this repo's App Router transition work, there is now a project-level formula at `.beads/formulas/mol-app-router-migration.formula.json`.
+
+Use it when a future session needs to create the full migration graph in one pass instead of hand-creating every child bead:
+
+```bash
+bd formula list
+bd mol pour mol-app-router-migration --var title="Migrate <surface> to App Router before cut-over"
+```
+
+Practical notes:
+
+- This formula uses `pour=true`, so it creates the root epic and the child work graph, not just an inline root issue.
+- Supply a real `title` value. Without a title variable, Beads uses the formula name as the root issue title.
+- If the workflow shape changes materially, update the live epic first and then refresh the formula so the template stays aligned with actual practice.
+
 ---
 
 Set dependencies at creation time whenever possible:
