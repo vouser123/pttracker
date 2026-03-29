@@ -42,6 +42,36 @@ Beads is designed for concurrent multi-agent use, but safe concurrency still dep
   - implementation here
   - review/verification there
 
+### Shared branch commit ownership
+
+This repo is still using a shared branch/worktree because Beads usually keeps Codex and Claude in separate file lanes. That only works if commit ownership stays strict.
+
+Before every `git add` or commit, run:
+
+```bash
+git status --short
+```
+
+Then verify:
+
+- every modified or staged file belongs to the current bead
+- every file is in the current agent lane
+- no other agent's files are about to be staged or committed
+
+If another agent's files appear in `git status`:
+
+- stop
+- leave those files untouched
+- do not scoop them into the current commit to "keep things moving"
+
+If another agent lands a commit during active work:
+
+- treat that as a hard boundary
+- rerun `git status`
+- re-check bead/file ownership before any further staging or commit
+
+The shared-branch model is acceptable only while this rule is being followed reliably.
+
 ## Lifecycle Rule
 
 The core workflow rule is:

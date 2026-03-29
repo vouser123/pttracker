@@ -181,6 +181,12 @@ Full rules: `docs/BEADS_WORKFLOW.md`.
 - Check `bd dolt status` before trying to start Dolt; only run `bd dolt start` when the server is not already running.
 - Do not use `bd edit` from agent sessions; use `bd update` flags instead.
 - Use `bd remember` only for durable guidance that should come back through `bd prime` for every agent in this repo. `BEADS_ACTOR` records who set the memory, but it does not currently isolate prime-time injection by actor, so agent-private workflow notes belong in the local memory files unless the user explicitly wants them shared.
+- Shared-branch commit ownership rule:
+  - This repo currently uses one shared branch/worktree because Beads usually keeps Codex and Claude in separate file lanes.
+  - An agent must not stage or commit files it did not edit.
+  - Before every `git add` or commit, run `git status --short` and verify every modified or staged file belongs to the current bead and current agent lane.
+  - If `git status` shows another agent's files, stop and leave them untouched.
+  - If another agent lands a commit during active work, treat that as a hard boundary: rerun `git status`, re-check file ownership, and continue only with files that are still clearly in your lane.
 - Claim first in multi-agent workflows:
   - `bd update <id> --claim --assignee codex` (or `claude`)
 - Search before create to reduce duplicate issues:
