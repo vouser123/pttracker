@@ -1,11 +1,12 @@
+'use client';
 /**
- * pages/pt-view.js — Rehab History Dashboard: exercise history, notes, messages.
- * Replaces public/pt_view.html (Phase 2 migration).
+ * app/pt-view/PtViewPage.js — Rehab History Dashboard (Client Component).
+ * Migrated from pages/pt-view.js. All logic is identical; <Head> replaced by
+ * metadata export in app/pt-view/page.js (App Router pattern).
  *
  * ⚠️  ORCHESTRATOR ONLY — this file wires hooks and components together. Nothing else.
  * Before adding ANY code here, ask: "Is this pure wiring?"
  * If the answer is no → it belongs in a hook, component, or lib file, not this file.
- * Adding non-wiring code here is how fixed pages regress. See AGENTS.md Pre-Coding Layer Check.
  *
  * Wires:
  *   Auth           → hooks/useAuth.js
@@ -16,30 +17,29 @@
  *   Messages       → hooks/useMessages.js
  *   UI             → components/MessagesModal.js, components/ExerciseHistoryModal.js,
  *                    components/PtView*.js, components/NavMenu.js, components/AuthForm.js
- *   Styles         → pt-view.module.css
+ *   Styles         → pages/pt-view.module.css (shared until CSS is relocated)
  */
-import Head from 'next/head';
 import { useMemo, useState } from 'react';
-import { useAuth } from '../hooks/useAuth';
-import { useUserContext } from '../hooks/useUserContext';
-import { useMessages } from '../hooks/useMessages';
-import NavMenu from '../components/NavMenu';
-import AuthForm from '../components/AuthForm';
-import MessagesModal from '../components/MessagesModal';
-import ExerciseHistoryModal from '../components/ExerciseHistoryModal';
-import PatientNotes from '../components/PatientNotes';
-import HistoryList from '../components/HistoryList';
-import PtViewNeedsAttention from '../components/PtViewNeedsAttention';
-import PtViewSummaryStats from '../components/PtViewSummaryStats';
-import PtViewFiltersPanel from '../components/PtViewFiltersPanel';
-import { usePtViewData } from '../hooks/usePtViewData';
-import { usePtViewUiState } from '../hooks/usePtViewUiState';
-import { useEmailNotifications } from '../hooks/useEmailNotifications';
+import { useAuth } from '../../hooks/useAuth';
+import { useUserContext } from '../../hooks/useUserContext';
+import { useMessages } from '../../hooks/useMessages';
+import NavMenu from '../../components/NavMenu';
+import AuthForm from '../../components/AuthForm';
+import MessagesModal from '../../components/MessagesModal';
+import ExerciseHistoryModal from '../../components/ExerciseHistoryModal';
+import PatientNotes from '../../components/PatientNotes';
+import HistoryList from '../../components/HistoryList';
+import PtViewNeedsAttention from '../../components/PtViewNeedsAttention';
+import PtViewSummaryStats from '../../components/PtViewSummaryStats';
+import PtViewFiltersPanel from '../../components/PtViewFiltersPanel';
+import { usePtViewData } from '../../hooks/usePtViewData';
+import { usePtViewUiState } from '../../hooks/usePtViewUiState';
+import { useEmailNotifications } from '../../hooks/useEmailNotifications';
 import {
     groupLogsByDate, findNeedsAttention, needsAttentionUrgency,
     computeSummaryStats, applyFilters,
-} from '../lib/pt-view';
-import styles from './pt-view.module.css';
+} from '../../lib/pt-view';
+import styles from '../../pages/pt-view.module.css';
 
 export default function PtViewPage() {
     const { session, loading: authLoading, signIn, signOut } = useAuth();
@@ -114,11 +114,6 @@ export default function PtViewPage() {
 
     return (
         <>
-            <Head>
-                <title>Rehab History</title>
-                <meta name="viewport" content="width=device-width, initial-scale=1" />
-            </Head>
-
             <div className={styles.header}>
                 <h1>Rehab History</h1>
                 <div className={styles['header-actions']}>
