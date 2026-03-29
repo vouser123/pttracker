@@ -7,7 +7,7 @@
  * reconnect recovery, history, logger modals, and messaging together.
  */
 import dynamic from 'next/dynamic';
-import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
+import { useMemo, useState, useCallback, useEffect, useRef, useDeferredValue, useTransition } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useIndexData } from '../../hooks/useIndexData';
 import { useIndexOfflineQueue } from '../../hooks/useIndexOfflineQueue';
@@ -62,6 +62,7 @@ export default function TrackerPage() {
     });
 
     const [activeTab, setActiveTab] = useState('exercises');
+    const [, startTabTransition] = useTransition();
     const [isMessagesOpen, setIsMessagesOpen] = useState(false);
     const [emailEnabled, setEmailEnabled] = useState(true);
 
@@ -166,12 +167,18 @@ export default function TrackerPage() {
 
     const logger = useSessionLogging(token, trackerPatientId, reload, enqueue);
     const msgs = useMessages(token, userCtx.profileId);
+    const deferredAllLogs = useDeferredValue(allLogs);
+    const setActiveTabDeferred = useCallback((nextTab) => {
+        startTabTransition(() => {
+            setActiveTab(nextTab);
+        });
+    }, [startTabTransition]);
     const pickerPrograms = useMemo(() => {
         const buildHistoryState = (exerciseId, canonicalName = null) => {
             if (historyLoading && logs.length === 0) {
                 return { history_pending: true };
             }
-            return getAdherenceBadgeState(allLogs, exerciseId, canonicalName);
+            return getAdherenceBadgeState(deferredAllLogs, exerciseId, canonicalName);
         };
 
         if (programs.length > 0) {
@@ -184,7 +191,7 @@ export default function TrackerPage() {
             exercise_id: exercise.id,
             ...buildHistoryState(exercise.id, exercise.canonical_name ?? null),
         }));
-    }, [allLogs, exercises, historyLoading, logs.length, programs]);
+    }, [deferredAllLogs, exercises, historyLoading, logs.length, programs]);
     const sessionProgress = useMemo(() => buildSessionProgress(selectedExercise, draftSession?.sets ?? []), [draftSession?.sets, selectedExercise]);
 
     useEffect(() => {
@@ -205,8 +212,8 @@ export default function TrackerPage() {
 
     const handleSaveAndShowHistory = useCallback(() => {
         const didSave = handleSaveFinishedSession();
-        if (didSave) setActiveTab('exercises');
-    }, [handleSaveFinishedSession]);
+        if (didSave) setActiveTabDeferred('exercises');
+    }, [handleSaveFinishedSession, setActiveTabDeferred]);
 
     const handleEditLog = useCallback((log) => {
         const byId = pickerExercises.find((exercise) => exercise.id === log.exercise_id);
@@ -356,7 +363,7 @@ export default function TrackerPage() {
                 )}
             </main>
 
-            <BottomNav activeTab={activeTab} onTabChange={setActiveTab} pendingSync={pendingCount} />
+            <BottomNav activeTab={activeTab} onTabChange={setActiveTabDeferred} pendingSync={pendingCount} />
 
             {isSessionLoggerOpen && (
                 <SessionLoggerModal
