@@ -1,33 +1,31 @@
+'use client';
 /**
- * pages/rehab.js — Rehab Coverage Analysis: exercise coverage matrix and region bars.
- * Replaces public/rehab_coverage.html (DN-033).
+ * app/rehab/RehabPage.js — Rehab Coverage Analysis page (Client Component).
+ * Migrated from pages/rehab.js. All logic is identical; <Head> replaced by
+ * metadata export in app/rehab/page.js (App Router pattern).
  *
  * ⚠️  ORCHESTRATOR ONLY — this file wires hooks and components together. Nothing else.
  * Before adding ANY code here, ask: "Is this pure wiring?"
  * If the answer is no → it belongs in a hook, component, or lib file, not this file.
- * Adding non-wiring code here is how fixed pages regress. See AGENTS.md Pre-Coding Layer Check.
  *
  * Wires:
  *   Auth          → hooks/useAuth.js
  *   Data          → hooks/useRehabCoverageData.js
  *   UI            → components/NavMenu.js, components/AuthForm.js
- *   Styles        → rehab.module.css
- *
- * No window.*, no Script tags, no useRef plumbing to bridge React and globals.
+ *   Styles        → pages/rehab.module.css (shared until CSS is relocated)
  */
 import { useState } from 'react';
-import Head from 'next/head';
-import { useAuth } from '../hooks/useAuth';
-import { useRehabCoverageData } from '../hooks/useRehabCoverageData';
-import { supabase } from '../lib/supabase';
-import NavMenu from '../components/NavMenu';
-import AuthForm from '../components/AuthForm';
-import CoverageSummary from '../components/CoverageSummary';
-import CoverageMatrix from '../components/CoverageMatrix';
-import { colorScoreToRGB, COVERAGE_CONSTANTS } from '../lib/rehab-coverage';
-import styles from './rehab.module.css';
+import { useAuth } from '../../hooks/useAuth';
+import { useRehabCoverageData } from '../../hooks/useRehabCoverageData';
+import { supabase } from '../../lib/supabase';
+import NavMenu from '../../components/NavMenu';
+import AuthForm from '../../components/AuthForm';
+import CoverageSummary from '../../components/CoverageSummary';
+import CoverageMatrix from '../../components/CoverageMatrix';
+import { colorScoreToRGB, COVERAGE_CONSTANTS } from '../../lib/rehab-coverage';
+import styles from '../../pages/rehab.module.css';
 
-export default function RehabCoverage() {
+export default function RehabPage() {
     const { session, loading: authLoading, signIn } = useAuth();
     const {
         userRole,
@@ -71,15 +69,6 @@ export default function RehabCoverage() {
 
     return (
         <>
-            <Head>
-                <title>Rehab Coverage Analysis</title>
-                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-                <link rel="manifest" href="/manifest-tracker.json" />
-                <meta name="mobile-web-app-capable" content="yes" />
-                <meta name="apple-mobile-web-app-capable" content="yes" />
-                <meta name="apple-mobile-web-app-title" content="PT Tracker" />
-            </Head>
-
             {/* Auth form — shown when not signed in (and auth check has resolved) */}
             {!session && !authLoading && (
                 <AuthForm
