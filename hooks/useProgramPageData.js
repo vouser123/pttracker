@@ -20,6 +20,42 @@ function emptyProgramDataState() {
   };
 }
 
+function buildCachedProgramSnapshot(cachedUsers, authUserId, cachedExercises, cachedVocabularies, cachedReferenceData, cachedPrograms) {
+  const currentUser = (cachedUsers ?? []).find((user) => user.auth_id === authUserId);
+  if (!currentUser) return null;
+
+  if (currentUser.role !== 'therapist' && currentUser.role !== 'admin') {
+    return {
+      ...emptyProgramDataState(),
+      currentUserRole: currentUser.role,
+      accessError: 'Therapist or admin access required.',
+    };
+  }
+
+  const { patientUser, patientDisplayName } = resolvePatientScopedUserContext(cachedUsers, authUserId);
+  const programMap = Object.fromEntries((cachedPrograms ?? []).map((program) => [program.exercise_id, program]));
+  const hasCachedBootstrap =
+    (cachedExercises?.length ?? 0) > 0 ||
+    Object.keys(cachedVocabularies ?? {}).length > 0 ||
+    (cachedReferenceData?.equipment?.length ?? 0) > 0 ||
+    (cachedReferenceData?.muscles?.length ?? 0) > 0 ||
+    (cachedReferenceData?.formParameters?.length ?? 0) > 0 ||
+    Object.keys(programMap).length > 0;
+
+  if (!hasCachedBootstrap) return null;
+
+  return {
+    ...emptyProgramDataState(),
+    exercises: cachedExercises ?? [],
+    vocabularies: cachedVocabularies ?? {},
+    referenceData: cachedReferenceData ?? emptyReferenceData(),
+    programs: programMap,
+    currentUserRole: currentUser.role,
+    programPatientId: patientUser.id,
+    programPatientName: patientDisplayName,
+  };
+}
+
 /**
  * /program bootstrap, cache, and offline fallback lifecycle.
  * @param {{ session: object|null }} params
@@ -43,8 +79,36 @@ export function useProgramPageData({ session }) {
   }, []);
 
   const loadData = useCallback(async (accessToken, authUserId) => {
+    let cachedBootstrap = null;
+
     try {
       await offlineCache.init();
+      const [
+        cachedUsers,
+        cachedExercises,
+        cachedVocabularies,
+        cachedReferenceData,
+        cachedPrograms,
+      ] = await Promise.all([
+        offlineCache.getCachedUsers(),
+        offlineCache.getCachedExercises(),
+        offlineCache.getCachedProgramVocabularies(),
+        offlineCache.getCachedProgramReferenceData(),
+        offlineCache.getCachedPrograms(),
+      ]);
+      cachedBootstrap = buildCachedProgramSnapshot(
+        cachedUsers,
+        authUserId,
+        cachedExercises,
+        cachedVocabularies,
+        cachedReferenceData,
+        cachedPrograms
+      );
+
+      if (cachedBootstrap) {
+        setState(cachedBootstrap);
+      }
+
       const usersData = await fetchUsers(accessToken);
       await offlineCache.cacheUsers(usersData);
       const currentUser = usersData.find((user) => user.auth_id === authUserId);
@@ -76,44 +140,32 @@ export function useProgramPageData({ session }) {
       return nextData;
     } catch (err) {
       try {
-        await offlineCache.init();
-        const [cachedUsers, cachedExercises, cachedVocabularies, cachedReferenceData, cachedPrograms] = await Promise.all([
-          offlineCache.getCachedUsers(),
-          offlineCache.getCachedExercises(),
-          offlineCache.getCachedProgramVocabularies(),
-          offlineCache.getCachedProgramReferenceData(),
-          offlineCache.getCachedPrograms(),
-        ]);
-        const currentUser = (cachedUsers ?? []).find((user) => user.auth_id === authUserId);
-        if (!currentUser) throw err;
-
-        if (currentUser.role !== 'therapist' && currentUser.role !== 'admin') {
-          setState({ ...emptyProgramDataState(), currentUserRole: currentUser.role, accessError: 'Therapist or admin access required.' });
-          return null;
+        if (!cachedBootstrap) {
+          await offlineCache.init();
+          const [cachedUsers, cachedExercises, cachedVocabularies, cachedReferenceData, cachedPrograms] = await Promise.all([
+            offlineCache.getCachedUsers(),
+            offlineCache.getCachedExercises(),
+            offlineCache.getCachedProgramVocabularies(),
+            offlineCache.getCachedProgramReferenceData(),
+            offlineCache.getCachedPrograms(),
+          ]);
+          cachedBootstrap = buildCachedProgramSnapshot(
+            cachedUsers,
+            authUserId,
+            cachedExercises,
+            cachedVocabularies,
+            cachedReferenceData,
+            cachedPrograms
+          );
         }
 
-        const { patientUser, patientDisplayName } = resolvePatientScopedUserContext(cachedUsers, authUserId);
-        const programMap = Object.fromEntries((cachedPrograms ?? []).map((program) => [program.exercise_id, program]));
-        const hasCachedBootstrap =
-          (cachedExercises?.length ?? 0) > 0 ||
-          Object.keys(cachedVocabularies ?? {}).length > 0 ||
-          (cachedReferenceData?.equipment?.length ?? 0) > 0 ||
-          (cachedReferenceData?.muscles?.length ?? 0) > 0 ||
-          (cachedReferenceData?.formParameters?.length ?? 0) > 0 ||
-          Object.keys(programMap).length > 0;
-        if (!hasCachedBootstrap) throw err;
+        if (!cachedBootstrap) throw err;
 
-        const nextData = {
-          exercises: cachedExercises ?? [],
-          vocabularies: cachedVocabularies ?? {},
-          referenceData: cachedReferenceData ?? emptyReferenceData(),
-          programs: programMap,
-          currentUserRole: currentUser.role,
-          programPatientId: patientUser.id,
-          programPatientName: patientDisplayName,
-        };
-        setState({ ...emptyProgramDataState(), ...nextData, offlineNotice: 'Offline - showing cached editor data.' });
-        return nextData;
+        setState({
+          ...cachedBootstrap,
+          offlineNotice: 'Offline - showing cached editor data.',
+        });
+        return cachedBootstrap;
       } catch {
         setState({ ...emptyProgramDataState(), loadError: err.message });
         return null;
