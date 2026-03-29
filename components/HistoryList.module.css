@@ -6,9 +6,7 @@
     padding: 0 1rem 1rem 1rem;
 }
 
-.grouped-by-date {
-    margin-bottom: 0.75rem;
-}
+/* .grouped-by-date removed — GroupedVirtuoso renders headers and items as siblings */
 
 .date-group-header {
     background: #007bff;
@@ -17,6 +15,7 @@
     border-radius: 3px;
     font-weight: 600;
     font-size: var(--font-size-compact);
+    margin-top: 0.75rem; /* replaces .grouped-by-date margin-bottom */
     margin-bottom: 3px;
     position: sticky;
     top: 0;
