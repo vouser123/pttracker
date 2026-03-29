@@ -1,3 +1,4 @@
+'use client';
 // components/PtViewFiltersPanel.js — page-only filters panel for the rehab history route
 import NativeSelect from './NativeSelect';
 import styles from './PtViewFiltersPanel.module.css';

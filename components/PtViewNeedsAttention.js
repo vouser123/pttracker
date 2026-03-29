@@ -1,3 +1,4 @@
+'use client';
 // components/PtViewNeedsAttention.js — page-only needs-attention panel for the rehab history route
 
 import styles from './PtViewNeedsAttention.module.css';
