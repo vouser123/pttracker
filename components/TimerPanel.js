@@ -92,7 +92,7 @@ export default function TimerPanel({
         : 'Tap to count';
 
     return (
-        <div className={styles.overlay} onPointerUp={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+        <div className={styles.overlay}>
             <section className={styles.panel} aria-label="Exercise timer and counter">
                 <header className={styles.header}>
                     <div>

@@ -129,6 +129,9 @@
 .input,
 .select,
 .textarea {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     min-height: 44px;
     border: 1px solid var(--border-color);
     border-radius: 10px;
@@ -152,11 +155,15 @@
 
 @media (max-width: 720px) {
     .fieldGrid {
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        grid-template-columns: 1fr;
     }
 
     .formDataGrid {
         grid-template-columns: 1fr;
+    }
+
+    .withUnit {
+        grid-template-columns: minmax(0, 1fr) 72px;
     }
 
     .footer > button {
