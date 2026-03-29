@@ -28,6 +28,9 @@ Session-start requirement:
 
 - Read both files if present before work begins.
 - If guidance conflicts, prefer the file with the newer `LastWriteTime` and note the conflict in session updates.
+- Run `bd prime` after reading local memory and before starting work. `bd prime` is the Beads single source of truth for current workflow guidance, and it auto-injects remembered Beads memories at prime time.
+- Run `bd prime` again before compaction or handoff if session context may be stale.
+- `BEADS_ACTOR` provides attribution, but current Beads memory injection is not actor-filtered on read. Do not store agent-private workflow notes in `bd remember` unless they are intentionally shared across agents; keep private operational notes in the local memory files instead.
 - When adding durable local operational notes, update both files with the same change.
 
 ## Pre-Coding Layer Check (Required Before Writing Any Code)
@@ -177,6 +180,7 @@ Full rules: `docs/BEADS_WORKFLOW.md`.
 - Keep `AGENTS.md` as the policy surface; use the workflow doc for command patterns, parallel-thread rules, and Dolt cleanup steps.
 - Check `bd dolt status` before trying to start Dolt; only run `bd dolt start` when the server is not already running.
 - Do not use `bd edit` from agent sessions; use `bd update` flags instead.
+- Use `bd remember` only for durable guidance that should come back through `bd prime` for every agent in this repo. `BEADS_ACTOR` records who set the memory, but it does not currently isolate prime-time injection by actor, so agent-private workflow notes belong in the local memory files unless the user explicitly wants them shared.
 - Claim first in multi-agent workflows:
   - `bd update <id> --claim --assignee codex` (or `claude`)
 - Search before create to reduce duplicate issues:

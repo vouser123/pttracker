@@ -29,6 +29,9 @@ Beads is designed for concurrent multi-agent use, but safe concurrency still dep
   - Claude: `BEADS_ACTOR=claude`
   - Codex: `BEADS_ACTOR=codex`
   - Without this, both agents fall back to the same git `user.name` and audit logs lose attribution.
+- Run `bd prime` at session start after local memory is read, and rerun it before compaction or handoff when session context may be stale.
+- `bd prime` auto-injects memories stored with `bd remember`, so treat `bd prime` output as the active Beads instruction surface for the current actor.
+- `BEADS_ACTOR` gives attribution for who set a memory, but current memory recall/prime injection is not actor-filtered. In this repo, only store memories in `bd remember` when they are intentionally shared across agents. Keep agent-private operational guidance in the local memory files instead.
 - Claim first in multi-agent workflows:
   - `bd update <id> --claim --assignee codex`
   - `bd update <id> --claim --assignee claude`
