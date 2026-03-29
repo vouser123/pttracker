@@ -22,16 +22,23 @@ This file governs agent behavior for work in this repo.
 These local files are operator memory for agents and are not committed to GitHub:
 
 - `C:\Users\cindi\OneDrive\Documents\claude-memory\MEMORY.md`
+- `C:\Users\cindi\OneDrive\Documents\codex-memory\MEMORY.md`
 - `C:\Users\cindi\OneDrive\Documents\PT_Backup\agent_memory\MEMORY.md`
 
 Session-start requirement:
 
-- Read both files if present before work begins.
+- Read the shared file plus the actor-specific file if present before work begins.
+- Claude reads:
+  - `C:\Users\cindi\OneDrive\Documents\claude-memory\MEMORY.md`
+  - `C:\Users\cindi\OneDrive\Documents\PT_Backup\agent_memory\MEMORY.md`
+- Codex reads:
+  - `C:\Users\cindi\OneDrive\Documents\codex-memory\MEMORY.md`
+  - `C:\Users\cindi\OneDrive\Documents\PT_Backup\agent_memory\MEMORY.md`
 - If guidance conflicts, prefer the file with the newer `LastWriteTime` and note the conflict in session updates.
 - Run `bd prime` after reading local memory and before starting work. `bd prime` is the Beads single source of truth for current workflow guidance, and it auto-injects remembered Beads memories at prime time.
 - Run `bd prime` again before compaction or handoff if session context may be stale.
 - `BEADS_ACTOR` provides attribution, but current Beads memory injection is not actor-filtered on read. Do not store agent-private workflow notes in `bd remember` unless they are intentionally shared across agents; keep private operational notes in the local memory files instead.
-- When adding durable local operational notes, update both files with the same change.
+- When adding durable shared operational notes, update the shared file and the actor-specific file together only if both agents should inherit the same guidance. Keep Codex-only notes in the Codex memory file.
 
 ## Pre-Coding Layer Check (Required Before Writing Any Code)
 
