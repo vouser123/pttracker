@@ -6,6 +6,7 @@
  * ORCHESTRATOR ONLY — this file wires auth, tracker state, offline queue,
  * reconnect recovery, history, logger modals, and messaging together.
  */
+import dynamic from 'next/dynamic';
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useIndexData } from '../hooks/useIndexData';
@@ -24,16 +25,17 @@ import NavMenu from '../components/NavMenu';
 import HistoryPanel from '../components/HistoryPanel';
 import BottomNav from '../components/BottomNav';
 import ExercisePicker from '../components/ExercisePicker';
-import NextSetConfirmModal from '../components/NextSetConfirmModal';
-import SessionLoggerModal from '../components/SessionLoggerModal';
-import SessionNotesModal from '../components/SessionNotesModal';
 import TimerPanel from '../components/TimerPanel';
-import MessagesModal from '../components/MessagesModal';
 import Toast from '../components/Toast';
 import { getAdherenceBadgeState } from '../lib/index-history';
 import { buildSessionProgress } from '../lib/index-tracker-session';
 import { markTrackerPickerReady } from '../lib/tracker-performance';
 import styles from '../pages/index.module.css';
+
+const SessionLoggerModal = dynamic(() => import('../components/SessionLoggerModal'), { loading: () => null });
+const NextSetConfirmModal = dynamic(() => import('../components/NextSetConfirmModal'), { loading: () => null });
+const SessionNotesModal = dynamic(() => import('../components/SessionNotesModal'), { loading: () => null });
+const MessagesModal = dynamic(() => import('../components/MessagesModal'), { loading: () => null });
 
 export default function TrackerPage() {
     const { session, loading: authLoading, signIn } = useAuth();
@@ -280,6 +282,9 @@ export default function TrackerPage() {
         && backdateValue
         && Math.abs(new Date(backdateValue).getTime() - new Date(draftSession.date).getTime()) > 120000
     );
+    const isSessionLoggerOpen = manualLog.manualLogState.isOpen || logger.isOpen;
+    const isConfirmModalOpen = Boolean(pendingSetPatch);
+    const isNotesModalOpen = notesModalOpen && Boolean(draftSession);
 
     return (
         <div className={styles.page}>
@@ -353,29 +358,31 @@ export default function TrackerPage() {
 
             <BottomNav activeTab={activeTab} onTabChange={setActiveTab} pendingSync={pendingCount} />
 
-            <SessionLoggerModal
-                isOpen={manualLog.manualLogState.isOpen || logger.isOpen}
-                isEdit={manualLog.manualLogState.isOpen ? false : logger.isEdit}
-                exercise={manualLog.manualLogState.isOpen ? manualLog.manualLogState.exercise : logger.exercise}
-                title={manualLog.manualLogState.isOpen ? 'Log Set' : null}
-                submitLabel={manualLog.manualLogState.isOpen ? 'Save Set' : null}
-                showPerformedAt={!manualLog.manualLogState.isOpen}
-                showNotes={!manualLog.manualLogState.isOpen}
-                performedAt={manualLog.manualLogState.isOpen ? draftSession?.date ?? new Date().toISOString() : logger.performedAt}
-                notes={manualLog.manualLogState.isOpen ? '' : logger.notes}
-                sets={manualLog.manualLogState.isOpen ? manualLog.manualLogState.sets : logger.sets}
-                submitting={manualLog.manualLogState.isOpen ? false : logger.submitting}
-                error={manualLog.manualLogState.isOpen ? manualLog.manualLogState.error : logger.error}
-                onClose={manualLog.manualLogState.isOpen ? manualLog.handleManualModalClose : logger.close}
-                onPerformedAtChange={manualLog.manualLogState.isOpen ? (() => {}) : logger.setPerformedAt}
-                onNotesChange={manualLog.manualLogState.isOpen ? (() => {}) : logger.setNotes}
-                onAddSet={manualLog.manualLogState.isOpen ? manualLog.handleManualAddSet : logger.addSet}
-                onRemoveSet={manualLog.manualLogState.isOpen ? manualLog.handleManualRemoveSet : logger.removeSet}
-                onSetChange={manualLog.manualLogState.isOpen ? manualLog.updateManualSet : logger.updateSet}
-                onFormParamChange={manualLog.manualLogState.isOpen ? manualLog.updateManualFormParam : logger.updateFormParam}
-                onSubmit={manualLog.manualLogState.isOpen ? manualLog.handleManualModalSubmit : handleHistoryModalSubmit}
-                historicalFormParams={(manualLog.manualLogState.isOpen ? manualLog.manualLogState.exercise : logger.exercise)?.historical_form_params ?? {}}
-            />
+            {isSessionLoggerOpen && (
+                <SessionLoggerModal
+                    isOpen={isSessionLoggerOpen}
+                    isEdit={manualLog.manualLogState.isOpen ? false : logger.isEdit}
+                    exercise={manualLog.manualLogState.isOpen ? manualLog.manualLogState.exercise : logger.exercise}
+                    title={manualLog.manualLogState.isOpen ? 'Log Set' : null}
+                    submitLabel={manualLog.manualLogState.isOpen ? 'Save Set' : null}
+                    showPerformedAt={!manualLog.manualLogState.isOpen}
+                    showNotes={!manualLog.manualLogState.isOpen}
+                    performedAt={manualLog.manualLogState.isOpen ? draftSession?.date ?? new Date().toISOString() : logger.performedAt}
+                    notes={manualLog.manualLogState.isOpen ? '' : logger.notes}
+                    sets={manualLog.manualLogState.isOpen ? manualLog.manualLogState.sets : logger.sets}
+                    submitting={manualLog.manualLogState.isOpen ? false : logger.submitting}
+                    error={manualLog.manualLogState.isOpen ? manualLog.manualLogState.error : logger.error}
+                    onClose={manualLog.manualLogState.isOpen ? manualLog.handleManualModalClose : logger.close}
+                    onPerformedAtChange={manualLog.manualLogState.isOpen ? (() => {}) : logger.setPerformedAt}
+                    onNotesChange={manualLog.manualLogState.isOpen ? (() => {}) : logger.setNotes}
+                    onAddSet={manualLog.manualLogState.isOpen ? manualLog.handleManualAddSet : logger.addSet}
+                    onRemoveSet={manualLog.manualLogState.isOpen ? manualLog.handleManualRemoveSet : logger.removeSet}
+                    onSetChange={manualLog.manualLogState.isOpen ? manualLog.updateManualSet : logger.updateSet}
+                    onFormParamChange={manualLog.manualLogState.isOpen ? manualLog.updateManualFormParam : logger.updateFormParam}
+                    onSubmit={manualLog.manualLogState.isOpen ? manualLog.handleManualModalSubmit : handleHistoryModalSubmit}
+                    historicalFormParams={(manualLog.manualLogState.isOpen ? manualLog.manualLogState.exercise : logger.exercise)?.historical_form_params ?? {}}
+                />
+            )}
 
             <TimerPanel
                 isOpen={isTimerOpen}
@@ -393,51 +400,57 @@ export default function TrackerPage() {
                 onOpenManual={handleTimerOpenManual}
             />
 
-            <NextSetConfirmModal
-                isOpen={Boolean(pendingSetPatch)}
-                exercise={selectedExercise}
-                setPatch={pendingSetPatch}
-                submitting={false}
-                error={null}
-                onClose={() => setPendingSetPatch(null)}
-                onEdit={handleEditNextSet}
-                onConfirm={handleConfirmNextSet}
-            />
+            {isConfirmModalOpen && (
+                <NextSetConfirmModal
+                    isOpen={isConfirmModalOpen}
+                    exercise={selectedExercise}
+                    setPatch={pendingSetPatch}
+                    submitting={false}
+                    error={null}
+                    onClose={() => setPendingSetPatch(null)}
+                    onEdit={handleEditNextSet}
+                    onConfirm={handleConfirmNextSet}
+                />
+            )}
 
-            <SessionNotesModal
-                isOpen={notesModalOpen && Boolean(draftSession)}
-                notes={draftSession?.notes ?? ''}
-                backdateEnabled={backdateEnabled}
-                backdateValue={backdateValue}
-                warningVisible={backdateWarningVisible}
-                onClose={handleNotesModalClose}
-                onCancel={handleCancelSession}
-                onNotesChange={(value) => {
-                    setDraftSession((previous) => (previous ? { ...previous, notes: value } : previous));
-                }}
-                onToggleBackdate={handleToggleBackdate}
-                onBackdateChange={setBackdateValue}
-                onSave={handleSaveAndShowHistory}
-            />
+            {isNotesModalOpen && (
+                <SessionNotesModal
+                    isOpen={isNotesModalOpen}
+                    notes={draftSession?.notes ?? ''}
+                    backdateEnabled={backdateEnabled}
+                    backdateValue={backdateValue}
+                    warningVisible={backdateWarningVisible}
+                    onClose={handleNotesModalClose}
+                    onCancel={handleCancelSession}
+                    onNotesChange={(value) => {
+                        setDraftSession((previous) => (previous ? { ...previous, notes: value } : previous));
+                    }}
+                    onToggleBackdate={handleToggleBackdate}
+                    onBackdateChange={setBackdateValue}
+                    onSave={handleSaveAndShowHistory}
+                />
+            )}
 
-            <MessagesModal
-                isOpen={isMessagesOpen}
-                onClose={() => setIsMessagesOpen(false)}
-                messages={msgs.messages}
-                viewerId={userCtx.profileId}
-                viewerName={userCtx.viewerName}
-                otherName={userCtx.otherName}
-                otherIsTherapist={userCtx.otherIsTherapist}
-                recipientId={userCtx.recipientId}
-                emailEnabled={emailEnabled}
-                onSend={msgs.send}
-                onArchive={msgs.archive}
-                onUnarchive={msgs.unarchive}
-                onRemove={msgs.remove}
-                onMarkRead={msgs.markRead}
-                onEmailToggle={handleEmailToggle}
-                onOpened={msgs.markModalOpened}
-            />
+            {isMessagesOpen && (
+                <MessagesModal
+                    isOpen={isMessagesOpen}
+                    onClose={() => setIsMessagesOpen(false)}
+                    messages={msgs.messages}
+                    viewerId={userCtx.profileId}
+                    viewerName={userCtx.viewerName}
+                    otherName={userCtx.otherName}
+                    otherIsTherapist={userCtx.otherIsTherapist}
+                    recipientId={userCtx.recipientId}
+                    emailEnabled={emailEnabled}
+                    onSend={msgs.send}
+                    onArchive={msgs.archive}
+                    onUnarchive={msgs.unarchive}
+                    onRemove={msgs.remove}
+                    onMarkRead={msgs.markRead}
+                    onEmailToggle={handleEmailToggle}
+                    onOpened={msgs.markModalOpened}
+                />
+            )}
         </div>
     );
 }

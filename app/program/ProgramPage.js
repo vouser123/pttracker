@@ -6,7 +6,8 @@
  * ORCHESTRATOR ONLY — this file wires auth, bootstrap hooks, offline queue hooks,
  * workspace state, and shared editor components together.
  */
-import { useCallback } from 'react';
+import dynamic from 'next/dynamic';
+import { useCallback, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
 import { useProgramPageData } from '../../hooks/useProgramPageData';
@@ -20,17 +21,19 @@ import { useToast } from '../../hooks/useToast';
 import AuthForm from '../../components/AuthForm';
 import NavMenu from '../../components/NavMenu';
 import ProgramExerciseSelector from '../../components/ProgramExerciseSelector';
-import ExerciseForm from '../../components/ExerciseForm';
-import DosageModal from '../../components/DosageModal';
 import ExerciseRolesWorkspace from '../../components/ExerciseRolesWorkspace';
 import ProgramDosageWorkspace from '../../components/ProgramDosageWorkspace';
-import ProgramVocabEditor from '../../components/ProgramVocabEditor';
 import Toast from '../../components/Toast';
 import { getProgramMutationLabel } from '../../lib/program-offline';
 import styles from '../../pages/program.module.css';
 
+const ExerciseForm = dynamic(() => import('../../components/ExerciseForm'), { loading: () => null });
+const DosageModal = dynamic(() => import('../../components/DosageModal'), { loading: () => null });
+const ProgramVocabEditor = dynamic(() => import('../../components/ProgramVocabEditor'), { loading: () => null });
+
 export default function ProgramPage() {
     const { session, loading: authLoading, signIn, signOut } = useAuth();
+    const [isVocabOpen, setIsVocabOpen] = useState(false);
     const {
         exercises,
         referenceData,
@@ -263,18 +266,23 @@ export default function ProgramPage() {
                         />
 
                         <section className={styles.workspaceSection}>
-                            <details className={styles.vocabDetails}>
+                            <details
+                                className={styles.vocabDetails}
+                                onToggle={(event) => setIsVocabOpen(event.currentTarget.open)}
+                            >
                                 <summary className={styles.vocabSummary}>Manage Vocabulary</summary>
                                 <p className={styles.sectionDescription}>
                                     Controlled vocabularies define the valid codes used by the editor and shared role selectors.
                                 </p>
-                                <ProgramVocabEditor
-                                    vocabularies={vocabularies}
-                                    onAddTerm={handleAddVocabTerm}
-                                    onUpdateTerm={handleUpdateVocabTerm}
-                                    onDeleteTerm={handleDeleteVocabTerm}
-                                    saving={vocabSaving}
-                                />
+                                {isVocabOpen && (
+                                    <ProgramVocabEditor
+                                        vocabularies={vocabularies}
+                                        onAddTerm={handleAddVocabTerm}
+                                        onUpdateTerm={handleUpdateVocabTerm}
+                                        onDeleteTerm={handleDeleteVocabTerm}
+                                        saving={vocabSaving}
+                                    />
+                                )}
                             </details>
                         </section>
 
