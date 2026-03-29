@@ -1,7 +1,11 @@
 /**
- * useMessages — fetch, poll, send, and archive messages.
+ * useMessages — fetch, subscribe, send, and archive messages.
  *
- * Handles the 30-second polling interval and cleans up on unmount.
+ * Uses Supabase Realtime to subscribe to clinical_messages changes instead of
+ * polling. A one-time fetch on mount (delayed 3s to avoid competing with tracker
+ * bootstrap) hydrates initial state. The Realtime channel triggers a refresh
+ * whenever a row is inserted, updated, or deleted for the current user.
+ *
  * The page passes in the viewer's profile id (users table PK) for badge count calculations.
  * NOTE: clinical_messages.sender_id stores the users table PK, NOT the Supabase auth UUID.
  * Pass profileId (current.id from fetchUsers), not session.user.id (auth_id).
@@ -17,13 +21,15 @@ import {
     deleteMessage,
     countUnreadMessages,
 } from '../lib/pt-view';
+import { supabase } from '../lib/supabase';
 
-const POLL_INTERVAL_MS = 30_000;
+const MOUNT_DELAY_MS = 3_000;
 
 export function useMessages(token, viewerId) {
-    const [messages, setMessages]       = useState([]);
+    const [messages, setMessages]   = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
-    const intervalRef                   = useRef(null);
+    const channelRef                = useRef(null);
+    const mountTimerRef             = useRef(null);
 
     /** Load messages and recompute badge count using DB read_by_recipient field. */
     const refresh = useCallback(async () => {
@@ -39,12 +45,33 @@ export function useMessages(token, viewerId) {
         }
     }, [token, viewerId]);
 
-    // Start polling when we have a token; stop on unmount or sign-out
+    // Subscribe to Realtime changes on clinical_messages.
+    // Fetch once on mount (delayed), then let the channel drive updates.
     useEffect(() => {
         if (!token) return;
-        refresh();
-        intervalRef.current = setInterval(refresh, POLL_INTERVAL_MS);
-        return () => clearInterval(intervalRef.current);
+
+        // Delayed initial fetch — avoids racing with tracker bootstrap on open.
+        mountTimerRef.current = setTimeout(refresh, MOUNT_DELAY_MS);
+
+        // Realtime channel: re-fetch on any INSERT/UPDATE/DELETE in clinical_messages.
+        // Filter is server-side but clinical_messages RLS already scopes to the user,
+        // so any change that reaches the client is relevant.
+        channelRef.current = supabase
+            .channel('clinical_messages_changes')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'clinical_messages' },
+                () => { void refresh(); }
+            )
+            .subscribe();
+
+        return () => {
+            clearTimeout(mountTimerRef.current);
+            if (channelRef.current) {
+                supabase.removeChannel(channelRef.current);
+                channelRef.current = null;
+            }
+        };
     }, [token, refresh]);
 
     /**
