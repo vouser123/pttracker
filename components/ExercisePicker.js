@@ -1,5 +1,5 @@
 // components/ExercisePicker.js — exercise list/search/select UI with dosage, sort, and manual ordering
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styles from './ExercisePicker.module.css';
 import NativeSelect from './NativeSelect';
 import {
@@ -29,6 +29,69 @@ function getAdherence(program) {
     if (program?.last_performed_at) return { label: 'Recent activity', tone: 'green' };
     return { label: 'No history', tone: 'gray' };
 }
+
+const ExercisePickerCard = memo(function ExercisePickerCard({
+    exerciseId,
+    exerciseName,
+    category,
+    dosageText,
+    adherenceLabel,
+    adherenceTone,
+    isSelected,
+    isDragging,
+    isPendingDrag,
+    isManualMode,
+    onSelect,
+    onDragStart,
+    setCardRef,
+}) {
+    return (
+        <div
+            ref={(node) => setCardRef(exerciseId, node)}
+            className={`${styles.card} ${isSelected ? styles.selected : ''} ${(isDragging || isPendingDrag) ? styles.dragPlaceholder : ''}`}
+        >
+            <button
+                className={styles.cardButton}
+                onPointerUp={() => {
+                    if (isDragging) return;
+                    onSelect?.(exerciseId);
+                }}
+                aria-pressed={isSelected}
+                type="button"
+            >
+                <span className={styles.name}>{exerciseName}</span>
+                <span className={styles.dosage}>{dosageText}</span>
+                {adherenceLabel && (
+                    <span className={`${styles.adherence} ${styles[adherenceTone]}`}>
+                        {adherenceLabel}
+                    </span>
+                )}
+                {category && <span className={styles.tag}>{category}</span>}
+            </button>
+            {isManualMode && (
+                <button
+                    type="button"
+                    className={styles.dragHandle}
+                    aria-label={`Reorder ${exerciseName}`}
+                    onPointerDown={(event) => onDragStart(event, {
+                        id: exerciseId,
+                        canonical_name: exerciseName,
+                        dosageText,
+                    })}
+                >
+                    <span className={styles.dragGrip} aria-hidden="true">
+                        <span className={styles.dragDot} />
+                        <span className={styles.dragDot} />
+                        <span className={styles.dragDot} />
+                        <span className={styles.dragDot} />
+                        <span className={styles.dragDot} />
+                        <span className={styles.dragDot} />
+                    </span>
+                </button>
+            )}
+        </div>
+    );
+});
 
 export default function ExercisePicker({
     exercises = [],
@@ -77,13 +140,13 @@ export default function ExercisePicker({
     const visibleExerciseIds = useMemo(() => visibleExercises.map((exercise) => exercise.id), [visibleExercises]);
     const isManualMode = sortMode === 'manual';
 
-    function setCardRef(exerciseId, node) {
+    const setCardRef = useCallback((exerciseId, node) => {
         if (!node) {
             cardRefs.current.delete(exerciseId);
             return;
         }
         cardRefs.current.set(exerciseId, node);
-    }
+    }, []);
 
     function finishDrag(pointerId = dragState?.pointerId) {
         if (!dragState) return;
@@ -107,7 +170,7 @@ export default function ExercisePicker({
         setPreviewOrderIds(null);
     }
 
-    function handleDragStart(event, exercise) {
+    const handleDragStart = useCallback((event, exercise) => {
         if (!isManualMode) return;
         event.stopPropagation();
 
@@ -131,7 +194,7 @@ export default function ExercisePicker({
             width: rect?.width ?? 0,
         });
         setPreviewOrderIds(null);
-    }
+    }, [isManualMode, programsByExercise]);
 
     function cancelPendingDrag() {
         pendingTargetRef.current = null;
@@ -304,58 +367,28 @@ export default function ExercisePicker({
                 {visibleExercises.map((exercise) => {
                     const program = programsByExercise.get(exercise.id) ?? null;
                     const adherence = getAdherence(program);
-                    const isSelected = exercise.id === selectedId;
-                    const category = exercise.pt_category ?? '';
-                    const isDragging = dragState?.dragging && dragState.exerciseId === exercise.id;
-                    const isPendingDrag = pendingDrag?.exerciseId === exercise.id;
+                    const dosageText = formatDosageSummary(program ?? exercise, {
+                        exercise,
+                        emptyLabel: 'No dosage set',
+                    });
 
                     return (
-                        <div
+                        <ExercisePickerCard
                             key={exercise.id}
-                            ref={(node) => setCardRef(exercise.id, node)}
-                            className={`${styles.card} ${isSelected ? styles.selected : ''} ${(isDragging || isPendingDrag) ? styles.dragPlaceholder : ''}`}
-                        >
-                            <button
-                                className={styles.cardButton}
-                                onPointerUp={() => {
-                                    if (dragState?.dragging) return;
-                                    onSelect?.(exercise.id);
-                                }}
-                                aria-pressed={isSelected}
-                                type="button"
-                            >
-                                <span className={styles.name}>{exercise.canonical_name}</span>
-                                <span className={styles.dosage}>
-                                    {formatDosageSummary(program ?? exercise, {
-                                        exercise,
-                                        emptyLabel: 'No dosage set',
-                                    })}
-                                </span>
-                                {adherence && (
-                                    <span className={`${styles.adherence} ${styles[adherence.tone]}`}>
-                                        {adherence.label}
-                                    </span>
-                                )}
-                                {category && <span className={styles.tag}>{category}</span>}
-                            </button>
-                            {isManualMode && (
-                                <button
-                                    type="button"
-                                    className={styles.dragHandle}
-                                    aria-label={`Reorder ${exercise.canonical_name}`}
-                                    onPointerDown={(event) => handleDragStart(event, exercise)}
-                                >
-                                    <span className={styles.dragGrip} aria-hidden="true">
-                                        <span className={styles.dragDot} />
-                                        <span className={styles.dragDot} />
-                                        <span className={styles.dragDot} />
-                                        <span className={styles.dragDot} />
-                                        <span className={styles.dragDot} />
-                                        <span className={styles.dragDot} />
-                                    </span>
-                                </button>
-                            )}
-                        </div>
+                            exerciseId={exercise.id}
+                            exerciseName={exercise.canonical_name}
+                            category={exercise.pt_category ?? ''}
+                            dosageText={dosageText}
+                            adherenceLabel={adherence?.label ?? null}
+                            adherenceTone={adherence?.tone ?? 'gray'}
+                            isSelected={exercise.id === selectedId}
+                            isDragging={Boolean(dragState?.dragging && dragState.exerciseId === exercise.id)}
+                            isPendingDrag={pendingDrag?.exerciseId === exercise.id}
+                            isManualMode={isManualMode}
+                            onSelect={onSelect}
+                            onDragStart={handleDragStart}
+                            setCardRef={setCardRef}
+                        />
                     );
                 })}
             </div>
