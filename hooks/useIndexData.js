@@ -19,6 +19,20 @@ function getLoadErrorMessage(error) {
     return message;
 }
 
+function getCachedBootstrapSummary(cachedBootstrap) {
+    const cachedExercises = cachedBootstrap?.exercises ?? [];
+    const cachedPrograms = cachedBootstrap?.programs ?? [];
+    const cachedLogs = cachedBootstrap?.logs ?? [];
+    const hasCachedData = cachedExercises.length > 0 || cachedPrograms.length > 0 || cachedLogs.length > 0;
+
+    return {
+        cachedExercises,
+        cachedPrograms,
+        cachedLogs,
+        hasCachedData,
+    };
+}
+
 export function useIndexData(token, patientId) {
     const [exercises, setExercises] = useState([]);
     const [programs, setPrograms] = useState([]);
@@ -41,6 +55,34 @@ export function useIndexData(token, patientId) {
 
         let nextExercises = [];
         let nextPrograms = [];
+        let servedCachedBootstrap = false;
+
+        if (typeof window !== 'undefined') {
+            try {
+                await offlineCache.init();
+                const cachedBootstrap = await offlineCache.getCachedTrackerBootstrap(patientId);
+                const {
+                    cachedExercises,
+                    cachedPrograms,
+                    cachedLogs,
+                    hasCachedData,
+                } = getCachedBootstrapSummary(cachedBootstrap);
+
+                if (hasCachedData) {
+                    setExercises(cachedExercises);
+                    setPrograms(cachedPrograms);
+                    setLogs(cachedLogs);
+                    setFromCache(true);
+                    setLoading(false);
+                    setHistoryLoading(false);
+                    servedCachedBootstrap = true;
+                    markTrackerPrimaryReady();
+                    markTrackerHistoryReady();
+                }
+            } catch (cacheError) {
+                console.error('useIndexData cache-first bootstrap failed:', cacheError);
+            }
+        }
 
         try {
             [nextExercises, nextPrograms] = await Promise.all([
@@ -56,6 +98,8 @@ export function useIndexData(token, patientId) {
             }
             setExercises(nextExercises);
             setPrograms(nextPrograms);
+            setFromCache(false);
+            setError(null);
             markTrackerPrimaryReady();
         } catch (err) {
             const message = getLoadErrorMessage(err);
@@ -68,10 +112,12 @@ export function useIndexData(token, patientId) {
             try {
                 await offlineCache.init();
                 const cachedBootstrap = await offlineCache.getCachedTrackerBootstrap(patientId);
-                const cachedExercises = cachedBootstrap?.exercises ?? [];
-                const cachedPrograms = cachedBootstrap?.programs ?? [];
-                const cachedLogs = cachedBootstrap?.logs ?? [];
-                const hasCachedData = cachedExercises.length > 0 || cachedPrograms.length > 0 || cachedLogs.length > 0;
+                const {
+                    cachedExercises,
+                    cachedPrograms,
+                    cachedLogs,
+                    hasCachedData,
+                } = getCachedBootstrapSummary(cachedBootstrap);
 
                 if (hasCachedData) {
                     setExercises(cachedExercises);
@@ -88,11 +134,19 @@ export function useIndexData(token, patientId) {
                 console.error('useIndexData cache fallback failed:', cacheError);
             }
 
+            if (servedCachedBootstrap) {
+                setError(null);
+                setHistoryLoading(false);
+                return;
+            }
+
             setError(message);
             setHistoryLoading(false);
             return;
         } finally {
-            setLoading(false);
+            if (!servedCachedBootstrap) {
+                setLoading(false);
+            }
         }
 
         try {
@@ -109,6 +163,8 @@ export function useIndexData(token, patientId) {
                 ]);
             }
             setLogs(nextLogs);
+            setFromCache(false);
+            setHistoryError(null);
             markTrackerHistoryReady();
         } catch (err) {
             const message = getLoadErrorMessage(err);
@@ -131,9 +187,13 @@ export function useIndexData(token, patientId) {
                 console.error('useIndexData history cache fallback failed:', cacheError);
             }
 
-            setHistoryError(message);
+            if (!servedCachedBootstrap) {
+                setHistoryError(message);
+            }
         } finally {
-            setHistoryLoading(false);
+            if (!servedCachedBootstrap) {
+                setHistoryLoading(false);
+            }
         }
     }, [token, patientId]);
 
