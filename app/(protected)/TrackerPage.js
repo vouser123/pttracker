@@ -7,7 +7,7 @@
  * reconnect recovery, history, logger modals, and messaging together.
  */
 import dynamic from 'next/dynamic';
-import { useMemo, useState, useCallback, useEffect, useRef, useDeferredValue } from 'react';
+import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useIndexData } from '../../hooks/useIndexData';
 import { useIndexOfflineQueue } from '../../hooks/useIndexOfflineQueue';
@@ -166,13 +166,12 @@ export default function TrackerPage() {
 
     const logger = useSessionLogging(token, trackerPatientId, reload, enqueue);
     const msgs = useMessages(token, userCtx.profileId);
-    const deferredAllLogs = useDeferredValue(allLogs);
     const pickerPrograms = useMemo(() => {
         const buildHistoryState = (exerciseId, canonicalName = null) => {
             if (historyLoading && logs.length === 0) {
                 return { history_pending: true };
             }
-            return getAdherenceBadgeState(deferredAllLogs, exerciseId, canonicalName);
+            return getAdherenceBadgeState(allLogs, exerciseId, canonicalName);
         };
 
         if (programs.length > 0) {
@@ -185,7 +184,7 @@ export default function TrackerPage() {
             exercise_id: exercise.id,
             ...buildHistoryState(exercise.id, exercise.canonical_name ?? null),
         }));
-    }, [deferredAllLogs, exercises, historyLoading, logs.length, programs]);
+    }, [allLogs, exercises, historyLoading, logs.length, programs]);
     const sessionProgress = useMemo(() => buildSessionProgress(selectedExercise, draftSession?.sets ?? []), [draftSession?.sets, selectedExercise]);
 
     useEffect(() => {

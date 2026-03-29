@@ -78,6 +78,8 @@ ORDER BY l.created_at DESC, s.set_number, f.parameter_name;
 - Check whether heavy child surfaces rerender on unrelated parent state changes.
 - When modals or secondary panels are usually closed on first paint, confirm they are not inflating the initial route work unnecessarily.
 - If an interaction change was made, capture one interaction trace for the slow path and note the main-thread blocker.
+- For tracker history changes, use a history-bearing account or create fresh sessions first. Do not sign off on history behavior from an account that only shows `No history to show` or `Never done`.
+- For tracker history changes, verify more than the first rendered block: enter `History`, confirm the tab activates, and scroll far enough to confirm subsequent history groups continue rendering after the initial viewport.
 - Write down the evidence source for the bead note:
   - DevTools Performance trace
   - Vercel Speed Insights field data
