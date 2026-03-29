@@ -1,6 +1,6 @@
 # Next.js Code Structure Guidelines
 
-Authoritative rules for `` code organization during the Next.js migration. Apply to all Next.js pages. Do not re-evaluate these decisions per session.
+Authoritative rules for code organization during the Next.js migration. Apply to all Next.js route hosts and shared layers. Do not re-evaluate these decisions per session.
 
 **Loaded by:** `AGENTS.md`, `NEXTJS_MIGRATION_STATUS.md`
 
@@ -10,14 +10,45 @@ Authoritative rules for `` code organization during the Next.js migration. Apply
 
 ## Size Limits
 
+### Pages Router (`pages/`)
+
 | File type | Aim | Hard cap | At cap: required action |
 |-----------|-----|----------|------------------------|
 | Page (`pages/*.js`) | 350L | 500L | Extract an inline component before adding more code |
+
+### App Router (`app/`)
+
+| File type | Aim | Hard cap | At cap: required action |
+|-----------|-----|----------|------------------------|
+| Route entry (`app/**/page.js`) | 30L | 80L | Logic is leaking into the Server Component — move it to `[Name]Page.js` |
+| Route client host (`app/**/*Page.js`) | 350L | 500L | Same rules as `pages/*.js` — extract component or hook |
+| Root layout (`app/layout.js`) | 60L | 120L | Extract providers or shell wiring to a dedicated wrapper component |
+
+**`page.js` ownership rule:** A route entry file may only contain: `metadata` export, `viewport` export, and a single `return <[Name]Page />` render. No hooks, no state, no logic. If it needs to pass props to the client host, those props must be derivable server-side without any browser APIs or React state.
+
+### Shared layers
+
+| File type | Aim | Hard cap | At cap: required action |
+|-----------|-----|----------|------------------------|
 | Component (`components/*.js`) | 200L | 300L | Split into two components before adding more code |
 | Hook (`hooks/use*.js`) | 100L | 150L | Split by concern before adding more code |
 | Lib (`lib/*.js`) | 300L | 450L | Apply cohesion check (below) before adding more code |
 | CSS Module (`*.module.css`) | 350L | 500L | Extract the component that owns the large CSS section |
 | `styles/globals.css` | — | 100L | Hard stop — CSS variables + reset only, no exceptions |
+
+### Bundle size monitoring
+
+These are monitoring thresholds, not structural limits. Exceeding them triggers profiling work — not forced rewrites.
+
+| Threshold | Action |
+|-----------|--------|
+| Route first-load JS > ~1 MB (uncompressed) | Flag for profiling — identify what's inflating the chunk |
+| Route regresses materially from its recorded baseline | Investigate before merging — check `npm run analyze:bundle` |
+
+**Current baseline (2026-03-29, uncompressed first-load JS):**
+`/pt-view` 815 KB · `/` 784 KB · `/rehab` 753 KB · `/program` 691 KB · `/reset-password` 625 KB · framework floor (`/_not-found`) 521 KB
+
+Run `npm run analyze:bundle` → output at `.next/diagnostics/route-bundle-stats.json`.
 
 **At or above cap:** Must resolve before adding more code. No exceptions.
 
@@ -70,9 +101,25 @@ Do not split to reach the aim number. A 350L lib covering one domain is correct.
 
 ## Import Layer Rules
 
+### Pages Router
+
 | Layer | May import from |
 |-------|----------------|
 | `pages/` | `components/`, `hooks/`, `lib/`, own CSS module |
+
+### App Router
+
+| Layer | May import from |
+|-------|----------------|
+| `app/**/page.js` (Server Component) | `app/**/*Page.js` only — no hooks, no lib, no components directly |
+| `app/**/*Page.js` (`'use client'`) | `components/`, `hooks/`, `lib/`, CSS module (own or from `pages/` during CSS relocation) |
+| `app/layout.js` (Server Component) | `styles/globals.css`, `app/components/` — no hooks, no `lib/` data functions |
+| `app/components/` | same rules as `components/` |
+
+### Shared layers
+
+| Layer | May import from |
+|-------|----------------|
 | `components/` | other `components/`, own CSS module — no `lib/`, no `hooks/`; all data arrives via props |
 | `hooks/` | React, `lib/` only |
 | `lib/` | `lib/supabase.js`, `lib/utils.js` (create when first needed) only — no React, no hooks, no other lib files |
@@ -84,13 +131,29 @@ An import outside these rules signals misplaced responsibility. Fix the placemen
 
 ## Folder Structure
 
-```
+App Router routes live in `app/`; remaining Pages Router routes live in `pages/`. Both coexist during migration. An `app/` route always takes precedence over a `pages/` route for the same path — remove the `pages/` file once the `app/` version is live.
 
-├── pages/              # Next.js pages — one file per route
-│   ├── _app.js         # Global wrapper — do not modify except to add global imports
-│   ├── rehab.js        # /rehab — Coverage Analysis (Phase 1)
-│   ├── pt-view.js      # /pt-view — History Dashboard (Phase 2)
-│   └── *.module.css    # CSS Module for its page — lives here, not in styles/
+```
+├── app/                # App Router routes (being built out during migration)
+│   ├── layout.js       # Root layout — shell, globals.css, analytics, SW registrar
+│   ├── components/     # App-Router-only client components (e.g. ServiceWorkerRegistrar)
+│   ├── rehab/
+│   │   ├── page.js     # Server Component — metadata + renders RehabPage
+│   │   └── RehabPage.js  # 'use client' — full rehab logic
+│   ├── pt-view/
+│   │   ├── page.js     # Server Component — metadata + renders PtViewPage
+│   │   └── PtViewPage.js # 'use client' — full pt-view logic
+│   └── [route]/        # Pattern for each migrated route
+│       ├── page.js
+│       └── [Name]Page.js
+│
+├── pages/              # Pages Router — remaining unmigrated routes
+│   ├── _app.js         # Global wrapper — applies to pages/ routes only
+│   ├── _document.js    # HTML shell — applies to pages/ routes only
+│   ├── index.js        # / — Tracker index (migrating: pt-sjli.6)
+│   ├── program.js      # /program — Program editor (migrating: pt-sjli.5)
+│   ├── reset-password.js
+│   └── *.module.css    # CSS Module for its page — stays here until route is migrated
 │
 ├── components/         # UI components — shared or self-contained (modals, nav)
 │   ├── NavMenu.js      # Used on every page
@@ -112,7 +175,7 @@ An import outside these rules signals misplaced responsibility. Fix the placemen
 │   └── globals.css     # CSS variables + reset ONLY — no component styles
 │
 ├── api/                # Vercel serverless functions — DO NOT MODIFY during migration
-├── public/             # Legacy HTML — being retired one page at a time
+├── public/             # Static assets, manifest, and remaining legacy public files
 └── docs/               # Documentation — not loaded at runtime
 ```
 
@@ -121,6 +184,34 @@ An import outside these rules signals misplaced responsibility. Fix the placemen
 - New data function → `lib/[domain].js`
 - New state + effects logic reused ≥2 pages → `hooks/use[Name].js`; otherwise inline in page if ≤20L
 - New styles → CSS Module next to the JS file it belongs to; CSS variables → `styles/globals.css` only
+
+---
+
+## Server and Client Boundary Rules
+
+App Router adds an explicit server/client split. Treat that split as an ownership rule, not just a syntax rule.
+
+**Default:** keep `app/**/page.js` and `app/layout.js` as Server Components.
+
+Add `'use client'` only when the file needs one of these:
+- React client hooks such as `useState`, `useEffect`, `useRef`, or `useMemo`
+- event handlers such as `onPointerUp`, `onChange`, or `onKeyDown`
+- browser APIs such as `window`, `document`, `localStorage`, `matchMedia`, or service worker access
+- client-only shared hooks such as `useAuth`, `useMessages`, or other state/effect hooks
+
+Keep a file server-side when it is pure display or server-safe wiring:
+- metadata/viewport exports
+- rendering static or derived markup from props
+- route entry files that only delegate to a route-local client host
+
+**Push `'use client'` down the tree.** Do not mark a route entry or layout as client-side just because one child needs interactivity. Put the client boundary on the smallest practical host component and keep surrounding structure server-side.
+
+**Route pattern for this repo:**
+- `app/**/page.js` = thin Server Component route entry
+- `app/**/[Name]Page.js` = route-local client orchestrator when the route is interactive
+- `components/` = shared interactive or presentational building blocks under that host
+
+If a future edit would force `'use client'` onto `app/**/page.js`, pause and ask whether the interactive concern belongs in a route-local `*Page.js` or a deeper child component instead.
 
 ## README Maintenance (Required)
 
@@ -379,6 +470,6 @@ These files were written before this document existed. Files over cap must be br
 |------|-------|-----|--------|
 | `lib/rehab-coverage.js` | 588→588 | 450L | ✓ Fixed (DN-035): cohesive domain confirmed; `// NOTE: cohesive domain` added; import layer rules prohibit split |
 | `pages/pt-view.module.css` | 670→369 | 500L | ✓ Fixed (DN-035): PatientNotes + HistoryList extracted to components/ |
-| `pages/pt-view.js` | 446→353 | 500L | ✓ Fixed (DN-035): shrunk naturally after component extractions |
 | `pages/rehab.module.css` | 478 | 500L | Within cap — shrinks naturally when components below are extracted |
-| `pages/rehab.js` | 452 | 500L | Within cap but 4 inline render helpers exceed 40L limit (DN-036): `renderSummary` 45L → `CoverageSummary`, `renderMatrix` 50L → `CoverageMatrix`, `renderCapacity` 66L → `CoverageCapacity`, `renderExerciseCard` 144L → `CoverageExerciseCard`. TODOs added inline. Extract before rehab.js grows further. |
+| `pages/program.js` | current route host | 500L | Active Pages Router route — keep under the page cap until migrated to `app/` |
+| `pages/index.js` | current route host | 500L | Active Pages Router route — keep under the page cap until migrated to `app/` |
