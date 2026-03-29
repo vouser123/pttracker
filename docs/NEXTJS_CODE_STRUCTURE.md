@@ -38,17 +38,43 @@ Authoritative rules for code organization during the Next.js migration. Apply to
 
 ### Bundle size monitoring
 
-These are monitoring thresholds, not structural limits. Exceeding them triggers profiling work — not forced rewrites.
+These are performance signals, not ownership rules. Route size does not decide where code belongs, but it does decide when profiling and reduction work must happen.
 
-| Threshold | Action |
-|-----------|--------|
-| Route first-load JS > ~1 MB (uncompressed) | Flag for profiling — identify what's inflating the chunk |
-| Route regresses materially from its recorded baseline | Investigate before merging — check `npm run analyze:bundle` |
+**Official guidance first:** Next.js and Vercel treat first-load JS as a budget to minimize, not something apps should casually exceed. Treat the commonly cited ~170 KB compressed target as the official performance signal. Do not claim that PT Tracker is exempt because it is “more complex than most apps” or because it uses Supabase. If a route remains above budget, the burden is on us to show what is in the bundle, what can be reduced now, and what explicit tradeoff we are accepting.
 
-**Current baseline (2026-03-29, uncompressed first-load JS):**
-`/pt-view` 815 KB · `/` 784 KB · `/rehab` 753 KB · `/program` 691 KB · `/reset-password` 625 KB · framework floor (`/_not-found`) 521 KB
+**Current repo evidence (2026-03-29):**
+- Route baselines from `npm run analyze:bundle` (`.next/diagnostics/route-bundle-stats.json`):
+  - `/_not-found`: `520,901` bytes first-load uncompressed
+  - `/`: `866,049`
+  - `/pt-view`: `810,740`
+  - `/program`: `769,822`
+  - `/rehab`: `752,734`
+  - `/reset-password`: `620,980`
+- The shared floor is therefore about `521 KB` uncompressed before route-specific code.
+- Every current user-facing route is above the official budget signal today, and the shared floor alone nearly consumes that budget before route-specific code is added.
+- Analyzer module pass (`.next/diagnostics/analyze/data/modules.data`) found `114` Supabase-related client modules in the current client graph:
+  - `auth-js`: `57`
+  - `realtime-js`: `36`
+  - `functions-js`: `9`
+  - `supabase-js`: `6`
+  - `postgrest-js`: `3`
+  - `storage-js`: `3`
+- Current app-code evidence points to one shared browser client in `lib/supabase.js` plus IndexedDB-backed auth storage in `lib/offline-cache.js`, with clear heavy `supabase.auth` usage and one explicit realtime channel in `hooks/useMessages.js`.
+- Most app reads already go through `/api/*` handlers. In the browser app surface, the clear direct Supabase needs today are auth and one realtime subscription, not direct storage or edge-function usage.
+- Source review of `@supabase/supabase-js` shows that `createClient()` constructs auth, realtime, storage, functions, and PostgREST clients together. Treat that as a real constraint: bundle reduction will not come from hand-waving about “modular imports” while the app still converges on one shared `createClient()` singleton.
 
-Run `npm run analyze:bundle` → output at `.next/diagnostics/route-bundle-stats.json`.
+| Trigger | Action |
+|---------|--------|
+| Route or shared floor materially exceeds official budget guidance | Run `npm run analyze:bundle`, identify the exact shared and route-specific sources, and record the findings before merge |
+| Route regresses materially from its recorded baseline | Investigate before merging — find the exact import chain or feature that increased first-load JS |
+| Shared floor is carrying packages or sub-clients the app does not clearly need on first load | Treat as active reduction work, not a hand-waved “complex app” exception |
+
+**Current reduction candidates from first principles:**
+- Move auth to the approved `@supabase/ssr` foundation so the protected-route boundary no longer depends on the same client-only singleton shape.
+- Isolate or narrow realtime usage if the message badge/subscription does not need to ride the default shared browser client on every route.
+- Prefer route/API data reads over browser-SDK reads when that keeps heavy client libraries out of the first-load path.
+
+Run `npm run analyze:bundle` → outputs at `.next/diagnostics/route-bundle-stats.json`, `.next/diagnostics/build-diagnostics.json`, `.next/diagnostics/framework.json`, and `.next/diagnostics/analyze/`.
 
 **At or above cap:** Must resolve before adding more code. No exceptions.
 
@@ -471,5 +497,5 @@ These files were written before this document existed. Files over cap must be br
 | `lib/rehab-coverage.js` | 588→588 | 450L | ✓ Fixed (DN-035): cohesive domain confirmed; `// NOTE: cohesive domain` added; import layer rules prohibit split |
 | `pages/pt-view.module.css` | 670→369 | 500L | ✓ Fixed (DN-035): PatientNotes + HistoryList extracted to components/ |
 | `pages/rehab.module.css` | 478 | 500L | Within cap — shrinks naturally when components below are extracted |
-| `pages/program.js` | current route host | 500L | Active Pages Router route — keep under the page cap until migrated to `app/` |
-| `pages/index.js` | current route host | 500L | Active Pages Router route — keep under the page cap until migrated to `app/` |
+| `app/program/ProgramPage.js` | current route client host | 500L | Keep under the page-host cap; route is migrated but still client-heavy by design |
+| `app/TrackerPage.js` | current route client host | 500L | Keep under the page-host cap; route is migrated but still the heaviest interactive surface |
