@@ -58,3 +58,51 @@ LEFT JOIN patient_activity_set_form_data f ON f.activity_set_id = s.id
 WHERE l.patient_id = '35c3ec8d-...'  -- replace with actual patient UUID
 ORDER BY l.created_at DESC, s.set_number, f.parameter_name;
 ```
+
+---
+
+## App Router Render Profiling Checklist
+
+**Trigger:** Any App Router migration slice, cache/bootstrap change, dynamic import change, list rendering change, or rerender optimization on `index`, `program`, `pt-view`, or `rehab`.
+
+- Capture one desktop Chrome DevTools Performance trace for the changed route from cold load to first usable UI.
+- Capture one mobile-emulated trace for the same route. Use the same route/action each time so before/after comparisons are fair.
+- Record the LCP element and split. Note whether the delay is mostly `TTFB`, `load delay`, or `render delay`.
+- Check whether the route is blocked on client bootstrap before first usable paint.
+- For tracker work, read the custom marks from [`lib/tracker-performance.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib/tracker-performance.js):
+  - `tracker:bootstrap:primary-load`
+  - `tracker:bootstrap:history-load`
+  - `tracker:ui:picker-load`
+- Confirm whether cached bootstrap data appears before network refresh when the route is expected to be cache-first.
+- Verify whether large lists are paying full render cost up front or only rendering the visible slice when virtualization is in scope.
+- Check whether heavy child surfaces rerender on unrelated parent state changes.
+- When modals or secondary panels are usually closed on first paint, confirm they are not inflating the initial route work unnecessarily.
+- If an interaction change was made, capture one interaction trace for the slow path and note the main-thread blocker.
+- Write down the evidence source for the bead note:
+  - DevTools Performance trace
+  - Vercel Speed Insights field data
+  - custom `tracker-performance` marks
+  - bundle analysis, if relevant
+- Do not call a performance fix complete based only on `it feels faster.` Record at least one concrete before/after signal.
+
+---
+
+## Bundle Analysis Checklist
+
+**Trigger:** Any work intended to reduce initial JS, defer non-critical UI, or explain route bundle growth during the Next.js migration.
+
+### Run
+- `npm run analyze:bundle`
+
+### Capture
+- Note which route bundles are largest, especially `/`, `/program`, `/pt-view`, and `/rehab`.
+- Check whether conditionally opened UI such as modals is still present in the initial route bundle.
+- Check whether heavy shared dependencies appear in multiple route bundles.
+
+### Compare
+- Record before/after findings on the active bead when changing bundle shape.
+- Re-run after dynamic imports or route-host refactors that are expected to reduce initial JS.
+
+### Guardrail
+- The repo uses Next 16's built-in analyzer path (`next experimental-analyze -o`) instead of a separate analyzer plugin.
+- Bundle analysis is a build-time diagnostic only. It must not change normal `npm run build`, `npm run dev`, deployed runtime behavior, or Vercel config.

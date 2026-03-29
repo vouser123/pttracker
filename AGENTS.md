@@ -6,6 +6,8 @@ This file governs agent behavior for work in this repo.
 
 - `docs/README.md` - docs index that explains which doc to open and when
 - `README.md` - landing reference for the live codebase shape, shared components/hooks/utilities, timer/audio wiring, and legacy-to-Next.js page mapping
+- `https://nextjs.org/docs` - primary upstream Next.js framework documentation for version, App Router, and framework-behavior reference during migration or upgrade work
+- `https://github.com/vercel/next.js` - upstream Next.js framework source and issue tracker for deeper investigation when docs are not enough
 - `docs/NEXTJS_CODE_STRUCTURE.md` - file size limits, split rules, cohesion checks, folder structure, naming conventions
 - `docs/SYSTEM_ARCHITECTURE.md` - current hybrid architecture and implementation guardrails
 - `docs/IMPLEMENTATION_PATTERNS.md` - approved shared helpers, components, and do-this-not-that implementation guidance
