@@ -21,27 +21,27 @@
  */
 import dynamic from 'next/dynamic';
 import { useMemo, useState } from 'react';
-import { useAuth } from '../../hooks/useAuth';
-import { useUserContext } from '../../hooks/useUserContext';
-import { useMessages } from '../../hooks/useMessages';
-import NavMenu from '../../components/NavMenu';
-import AuthForm from '../../components/AuthForm';
-import PatientNotes from '../../components/PatientNotes';
-import HistoryList from '../../components/HistoryList';
-import PtViewNeedsAttention from '../../components/PtViewNeedsAttention';
-import PtViewSummaryStats from '../../components/PtViewSummaryStats';
-import PtViewFiltersPanel from '../../components/PtViewFiltersPanel';
-import { usePtViewData } from '../../hooks/usePtViewData';
-import { usePtViewUiState } from '../../hooks/usePtViewUiState';
-import { useEmailNotifications } from '../../hooks/useEmailNotifications';
+import { useAuth } from '../../../hooks/useAuth';
+import { useUserContext } from '../../../hooks/useUserContext';
+import { useMessages } from '../../../hooks/useMessages';
+import NavMenu from '../../../components/NavMenu';
+import AuthForm from '../../../components/AuthForm';
+import PatientNotes from '../../../components/PatientNotes';
+import HistoryList from '../../../components/HistoryList';
+import PtViewNeedsAttention from '../../../components/PtViewNeedsAttention';
+import PtViewSummaryStats from '../../../components/PtViewSummaryStats';
+import PtViewFiltersPanel from '../../../components/PtViewFiltersPanel';
+import { usePtViewData } from '../../../hooks/usePtViewData';
+import { usePtViewUiState } from '../../../hooks/usePtViewUiState';
+import { useEmailNotifications } from '../../../hooks/useEmailNotifications';
 import {
     groupLogsByDate, findNeedsAttention, needsAttentionUrgency,
     computeSummaryStats, applyFilters,
-} from '../../lib/pt-view';
-import styles from '../../pages/pt-view.module.css';
+} from '../../../lib/pt-view';
+import styles from '../../../pages/pt-view.module.css';
 
-const MessagesModal = dynamic(() => import('../../components/MessagesModal'), { loading: () => null });
-const ExerciseHistoryModal = dynamic(() => import('../../components/ExerciseHistoryModal'), { loading: () => null });
+const MessagesModal = dynamic(() => import('../../../components/MessagesModal'), { loading: () => null });
+const ExerciseHistoryModal = dynamic(() => import('../../../components/ExerciseHistoryModal'), { loading: () => null });
 
 export default function PtViewPage() {
     const { session, loading: authLoading, signIn, signOut } = useAuth();

@@ -10,12 +10,12 @@ Use [`NEXTJS_CODE_STRUCTURE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttrac
 PT Tracker is currently a hybrid application:
 
 - A legacy static/parity surface still lives in `public/` and remains relevant for unmigrated or recently migrated behavior checks.
-- An App Router surface now lives in `app/` and currently owns the root shell plus the migrated `/rehab` and `/pt-view` routes.
-- A shrinking Pages Router surface still lives in `pages/` and currently owns `/`, `/program`, and `/reset-password`.
+- An App Router surface now lives in `app/` and owns all four active routes: `/` (tracker), `/program`, `/rehab`, and `/pt-view`.
+- A minimal Pages Router surface still lives in `pages/` and owns only `/reset-password` plus the shared `_app.js` and `_document.js` wrappers. Migration to App Router is tracked in pt-5t9g.
 - Shared React UI/state/helper layers live in `components/`, `hooks/`, and the Next.js-layer files in `lib/`.
 - Vercel serverless routes in `api/` continue to serve both the legacy and Next.js surfaces.
 - Supabase remains the system of record for auth and application data.
-- IndexedDB-backed offline storage remains part of the live architecture for cached bootstrap data, queue state, and auth persistence.
+- IndexedDB-backed offline storage remains part of the live architecture for cached bootstrap data, queue state, and offline queue persistence.
 
 This architecture is intentional during the migration. Do not assume the repo is either "all static" or "all Next.js."
 
@@ -51,8 +51,13 @@ Use the legacy surface when:
 Current responsibilities:
 
 - `app/layout.js` owns the App Router root shell, metadata frame, analytics, Speed Insights, and the client-side service-worker registration bridge through `app/components/ServiceWorkerRegistrar.js`
-- `app/rehab/page.js` + `app/rehab/RehabPage.js` own `/rehab`
-- `app/pt-view/page.js` + `app/pt-view/PtViewPage.js` own `/pt-view`
+- `app/sign-in/page.js` + `app/sign-in/SignInPage.js` own the public `/sign-in` route
+- `app/(protected)/layout.js` is the server-side auth gate for all four authenticated routes; redirects to `/sign-in` if no session cookie is found
+- `app/(protected)/page.js` + `app/(protected)/TrackerPage.js` own `/` (tracker)
+- `app/(protected)/program/page.js` + `app/(protected)/program/ProgramPage.js` own `/program`
+- `app/(protected)/rehab/page.js` + `app/(protected)/rehab/RehabPage.js` own `/rehab`
+- `app/(protected)/pt-view/page.js` + `app/(protected)/pt-view/PtViewPage.js` own `/pt-view`
+- `proxy.js` (Next.js 16 convention, previously `middleware.js`) refreshes the Supabase session cookie on every request via `@supabase/ssr`
 
 Use the App Router surface when:
 
@@ -62,19 +67,13 @@ Use the App Router surface when:
 
 ### Remaining Pages Router Surface
 
-`pages/` remains active for the routes that have not yet migrated into `app/`.
+`pages/` is nearly retired. Only one route and the shared wrapper files remain:
 
-Current route owners:
-
-- `pages/index.js` for `/`
-- `pages/program.js` for `/program`
 - `pages/reset-password.js` for `/reset-password`
+- `pages/_app.js` and `pages/_document.js` (required while reset-password remains in Pages Router)
+- CSS modules for all four routes (pending relocation to `app/` — tracked in pt-5t9g)
 
-Use the remaining Pages Router surface when:
-
-- working on a route that still resolves through `pages/`
-- doing migration follow-through that must preserve current Pages Router behavior until cut-over
-- wiring shared hooks/components into the remaining route hosts
+Migration of reset-password to App Router and full Pages Router removal is tracked in **pt-5t9g**. Do not add new routes or code to `pages/`.
 
 ### Shared Next.js Layers
 
@@ -102,6 +101,21 @@ Keep API route count lean. Prefer shared handlers and existing endpoints over en
   - `auth.users.id` / `session.user.id`: the auth-session identifier used for sign-in and message sender/recipient auth references
   - `users.id`: the application profile identifier used for patient-scoped data such as programs and logs
 - Patient-scoped routes must resolve an effective patient context from the `users` table before reading or writing patient data. For current Next.js pages, the shared frontend helper is `resolvePatientScopedUserContext(...)` in `lib/users.js`.
+
+### Auth Architecture: Hybrid Foundation (decided 2026-03-29)
+
+The auth architecture target before cut-over is a **hybrid SSR-capable foundation**:
+
+- **Session storage**: migrate from IndexedDB-only to cookie-readable session via `@supabase/ssr` (`createServerClient` + `createBrowserClient`). This makes the session server-readable without removing client-side access.
+- **Server participation**: server components, middleware, and App Router layouts can read auth state. Full SSR is available where it helps.
+- **Selective usage**: not everything moves server-side. Use server-side rendering and gating where it reduces client bootstrap cost or improves route protection. Keep offline-heavy, interaction-heavy, and queue-backed surfaces client-side.
+- **IndexedDB stays**: offline queue, reconnect recovery, and cached bootstrap data remain IndexedDB-backed. Cookie session and IndexedDB offline storage are complementary, not competing.
+
+**What this is not:**
+- Not fully client-only auth (which blocks server participation — an explicit architectural limitation, not a best practice)
+- Not fully server-first (wrong fit for a PWA with offline requirements)
+
+Implementation tracked in **pt-8whf** (Claude owns). Do not implement server-side data fetching for auth-gated surfaces until pt-8whf lands.
 
 Core domains still in active use:
 
@@ -155,6 +169,38 @@ Core domains still in active use:
   - `SUPABASE_ANON_KEY`
 - Prefer preview-based validation for routine doc or migration follow-up work unless a riskier change needs extra local checks.
 - App Router validation should include service-worker behavior because App Router routes now register the service worker through the root layout bridge instead of the old Pages Router-only shell.
+
+## Pre-Cutover Architectural Decisions (2026-03-29)
+
+These decisions were made jointly by Claude, Codex, and the user before production cut-over. Do not relitigate them without explicit user sign-off. See **pt-679e** for the full decision log.
+
+### Approved for current pass
+
+- **React.memo**: approved for ExercisePicker and any other heavy rerender surfaces backed by evidence. Implementation bead: pt-injf.
+- **useTransition / useDeferredValue**: apply `startTransition` to `setActiveTab` in TrackerPage and `useDeferredValue` on `allLogs` in `pickerPrograms`. Both are surgical one-line changes. Implementation bead: pt-injf.
+- **reset-password App Router migration**: migrate `pages/reset-password.js` to App Router, remove all Pages Router files, relocate CSS modules. Implementation bead: pt-5t9g.
+- **Hybrid auth foundation**: migrate to `@supabase/ssr` cookie-readable session. See Auth Architecture section above. Implementation epic: pt-8whf.
+- **Protected route group**: create App Router route group for authenticated routes with shared AuthGate at layout level. Implement after pt-8whf lands, not before.
+
+### Explicitly deferred (not now)
+
+- **Server/client boundary tightening beyond thin-shell pattern**: blocked on pt-8whf landing. Calmer surfaces (rehab, pt-view) become server-side candidates after cookie session is server-readable.
+- **Server-only data assembly for auth-gated routes**: No now. Reactivation trigger: pt-8whf complete, or a public-data surface identified.
+- **Preview/runtime validation gate definition**: deferred to a future session.
+
+### Explicitly declined (do not reopen without new evidence)
+
+| Item | Decision | Reason |
+|------|----------|--------|
+| Middleware / edge routing | No | No current product need for request interception, rewrites, or edge personalization |
+| Server Actions / mutation shift | No | Would introduce a second mutation architecture during cut-over |
+| Parallel routes / intercepted routes | No | No route-addressable modal/navigation requirement exists |
+| Image / font optimization as primary lane | No as primary lane | Evidence points to client bundle and data bootstrap cost, not assets. Opportunistic hygiene when touched is fine. |
+| Additional list virtualization beyond HistoryList | No | HistoryList is already virtualized. No other current list has the same evidence. |
+| ExercisePicker virtualization | No | ~40 items does not justify it |
+| Full SSR auth migration (all routes server-first) | No | Wrong fit for a PWA with offline requirements |
+| Middleware-based auth | No | No current need; auth boundary handled at layout level after pt-8whf |
+| Edge rewrites | No | No current need |
 
 ## Documentation Maintenance
 

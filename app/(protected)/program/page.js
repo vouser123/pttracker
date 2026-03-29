@@ -1,4 +1,4 @@
-// app/program/page.js — App Router entry for /program.
+// app/(protected)/program/page.js — App Router entry for /program.
 // Server Component: exports metadata; delegates rendering to ProgramPage (client).
 
 import ProgramPage from './ProgramPage';

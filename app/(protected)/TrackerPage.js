@@ -8,34 +8,34 @@
  */
 import dynamic from 'next/dynamic';
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
-import { useAuth } from '../hooks/useAuth';
-import { useIndexData } from '../hooks/useIndexData';
-import { useIndexOfflineQueue } from '../hooks/useIndexOfflineQueue';
-import { useManualLog } from '../hooks/useManualLog';
-import { useTrackerReconnectRecovery } from '../hooks/useTrackerReconnectRecovery';
-import { useTrackerSession } from '../hooks/useTrackerSession';
-import { useSessionLogging } from '../hooks/useSessionLogging';
-import { useLoggerFeedback } from '../hooks/useLoggerFeedback';
-import { useToast } from '../hooks/useToast';
-import { useMessages } from '../hooks/useMessages';
-import { useUserContext } from '../hooks/useUserContext';
-import { useExerciseSortState } from '../hooks/useExerciseSortState';
-import AuthForm from '../components/AuthForm';
-import NavMenu from '../components/NavMenu';
-import HistoryPanel from '../components/HistoryPanel';
-import BottomNav from '../components/BottomNav';
-import ExercisePicker from '../components/ExercisePicker';
-import TimerPanel from '../components/TimerPanel';
-import Toast from '../components/Toast';
-import { getAdherenceBadgeState } from '../lib/index-history';
-import { buildSessionProgress } from '../lib/index-tracker-session';
-import { markTrackerPickerReady } from '../lib/tracker-performance';
-import styles from '../pages/index.module.css';
+import { useAuth } from '../../hooks/useAuth';
+import { useIndexData } from '../../hooks/useIndexData';
+import { useIndexOfflineQueue } from '../../hooks/useIndexOfflineQueue';
+import { useManualLog } from '../../hooks/useManualLog';
+import { useTrackerReconnectRecovery } from '../../hooks/useTrackerReconnectRecovery';
+import { useTrackerSession } from '../../hooks/useTrackerSession';
+import { useSessionLogging } from '../../hooks/useSessionLogging';
+import { useLoggerFeedback } from '../../hooks/useLoggerFeedback';
+import { useToast } from '../../hooks/useToast';
+import { useMessages } from '../../hooks/useMessages';
+import { useUserContext } from '../../hooks/useUserContext';
+import { useExerciseSortState } from '../../hooks/useExerciseSortState';
+import AuthForm from '../../components/AuthForm';
+import NavMenu from '../../components/NavMenu';
+import HistoryPanel from '../../components/HistoryPanel';
+import BottomNav from '../../components/BottomNav';
+import ExercisePicker from '../../components/ExercisePicker';
+import TimerPanel from '../../components/TimerPanel';
+import Toast from '../../components/Toast';
+import { getAdherenceBadgeState } from '../../lib/index-history';
+import { buildSessionProgress } from '../../lib/index-tracker-session';
+import { markTrackerPickerReady } from '../../lib/tracker-performance';
+import styles from '../../pages/index.module.css';
 
-const SessionLoggerModal = dynamic(() => import('../components/SessionLoggerModal'), { loading: () => null });
-const NextSetConfirmModal = dynamic(() => import('../components/NextSetConfirmModal'), { loading: () => null });
-const SessionNotesModal = dynamic(() => import('../components/SessionNotesModal'), { loading: () => null });
-const MessagesModal = dynamic(() => import('../components/MessagesModal'), { loading: () => null });
+const SessionLoggerModal = dynamic(() => import('../../components/SessionLoggerModal'), { loading: () => null });
+const NextSetConfirmModal = dynamic(() => import('../../components/NextSetConfirmModal'), { loading: () => null });
+const SessionNotesModal = dynamic(() => import('../../components/SessionNotesModal'), { loading: () => null });
+const MessagesModal = dynamic(() => import('../../components/MessagesModal'), { loading: () => null });
 
 export default function TrackerPage() {
     const { session, loading: authLoading, signIn } = useAuth();
@@ -258,14 +258,14 @@ export default function TrackerPage() {
 
     const handleSignOut = useCallback(async () => {
         clearQueue();
-        const { supabase } = await import('../lib/supabase');
+        const { supabase } = await import('../../lib/supabase');
         await supabase.auth.signOut();
     }, [clearQueue]);
 
     async function handleEmailToggle(enabled) {
         setEmailEnabled(enabled);
         try {
-            const { patchEmailNotifications } = await import('../lib/users');
+            const { patchEmailNotifications } = await import('../../lib/users');
             await patchEmailNotifications(token, enabled);
         } catch (err) {
             console.error('emailToggle:', err);

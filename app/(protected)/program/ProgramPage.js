@@ -8,28 +8,28 @@
  */
 import dynamic from 'next/dynamic';
 import { useCallback, useState } from 'react';
-import { useAuth } from '../../hooks/useAuth';
-import { supabase } from '../../lib/supabase';
-import { useProgramPageData } from '../../hooks/useProgramPageData';
-import { useProgramDataSnapshot } from '../../hooks/useProgramDataSnapshot';
-import { useProgramWorkspaceState } from '../../hooks/useProgramWorkspaceState';
-import { useProgramMutationUi } from '../../hooks/useProgramMutationUi';
-import { useProgramMutationActions } from '../../hooks/useProgramMutationActions';
-import { useProgramOfflineQueue } from '../../hooks/useProgramOfflineQueue';
-import { useProgramVocabActions } from '../../hooks/useProgramVocabActions';
-import { useToast } from '../../hooks/useToast';
-import AuthForm from '../../components/AuthForm';
-import NavMenu from '../../components/NavMenu';
-import ProgramExerciseSelector from '../../components/ProgramExerciseSelector';
-import ExerciseRolesWorkspace from '../../components/ExerciseRolesWorkspace';
-import ProgramDosageWorkspace from '../../components/ProgramDosageWorkspace';
-import Toast from '../../components/Toast';
-import { getProgramMutationLabel } from '../../lib/program-offline';
-import styles from '../../pages/program.module.css';
+import { useAuth } from '../../../hooks/useAuth';
+import { supabase } from '../../../lib/supabase';
+import { useProgramPageData } from '../../../hooks/useProgramPageData';
+import { useProgramDataSnapshot } from '../../../hooks/useProgramDataSnapshot';
+import { useProgramWorkspaceState } from '../../../hooks/useProgramWorkspaceState';
+import { useProgramMutationUi } from '../../../hooks/useProgramMutationUi';
+import { useProgramMutationActions } from '../../../hooks/useProgramMutationActions';
+import { useProgramOfflineQueue } from '../../../hooks/useProgramOfflineQueue';
+import { useProgramVocabActions } from '../../../hooks/useProgramVocabActions';
+import { useToast } from '../../../hooks/useToast';
+import AuthForm from '../../../components/AuthForm';
+import NavMenu from '../../../components/NavMenu';
+import ProgramExerciseSelector from '../../../components/ProgramExerciseSelector';
+import ExerciseRolesWorkspace from '../../../components/ExerciseRolesWorkspace';
+import ProgramDosageWorkspace from '../../../components/ProgramDosageWorkspace';
+import Toast from '../../../components/Toast';
+import { getProgramMutationLabel } from '../../../lib/program-offline';
+import styles from '../../../pages/program.module.css';
 
-const ExerciseForm = dynamic(() => import('../../components/ExerciseForm'), { loading: () => null });
-const DosageModal = dynamic(() => import('../../components/DosageModal'), { loading: () => null });
-const ProgramVocabEditor = dynamic(() => import('../../components/ProgramVocabEditor'), { loading: () => null });
+const ExerciseForm = dynamic(() => import('../../../components/ExerciseForm'), { loading: () => null });
+const DosageModal = dynamic(() => import('../../../components/DosageModal'), { loading: () => null });
+const ProgramVocabEditor = dynamic(() => import('../../../components/ProgramVocabEditor'), { loading: () => null });
 
 export default function ProgramPage() {
     const { session, loading: authLoading, signIn, signOut } = useAuth();

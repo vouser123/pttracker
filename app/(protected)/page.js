@@ -1,4 +1,4 @@
-// app/page.js — App Router entry for the tracker home route.
+// app/(protected)/page.js — App Router entry for the tracker home route.
 // Server Component: exports metadata; delegates rendering to TrackerPage (client).
 
 import TrackerPage from './TrackerPage';

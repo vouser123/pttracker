@@ -15,15 +15,15 @@
  *   Styles        → pages/rehab.module.css (shared until CSS is relocated)
  */
 import { useState } from 'react';
-import { useAuth } from '../../hooks/useAuth';
-import { useRehabCoverageData } from '../../hooks/useRehabCoverageData';
-import { supabase } from '../../lib/supabase';
-import NavMenu from '../../components/NavMenu';
-import AuthForm from '../../components/AuthForm';
-import CoverageSummary from '../../components/CoverageSummary';
-import CoverageMatrix from '../../components/CoverageMatrix';
-import { colorScoreToRGB, COVERAGE_CONSTANTS } from '../../lib/rehab-coverage';
-import styles from '../../pages/rehab.module.css';
+import { useAuth } from '../../../hooks/useAuth';
+import { useRehabCoverageData } from '../../../hooks/useRehabCoverageData';
+import { supabase } from '../../../lib/supabase';
+import NavMenu from '../../../components/NavMenu';
+import AuthForm from '../../../components/AuthForm';
+import CoverageSummary from '../../../components/CoverageSummary';
+import CoverageMatrix from '../../../components/CoverageMatrix';
+import { colorScoreToRGB, COVERAGE_CONSTANTS } from '../../../lib/rehab-coverage';
+import styles from '../../../pages/rehab.module.css';
 
 export default function RehabPage() {
     const { session, loading: authLoading, signIn } = useAuth();
