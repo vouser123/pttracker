@@ -19,14 +19,13 @@
  *                    components/PtView*.js, components/NavMenu.js, components/AuthForm.js
  *   Styles         → pages/pt-view.module.css (shared until CSS is relocated)
  */
+import dynamic from 'next/dynamic';
 import { useMemo, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useUserContext } from '../../hooks/useUserContext';
 import { useMessages } from '../../hooks/useMessages';
 import NavMenu from '../../components/NavMenu';
 import AuthForm from '../../components/AuthForm';
-import MessagesModal from '../../components/MessagesModal';
-import ExerciseHistoryModal from '../../components/ExerciseHistoryModal';
 import PatientNotes from '../../components/PatientNotes';
 import HistoryList from '../../components/HistoryList';
 import PtViewNeedsAttention from '../../components/PtViewNeedsAttention';
@@ -40,6 +39,9 @@ import {
     computeSummaryStats, applyFilters,
 } from '../../lib/pt-view';
 import styles from '../../pages/pt-view.module.css';
+
+const MessagesModal = dynamic(() => import('../../components/MessagesModal'), { loading: () => null });
+const ExerciseHistoryModal = dynamic(() => import('../../components/ExerciseHistoryModal'), { loading: () => null });
 
 export default function PtViewPage() {
     const { session, loading: authLoading, signIn, signOut } = useAuth();
@@ -179,24 +181,26 @@ export default function PtViewPage() {
                 onExerciseClick={openExerciseHistory}
             />
 
-            <MessagesModal
-                isOpen={messagesOpen}
-                onClose={() => setMessagesOpen(false)}
-                messages={msgs.messages}
-                viewerId={userCtx.profileId}
-                viewerName={userCtx.viewerName}
-                otherName={userCtx.otherName}
-                otherIsTherapist={userCtx.otherIsTherapist}
-                recipientId={userCtx.recipientId}
-                emailEnabled={emailEnabled}
-                onSend={msgs.send}
-                onArchive={msgs.archive}
-                onUnarchive={msgs.unarchive}
-                onRemove={msgs.remove}
-                onMarkRead={msgs.markRead}
-                onEmailToggle={handleEmailToggle}
-                onOpened={msgs.markModalOpened}
-            />
+            {messagesOpen && (
+                <MessagesModal
+                    isOpen={messagesOpen}
+                    onClose={() => setMessagesOpen(false)}
+                    messages={msgs.messages}
+                    viewerId={userCtx.profileId}
+                    viewerName={userCtx.viewerName}
+                    otherName={userCtx.otherName}
+                    otherIsTherapist={userCtx.otherIsTherapist}
+                    recipientId={userCtx.recipientId}
+                    emailEnabled={emailEnabled}
+                    onSend={msgs.send}
+                    onArchive={msgs.archive}
+                    onUnarchive={msgs.unarchive}
+                    onRemove={msgs.remove}
+                    onMarkRead={msgs.markRead}
+                    onEmailToggle={handleEmailToggle}
+                    onOpened={msgs.markModalOpened}
+                />
+            )}
 
             {historyTarget && (
                 <ExerciseHistoryModal
