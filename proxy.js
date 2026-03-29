@@ -36,9 +36,15 @@ export async function proxy(request) {
         }
     );
 
-    // Required: refreshes the session token and writes updated cookies.
-    // Do not add redirect logic here — use app/(protected)/layout.js for that.
-    await supabase.auth.getUser();
+    // Required: validates the JWT locally and refreshes the session token if
+    // expired, then writes updated cookies to both the request and response.
+    // Use getClaims() here, NOT getUser() — the proxy's only job is token
+    // refresh + cookie propagation. getUser() adds an unnecessary network
+    // round-trip to the Supabase auth server on every request. getClaims() is
+    // a local JWT check that still triggers the refresh mechanism.
+    // Auth gating (user identity verification) is handled in layout.js via getUser().
+    // See: https://supabase.com/docs/guides/auth/server-side/nextjs
+    await supabase.auth.getClaims();
 
     return supabaseResponse;
 }
