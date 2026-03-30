@@ -29,7 +29,7 @@ This is the current top-level structure that matters for app work:
 ```text
 pttracker/
 |- app/          App Router shell and migrated route entries
-|- pages/        Legacy API routes only (`pages/api/*`) after the App Router cut-over
+|- pages/        Legacy API bridge routes only (`pages/api/*`) after the App Router cut-over
 |- components/   Reusable React UI pieces and modal/panel building blocks
 |- hooks/        Shared React hooks for auth, data, logging, timers, and messaging
 |- lib/          Pure helpers and page-domain adapters used by Next.js code
@@ -176,6 +176,10 @@ Legacy API layer in `lib/`:
 
 - [`lib/auth.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib/auth.js): Legacy API-layer auth helpers. Do not treat this as the shared Next.js auth surface.
 - [`lib/db.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib/db.js): Legacy API-layer database helpers. Do not import this into Next.js pages/components as a shared frontend utility.
+
+Legacy API route bridge:
+
+- [`pages/api/users.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/api/users.js), [`pages/api/logs.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/api/logs.js), [`pages/api/reference-data.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/api/reference-data.js), [`pages/api/vocab.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/api/vocab.js), [`pages/api/env.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/api/env.js), [`pages/api/roles/index.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/api/roles/index.js) plus [`pages/api/roles/[id].js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/api/roles/[id].js), and [`pages/api/exercises/index.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/api/exercises/index.js) plus [`pages/api/exercises/[id].js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/api/exercises/[id].js) and [`pages/api/programs/index.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/api/programs/index.js) plus [`pages/api/programs/[id].js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/api/programs/[id].js): thin local/runtime bridge files that re-export the still-active root `api/*.js` handlers or `lib/handlers/*` API modules so `next dev` serves `/api/*` again during the App Router cut-over. Keep business logic in the root handlers/modules; use `pages/api/*` only as the compatibility surface.
 
 ## Shared Hooks
 
