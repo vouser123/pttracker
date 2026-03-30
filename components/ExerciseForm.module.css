@@ -270,6 +270,32 @@
   color: var(--text-secondary);
 }
 
+.archiveWarningBox {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.85rem 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--ios-red, #FF3B30) 35%, var(--border-color));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ios-red, #FF3B30) 8%, var(--bg-secondary));
+}
+
+.archiveWarningTitle,
+.archiveWarningText {
+  margin: 0;
+}
+
+.archiveWarningTitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.archiveWarningText {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
 .inlineActions {
   display: flex;
   align-items: center;

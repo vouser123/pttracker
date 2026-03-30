@@ -110,3 +110,17 @@ ORDER BY l.created_at DESC, s.set_number, f.parameter_name;
 ### Guardrail
 - The repo uses Next 16's built-in analyzer path (`next experimental-analyze -o`) instead of a separate analyzer plugin.
 - Bundle analysis is a build-time diagnostic only. It must not change normal `npm run build`, `npm run dev`, deployed runtime behavior, or Vercel config.
+
+---
+
+## Program Vocabulary Archive Checklist
+
+**Trigger:** Any change to `/program` vocabulary add/edit/archive behavior or the controlled-vocabulary editor safety flow.
+
+- Confirm the vocabulary editor still loads the expected active terms for each category.
+- Confirm add and edit still work for a real term.
+- Confirm the row action uses archive/soft-delete wording rather than permanent-delete wording.
+- Confirm the first archive tap opens an inline warning instead of mutating immediately.
+- Confirm a second explicit confirmation is still required before the archive request runs.
+- Confirm the archived term disappears from the active list after success.
+- Confirm a canceled archive leaves the term unchanged.

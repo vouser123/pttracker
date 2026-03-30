@@ -38,6 +38,7 @@ export default function ProgramVocabEditor({
   const [newDefinition, setNewDefinition] = useState('');
   const [editCode, setEditCode] = useState(null);
   const [editDefinition, setEditDefinition] = useState('');
+  const [archiveReviewCode, setArchiveReviewCode] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -45,6 +46,12 @@ export default function ProgramVocabEditor({
       setSelectedCategory(categoryOptions[0]?.value ?? 'region');
     }
   }, [categoryOptions, selectedCategory]);
+
+  useEffect(() => {
+    if (!selectedTerms.some((term) => term.code === archiveReviewCode)) {
+      setArchiveReviewCode(null);
+    }
+  }, [archiveReviewCode, selectedTerms]);
 
   const selectedTerms = vocabularies?.[selectedCategory] ?? [];
 
@@ -99,6 +106,7 @@ export default function ProgramVocabEditor({
         table: selectedCategory,
         code,
       });
+      setArchiveReviewCode(null);
       if (editCode === code) {
         setEditCode(null);
         setEditDefinition('');
@@ -106,6 +114,14 @@ export default function ProgramVocabEditor({
     } catch (err) {
       setError(err.message);
     }
+  }
+
+  async function handleConfirmArchive(term) {
+    const confirmed = window.confirm(
+      `Archive "${term.code}" from active ${selectedCategory.replace(/_/g, ' ')} vocabulary? This is a soft delete only and can be restored later if needed.`
+    );
+    if (!confirmed) return;
+    await handleDeleteTerm(term.code);
   }
 
   return (
@@ -161,6 +177,7 @@ export default function ProgramVocabEditor({
         <div className={styles.vocabList}>
           {selectedTerms.map((term) => {
             const isEditing = editCode === term.code;
+            const isReviewingArchive = archiveReviewCode === term.code;
 
             return (
               <div key={term.code} className={styles.vocabTermRow}>
@@ -175,6 +192,32 @@ export default function ProgramVocabEditor({
                   ) : (
                     <p className={styles.vocabDefinition}>{term.definition || '—'}</p>
                   )}
+                  {isReviewingArchive ? (
+                    <div className={styles.archiveWarningBox}>
+                      <p className={styles.archiveWarningTitle}>Archive this vocabulary term?</p>
+                      <p className={styles.archiveWarningText}>
+                        This removes the term from active editor lists only. It does not permanently erase the term.
+                      </p>
+                      <div className={styles.inlineActions}>
+                        <button
+                          type="button"
+                          className={styles.btnSecondary}
+                          onPointerUp={() => setArchiveReviewCode(null)}
+                          disabled={saving}
+                        >
+                          Keep term
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.roleRemoveBtn}
+                          onPointerUp={() => handleConfirmArchive(term)}
+                          disabled={saving}
+                        >
+                          Confirm archive
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
                 <div className={styles.inlineActions}>
                   {isEditing ? (
@@ -215,10 +258,16 @@ export default function ProgramVocabEditor({
                   <button
                     type="button"
                     className={styles.roleRemoveBtn}
-                    onPointerUp={() => handleDeleteTerm(term.code)}
+                    onPointerUp={() => {
+                      setArchiveReviewCode(term.code);
+                      if (editCode === term.code) {
+                        setEditCode(null);
+                        setEditDefinition('');
+                      }
+                    }}
                     disabled={saving}
                   >
-                    Delete
+                    Archive…
                   </button>
                 </div>
               </div>

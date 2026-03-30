@@ -28,6 +28,6 @@ export function useProgramVocabActions({
   return {
     handleAddVocabTerm: makeVocabHandler('vocab.create', 'Vocabulary term added.', (terms, payload) => [...terms, { code: payload.code, definition: payload.definition, sort_order: payload.sort_order ?? terms.length + 1, active: true }]),
     handleUpdateVocabTerm: makeVocabHandler('vocab.update', 'Vocabulary term updated.', (terms, payload) => terms.map((term) => (term.code === payload.code ? { ...term, definition: payload.definition ?? term.definition, sort_order: payload.sort_order ?? term.sort_order } : term))),
-    handleDeleteVocabTerm: makeVocabHandler('vocab.delete', 'Vocabulary term deleted.', (terms, payload) => terms.filter((term) => term.code !== payload.code)),
+    handleDeleteVocabTerm: makeVocabHandler('vocab.delete', 'Vocabulary term archived from active use.', (terms, payload) => terms.filter((term) => term.code !== payload.code)),
   };
 }
