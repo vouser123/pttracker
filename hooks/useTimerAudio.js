@@ -1,6 +1,6 @@
 // hooks/useTimerAudio.js — audio and speech side effects for exercise execution feedback
 
-import { useCallback, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 
 export function useTimerAudio() {
     const audioContextRef = useRef(null);
@@ -105,12 +105,12 @@ export function useTimerAudio() {
         });
     }, [clearSpeechQueue, ensureAudioReady, playBeep, playCompletionSound, speakText]);
 
-    return {
+    return useMemo(() => ({
         ensureAudioReady,
         playBeep,
         playCompletionSound,
         speakText,
         clearSpeechQueue,
         executeEffects,
-    };
+    }), [ensureAudioReady, playBeep, playCompletionSound, speakText, clearSpeechQueue, executeEffects]);
 }

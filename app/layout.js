@@ -2,6 +2,7 @@
 // Server Component: runs on the server; no 'use client'.
 // Applies to all routes under app/. Pages Router routes (pages/) use _app.js/_document.js instead.
 
+import { StrictMode } from 'react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/next';
 import ServiceWorkerRegistrar from './components/ServiceWorkerRegistrar';
@@ -35,7 +36,7 @@ export default function RootLayout({ children }) {
     return (
         <html lang="en">
             <body>
-                {children}
+                <StrictMode>{children}</StrictMode>
                 <ServiceWorkerRegistrar />
                 <SpeedInsights />
                 <Analytics />
