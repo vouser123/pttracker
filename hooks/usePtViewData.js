@@ -59,8 +59,8 @@ export function usePtViewData({ token, patientId }) {
                         offlineCache.clearLogs(),
                     ]))
                     .catch((err) => console.error('usePtViewData cache clear failed:', err));
+                setState(getDefaultState());
             }
-            setState(getDefaultState());
             return;
         }
 

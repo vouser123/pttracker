@@ -73,6 +73,16 @@ function deriveContext(users, authUserId) {
     };
 }
 
+function isOfflineError(error) {
+    const message = String(error?.message ?? '').toLowerCase();
+    return (
+        typeof navigator !== 'undefined' && navigator.onLine === false
+    ) || message.includes('failed to fetch')
+        || message.includes('network request failed')
+        || message.includes('networkerror')
+        || message.includes('fetch failed');
+}
+
 /**
  * @param {import('@supabase/supabase-js').Session|null} session
  * @returns {ReturnType<typeof getDefaultState>}
@@ -93,8 +103,28 @@ export function useUserContext(session) {
         let cancelled = false;
 
         async function load() {
+            let cachedContext = null;
+
             try {
                 await offlineCache.init();
+
+                const cachedUsers = await offlineCache.getCachedUsers();
+                if (cachedUsers.length) {
+                    try {
+                        cachedContext = deriveContext(cachedUsers, session.user.id);
+                        if (!cancelled) {
+                            setState(cachedContext);
+                        }
+                    } catch {
+                        cachedContext = null;
+                    }
+                }
+
+                if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+                    if (cachedContext) return;
+                    throw new Error('Offline - cached user context unavailable.');
+                }
+
                 const users = await fetchUsers(session.access_token);
 
                 // Cache users for offline fallback (consumed by usePtViewData offline path)
@@ -104,6 +134,10 @@ export function useUserContext(session) {
                 setState(deriveContext(users, session.user.id));
             } catch (err) {
                 if (cancelled) return;
+
+                if (cachedContext && isOfflineError(err)) {
+                    return;
+                }
 
                 // Try offline cache fallback
                 try {
