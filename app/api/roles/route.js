@@ -110,3 +110,38 @@ export async function POST(request) {
         return serverError('Failed to create role', err);
     }
 }
+
+/**
+ * DELETE /api/roles?id=X — Soft-delete a role assignment (sets active=false).
+ * Only therapists and admins can delete.
+ */
+export async function DELETE(request) {
+    const { user, accessToken, error } = await authenticateRoute(request);
+    if (error) return unauthorized(error);
+
+    if (user.role !== 'therapist' && user.role !== 'admin') {
+        return forbidden('Only therapists and admins can delete role assignments');
+    }
+
+    const roleId = request.nextUrl.searchParams.get('id');
+    if (!roleId) return badRequest('Missing role id');
+
+    const supabase = getSupabaseWithAuth(accessToken);
+
+    try {
+        const { data, error: dbError } = await supabase
+            .from('exercise_roles')
+            .update({ active: false, updated_at: new Date().toISOString() })
+            .eq('id', roleId)
+            .select()
+            .single();
+
+        if (dbError) throw dbError;
+
+        return Response.json({ success: true, deleted: roleId });
+
+    } catch (err) {
+        console.error('Error deleting role:', err);
+        return serverError('Failed to delete role', err);
+    }
+}
