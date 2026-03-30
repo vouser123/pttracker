@@ -28,3 +28,8 @@ scripts/bd-doctor-once.ps1
 .beads-credential-key
 
 .env*.local
+
+# Serwist-generated service worker files (built at compile time, not committed)
+public/sw.js
+public/sw.js.map
+public/swe-worker*

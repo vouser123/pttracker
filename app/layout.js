@@ -5,7 +5,7 @@
 import { StrictMode } from 'react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/next';
-import ServiceWorkerRegistrar from './components/ServiceWorkerRegistrar';
+import { SerwistProvider } from './components/SerwistRegistrar';
 import '../styles/globals.css';
 
 export const metadata = {
@@ -36,8 +36,9 @@ export default function RootLayout({ children }) {
     return (
         <html lang="en">
             <body>
-                <StrictMode>{children}</StrictMode>
-                <ServiceWorkerRegistrar />
+                <SerwistProvider swUrl="/serwist/sw.js">
+                    <StrictMode>{children}</StrictMode>
+                </SerwistProvider>
                 <SpeedInsights />
                 <Analytics />
             </body>
