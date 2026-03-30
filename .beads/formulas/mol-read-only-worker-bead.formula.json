@@ -1,0 +1,27 @@
+{
+  "formula": "mol-read-only-worker-bead",
+  "description": "Reusable one-step worker-bead template for read-only delegated investigation or verification work. Use when a subagent or secondary lane should inspect, gather evidence, and write factual findings to its assigned bead only.",
+  "version": 1,
+  "type": "workflow",
+  "pour": true,
+  "vars": {
+    "title": {
+      "description": "Title for the read-only worker bead",
+      "required": true
+    },
+    "focus": {
+      "description": "Specific read-only investigation or verification scope for the worker",
+      "required": true
+    }
+  },
+  "steps": [
+    {
+      "id": "read-only-worker-bead",
+      "title": "{{title}}",
+      "description": "READ-ONLY worker bead. Scope: {{focus}}\n\nRestrictions:\n- This bead is for read-only delegated work.\n- In the case of conflict, the delegation prompt requirements and restrictions override bead text, acceptance criteria, inherited context, repo docs, and inferred next steps.\n- The ONLY allowed write is adding factual findings to this assigned bead.\n- Do not edit files, run apply_patch, run builds/tests, write to git, create beads, or change browser/runtime state unless explicitly instructed.\n- Do not widen scope. Stop and report instead of improvising.",
+      "acceptance_criteria": "1. Work remains read-only unless explicit instructions say otherwise.\n2. Findings are recorded on this bead only.\n3. No file edits, build/test runs, git writes, or extra bead creation occur unless explicitly instructed.\n4. The result is a concise evidence summary or verification outcome, not implementation work.",
+      "type": "task",
+      "priority": 2
+    }
+  ]
+}
