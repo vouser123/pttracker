@@ -12,7 +12,7 @@
  *   Auth          → hooks/useAuth.js
  *   Data          → hooks/useRehabCoverageData.js
  *   UI            → components/NavMenu.js, components/AuthForm.js
- *   Styles        → pages/rehab.module.css (shared until CSS is relocated)
+ *   Styles        → RehabPage.module.css
  */
 import { useState } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
@@ -23,7 +23,7 @@ import AuthForm from '../../../components/AuthForm';
 import CoverageSummary from '../../../components/CoverageSummary';
 import CoverageMatrix from '../../../components/CoverageMatrix';
 import { colorScoreToRGB, COVERAGE_CONSTANTS } from '../../../lib/rehab-coverage';
-import styles from '../../../pages/rehab.module.css';
+import styles from './RehabPage.module.css';
 
 export default function RehabPage() {
     const { session, loading: authLoading, signIn } = useAuth();

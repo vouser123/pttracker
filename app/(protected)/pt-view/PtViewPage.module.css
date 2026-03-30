@@ -1,8 +1,4 @@
-/* pt-view.module.css — scoped styles for pages/pt-view.js (DN-034).
- * CSS variables come from styles/globals.css (loaded in _app.js).
- * Auth form styles → components/AuthForm.module.css
- * Nav/hamburger styles → components/NavMenu.module.css
- */
+/* PtViewPage.module.css — scoped styles for the PT view route host. */
 
 /* ── Page header ───────────────────────────────────────────────── */
 

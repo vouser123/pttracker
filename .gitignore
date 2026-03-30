@@ -26,3 +26,5 @@ scripts/bd-doctor-once.ps1
 
 # Beads / Dolt files (added by bd init)
 .beads-credential-key
+
+.env*.local

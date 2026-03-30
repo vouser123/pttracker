@@ -8,6 +8,8 @@
     "dev": "next dev",
     "build": "next build",
     "analyze:bundle": "next experimental-analyze -o",
+    "analyze:paths": "node scripts/dump-analyzer-paths.mjs",
+    "analyze:modules": "node scripts/dump-analyzer-module-graph.mjs",
     "start": "next start",
     "migrate": "node db/migrate.js",
     "deploy": "vercel --prod",

@@ -61,7 +61,7 @@ These are performance signals, not ownership rules. Route size does not decide w
   - `storage-js`: `3`
 - Current app-code evidence points to one shared browser client in `lib/supabase.js` plus IndexedDB-backed auth storage in `lib/offline-cache.js`, with clear heavy `supabase.auth` usage and one explicit realtime channel in `hooks/useMessages.js`.
 - Most app reads already go through `/api/*` handlers. In the browser app surface, the clear direct Supabase needs today are auth and one realtime subscription, not direct storage or edge-function usage.
-- Source review of `@supabase/supabase-js` shows that `createClient()` constructs auth, realtime, storage, functions, and PostgREST clients together. Treat that as a real constraint: bundle reduction will not come from hand-waving about “modular imports” while the app still converges on one shared `createClient()` singleton.
+- Source review plus module-graph extraction now show the same constraint from two angles: `@supabase/supabase-js` constructs auth, realtime, storage, functions, and PostgREST clients together, and `npm run analyze:modules -- --term createBrowserClient` shows `@supabase/ssr/dist/module/createBrowserClient.js` pulling those same sub-clients directly in the app-client and client builds. Treat that as a real constraint: bundle reduction will not come from hand-waving about “modular imports” while the app still converges on one shared `createBrowserClient()` / `supabase-js` browser foundation.
 
 | Trigger | Action |
 |---------|--------|
@@ -75,6 +75,10 @@ These are performance signals, not ownership rules. Route size does not decide w
 - Prefer route/API data reads over browser-SDK reads when that keeps heavy client libraries out of the first-load path.
 
 Run `npm run analyze:bundle` → outputs at `.next/diagnostics/route-bundle-stats.json`, `.next/diagnostics/build-diagnostics.json`, `.next/diagnostics/framework.json`, and `.next/diagnostics/analyze/`.
+
+Helpful local analyzers when the treemap needs repeatable evidence instead of manual clicking:
+- `npm run analyze:paths -- --route / --term supabase` → route-source chains plus emitted output files for the current route
+- `npm run analyze:modules -- --term createBrowserClient` → packed module-graph dependents and dependencies behind the treemap right panel
 
 **At or above cap:** Must resolve before adding more code. No exceptions.
 
@@ -192,7 +196,8 @@ App Router routes live in `app/`; remaining Pages Router routes live in `pages/`
 │   └── use[Name].js
 │
 ├── lib/                # Pure data functions — no React, no hooks
-│   ├── supabase.js     # Supabase client singleton — only place createClient() is called
+│   ├── supabase.js     # Shared lazy proxy over the browser Supabase client singleton
+│   ├── supabase-browser.js # Only place createBrowserClient() is called
 │   ├── rehab-coverage.js   # Data functions for /rehab
 │   ├── pt-view.js      # Data functions for /pt-view
 │   └── utils.js        # Cross-domain utilities (date formatting, etc.)
@@ -460,7 +465,7 @@ Correct for non-touch targets:
 ## What Must Not Happen
 
 - `window.*` globals — use props, hooks, or module constants
-- `createClient()` outside `lib/supabase.js`
+- `createBrowserClient()` outside `lib/supabase-browser.js`
 - `useRef` for DOM manipulation that CSS or state can handle
 - Redux, Zustand, or React Context — session is managed by Supabase
 - TypeScript

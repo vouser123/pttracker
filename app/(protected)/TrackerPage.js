@@ -30,7 +30,7 @@ import Toast from '../../components/Toast';
 import { getAdherenceBadgeState } from '../../lib/index-history';
 import { buildSessionProgress } from '../../lib/index-tracker-session';
 import { markTrackerPickerReady } from '../../lib/tracker-performance';
-import styles from '../../pages/index.module.css';
+import styles from './TrackerPage.module.css';
 
 const SessionLoggerModal = dynamic(() => import('../../components/SessionLoggerModal'), { loading: () => null });
 const NextSetConfirmModal = dynamic(() => import('../../components/NextSetConfirmModal'), { loading: () => null });

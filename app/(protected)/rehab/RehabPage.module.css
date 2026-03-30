@@ -1,7 +1,4 @@
-/* Rehab Coverage Analysis page styles (DN-033).
- * Scoped to pages/rehab.js via CSS Modules.
- * CSS variables come from styles/globals.css (loaded in _app.js).
- */
+/* Rehab Coverage Analysis page styles. */
 
 .hidden {
     display: none !important;

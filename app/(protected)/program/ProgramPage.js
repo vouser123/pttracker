@@ -25,7 +25,7 @@ import ExerciseRolesWorkspace from '../../../components/ExerciseRolesWorkspace';
 import ProgramDosageWorkspace from '../../../components/ProgramDosageWorkspace';
 import Toast from '../../../components/Toast';
 import { getProgramMutationLabel } from '../../../lib/program-offline';
-import styles from '../../../pages/program.module.css';
+import styles from './ProgramPage.module.css';
 
 const ExerciseForm = dynamic(() => import('../../../components/ExerciseForm'), { loading: () => null });
 const DosageModal = dynamic(() => import('../../../components/DosageModal'), { loading: () => null });

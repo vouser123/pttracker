@@ -17,7 +17,7 @@
  *   Messages       → hooks/useMessages.js
  *   UI             → components/MessagesModal.js, components/ExerciseHistoryModal.js,
  *                    components/PtView*.js, components/NavMenu.js, components/AuthForm.js
- *   Styles         → pages/pt-view.module.css (shared until CSS is relocated)
+ *   Styles         → PtViewPage.module.css
  */
 import dynamic from 'next/dynamic';
 import { useMemo, useState } from 'react';
@@ -38,7 +38,7 @@ import {
     groupLogsByDate, findNeedsAttention, needsAttentionUrgency,
     computeSummaryStats, applyFilters,
 } from '../../../lib/pt-view';
-import styles from '../../../pages/pt-view.module.css';
+import styles from './PtViewPage.module.css';
 
 const MessagesModal = dynamic(() => import('../../../components/MessagesModal'), { loading: () => null });
 const ExerciseHistoryModal = dynamic(() => import('../../../components/ExerciseHistoryModal'), { loading: () => null });
