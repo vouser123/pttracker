@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 async function loadNormalizer() {
   process.env.SUPABASE_URL = process.env.SUPABASE_URL || 'https://example.supabase.co';
   process.env.SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'test-key';
-  const module = await import('../lib/handlers/programs.js');
+  const module = await import('../lib/programs-utils.js');
   return module.normalizeProgramPatternModifiers;
 }
 

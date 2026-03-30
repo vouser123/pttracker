@@ -5,6 +5,6 @@
     { "source": "/track", "destination": "/" }
   ],
   "crons": [
-    { "path": "/api/logs?type=notify", "schedule": "0 13 * * *" }
+    { "path": "/api/messages?type=notify", "schedule": "0 13 * * *" }
   ]
 }
