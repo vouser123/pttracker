@@ -20,7 +20,7 @@ Current visible page mapping:
 - [`app/pt-view/page.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/pt-view/page.js) + [`app/pt-view/PtViewPage.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/pt-view/PtViewPage.js) — PT view (therapist-facing patient view). `page.js` is the App Router server entry and metadata owner; `PtViewPage.js` is the current client route host. Replaced `public/pt_view.html`.
 - [`app/rehab/page.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/rehab/page.js) + [`app/rehab/RehabPage.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/rehab/RehabPage.js) — rehab coverage report. `page.js` is the App Router server entry and metadata owner; `RehabPage.js` is the current client route host. Replaced `public/rehab_coverage.html`.
 - [`app/program/page.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/program/page.js) + [`app/program/ProgramPage.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/program/ProgramPage.js) — exercise editor (therapist/admin only). `page.js` is the App Router server entry and metadata owner; `ProgramPage.js` is the current client route host. Replaced `public/pt_editor.html`.
-- [`pages/reset-password.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/reset-password.js) — Supabase password recovery route. Replaced `public/reset-password.html`. Handles `PASSWORD_RECOVERY` auth event from email link.
+- [`app/reset-password/page.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/reset-password/page.js) + [`app/reset-password/ResetPasswordPage.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/reset-password/ResetPasswordPage.js) — public password recovery route. `page.js` is the App Router server entry and metadata owner; `ResetPasswordPage.js` handles the Supabase `PASSWORD_RECOVERY` flow from the email link. Replaced `public/reset-password.html`.
 
 ## Folder Structure
 
@@ -29,7 +29,7 @@ This is the current top-level structure that matters for app work:
 ```text
 pttracker/
 |- app/          App Router shell and migrated route entries
-|- pages/        Remaining Pages Router routes and page-level orchestration during migration
+|- pages/        Legacy API routes only (`pages/api/*`) after the App Router cut-over
 |- components/   Reusable React UI pieces and modal/panel building blocks
 |- hooks/        Shared React hooks for auth, data, logging, timers, and messaging
 |- lib/          Pure helpers and page-domain adapters used by Next.js code
@@ -43,12 +43,11 @@ pttracker/
 |- test/         Additional test helpers/assets
 |- scripts/      Local project scripts
 ```
-- [`app/(protected)/layout.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/(protected)/layout.js): Server-side auth gate for authenticated routes plus the protected-route client warmer bridge used to prefill shared offline caches needed by `/program`.
-- [`app/(protected)/ProtectedClientWarmers.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/(protected)/ProtectedClientWarmers.js): No-UI protected-route client bridge. Use it for shared authenticated warm tasks that should happen once per protected-route session instead of being reimplemented in individual pages.
 
 - [`app/layout.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/layout.js): App Router root shell. Owns shared metadata, manifest/icon links, analytics, Speed Insights, and the client-side service-worker registrar for routes that already live under `app/`.
+- [`app/(protected)/layout.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/(protected)/layout.js): Server-side auth gate for authenticated routes plus the protected-route client warmer bridge used to prefill shared offline caches needed by `/program`.
+- [`app/(protected)/ProtectedClientWarmers.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/(protected)/ProtectedClientWarmers.js): No-UI protected-route client bridge. Use it for shared authenticated warm tasks that should happen once per protected-route session instead of being reimplemented in individual pages.
 - [`app/components/ServiceWorkerRegistrar.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/components/ServiceWorkerRegistrar.js): Client-only service-worker registration bridge used by the App Router shell. Use it instead of duplicating registration logic in route files.
-- [`pages/_document.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/_document.js): Shared document-level head ownership for the remaining Pages Router surface. Use it for legacy `pages/` routes until those routes migrate into `app/`.
 - [`scripts/dump-analyzer-paths.mjs`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/scripts/dump-analyzer-paths.mjs): Local analyzer helper for walking Next 16 route-source chains without manual UI paging. Use `npm run analyze:paths -- --route / --term supabase` (or another route/term) after `npm run analyze:bundle` when bundle investigations need route-specific source-chain and output-file evidence.
 - [`scripts/dump-analyzer-module-graph.mjs`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/scripts/dump-analyzer-module-graph.mjs): Local analyzer helper for dumping the packed module dependency graph behind the treemap right-side panel. Use `npm run analyze:modules -- --term GoTrueClient` (or another module term) when bundle investigations need the direct module-level dependents and dependencies without clicking through each branch manually.
 
@@ -57,6 +56,7 @@ Pointers:
 - For route-to-legacy ownership, see `Current Route And Legacy Surface Map` above.
 - For shared Next.js file ownership, see `Shared Components`, `Tracker Execution Stack`, `Shared Utilities`, and `Shared Hooks` below.
 - For canonical operating rules, see [`AGENTS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/AGENTS.md).
+- For the generated AI context overview (routes, key folders, active docs), see [`docs/AI_CONTEXT.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/AI_CONTEXT.md). Regenerate with `node scripts/generate-ai-context.mjs`.
 
 ## Shared Styling
 
@@ -190,8 +190,8 @@ Use these from `hooks/` to keep page files thin and consistent with the current 
 - [`hooks/useUserContext.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useUserContext.js): Shared resolver for profile-vs-auth identity domains. Tracker bootstrap and tracker log creation must use `patientId`/`profileId` from this hook where APIs expect `users.id`, not `session.user.id` (auth UUID).
 - [`hooks/useIndexOfflineQueue.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useIndexOfflineQueue.js): Manages the tracker offline queue, async IndexedDB hydration/persistence, sync, and sign-out cleanup.
 - [`hooks/useTrackerReconnectRecovery.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useTrackerReconnectRecovery.js): Owns tracker reconnect policy for the index route: immediate queue sync on browser online return, picker-only full reload when the route is safe to refresh, and deferred refresh while logger/history flows stay active.
-- [`hooks/useProgramBootstrapWarmup.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useProgramBootstrapWarmup.js): Shared protected-route warm hook for `/program` cold-open offline support. It fills missing editor bootstrap caches (users, exercises, programs, vocabularies, reference data) after authenticated app use so PT-office offline first visits to `/program` do not depend on a prior online `/program` load.
 - [`hooks/useProgramOfflineQueue.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useProgramOfflineQueue.js): Manages the `/program` offline mutation queue lifecycle, including IndexedDB hydration, online replay, queue-status reporting, failed-change recovery state, and replay refresh against the resolved patient context.
+- [`hooks/useProgramBootstrapWarmup.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useProgramBootstrapWarmup.js): Shared protected-route warm hook for `/program` cold-open offline support. It fills missing editor bootstrap caches (users, exercises, programs, vocabularies, reference data) after authenticated app use so PT-office offline first visits to `/program` do not depend on a prior online `/program` load.
 - [`hooks/useProgramPageData.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useProgramPageData.js): Owns the `/program` bootstrap and cached fallback lifecycle, including therapist/admin access gating, patient-scoped context resolution, immediate cached editor bootstrap when IndexedDB already has data, background refresh of the full editor payload, and offline fallback when the network path fails.
 - [`hooks/useProgramDataSnapshot.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useProgramDataSnapshot.js): Owns cached snapshot writes for `/program` editor data. Use it when optimistic editor updates need to update the in-memory data snapshot and keep IndexedDB fallback data aligned.
 - [`hooks/useProgramMutationUi.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useProgramMutationUi.js): Owns `/program` mutation loading flags and the UI-facing wrapper handlers that bracket role and vocabulary writes while reusing the lower-level optimistic mutation hooks.
