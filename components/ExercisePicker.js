@@ -35,20 +35,31 @@ const ExercisePickerCard = memo(function ExercisePickerCard({
     exerciseName,
     category,
     dosageText,
+    dosageActionLabel,
     adherenceLabel,
     adherenceTone,
     isSelected,
     isDragging,
     isPendingDrag,
     isManualMode,
+    canEditDosage,
     onSelect,
+    onEditDosage,
     onDragStart,
     setCardRef,
 }) {
+    const cardClassName = [
+        styles.card,
+        isSelected ? styles.selected : '',
+        (isDragging || isPendingDrag) ? styles.dragPlaceholder : '',
+        canEditDosage && isManualMode ? styles.cardWithTwoActions : '',
+        canEditDosage && !isManualMode ? styles.cardWithEditAction : '',
+    ].filter(Boolean).join(' ');
+
     return (
         <div
             ref={(node) => setCardRef(exerciseId, node)}
-            className={`${styles.card} ${isSelected ? styles.selected : ''} ${(isDragging || isPendingDrag) ? styles.dragPlaceholder : ''}`}
+            className={cardClassName}
         >
             <button
                 className={styles.cardButton}
@@ -68,6 +79,19 @@ const ExercisePickerCard = memo(function ExercisePickerCard({
                 )}
                 {category && <span className={styles.tag}>{category}</span>}
             </button>
+            {canEditDosage && (
+                <button
+                    type="button"
+                    className={styles.editAction}
+                    aria-label={`${dosageActionLabel} for ${exerciseName}`}
+                    onPointerUp={(event) => {
+                        event.stopPropagation();
+                        onEditDosage?.(exerciseId);
+                    }}
+                >
+                    Dosage
+                </button>
+            )}
             {isManualMode && (
                 <button
                     type="button"
@@ -98,6 +122,8 @@ export default function ExercisePicker({
     programs = [],
     selectedId = null,
     onSelect,
+    onEditDosage,
+    canEditDosage = false,
     sortMode = 'pt_order',
     onSortChange,
     manualOrderIds = [],
@@ -371,6 +397,7 @@ export default function ExercisePicker({
                         exercise,
                         emptyLabel: 'No dosage set',
                     });
+                    const dosageActionLabel = program ? 'Edit dosage' : 'Set dosage';
 
                     return (
                         <ExercisePickerCard
@@ -379,13 +406,16 @@ export default function ExercisePicker({
                             exerciseName={exercise.canonical_name}
                             category={exercise.pt_category ?? ''}
                             dosageText={dosageText}
+                            dosageActionLabel={dosageActionLabel}
                             adherenceLabel={adherence?.label ?? null}
                             adherenceTone={adherence?.tone ?? 'gray'}
                             isSelected={exercise.id === selectedId}
                             isDragging={Boolean(dragState?.dragging && dragState.exerciseId === exercise.id)}
                             isPendingDrag={pendingDrag?.exerciseId === exercise.id}
                             isManualMode={isManualMode}
+                            canEditDosage={canEditDosage}
                             onSelect={onSelect}
+                            onEditDosage={onEditDosage}
                             onDragStart={handleDragStart}
                             setCardRef={setCardRef}
                         />

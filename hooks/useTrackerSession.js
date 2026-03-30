@@ -1,5 +1,5 @@
 // hooks/useTrackerSession.js — active tracker session state and lifecycle handlers for pages/index.js
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createDraftSession } from '../lib/index-tracker-session';
 import { buildDefaultFormDataForExercise, collectParameterValuesForExercise } from '../lib/session-form-params';
 import { getProgressComparison } from '../lib/logger-progress-comparison';
@@ -149,6 +149,16 @@ export function useTrackerSession({
         handleTimerOpenManual({ side: pendingSetPatch.side, seedSet: pendingSetPatch });
         setPendingSetPatch(null);
     }, [handleTimerOpenManual, pendingSetPatch, selectedExercise]);
+
+    useEffect(() => {
+        if (!selectedExerciseId) return;
+
+        const refreshedExercise = pickerExercises.find((exercise) => exercise.id === selectedExerciseId) || null;
+        if (!refreshedExercise) return;
+
+        const nextSelectedSide = refreshedExercise.pattern === 'side' ? (currentSide ?? 'right') : null;
+        setSelectedExercise(buildExerciseFormContext(refreshedExercise, nextSelectedSide));
+    }, [buildExerciseFormContext, currentSide, pickerExercises, selectedExerciseId]);
 
     return {
         selectedExerciseId, selectedExercise, draftSession, isTimerOpen, panelResetToken, pendingSetPatch, notesModalOpen,

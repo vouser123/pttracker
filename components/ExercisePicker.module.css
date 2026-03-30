@@ -60,6 +60,14 @@
     overflow: hidden;
 }
 
+.cardWithEditAction {
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.cardWithTwoActions {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
 .cardButton {
     border: 0;
     background: transparent;
@@ -85,6 +93,24 @@
     cursor: grab;
     transition: background-color 140ms ease, transform 140ms ease;
     -webkit-tap-highlight-color: transparent;
+}
+
+.editAction {
+    border: 0;
+    border-left: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--accent-color);
+    min-width: 72px;
+    min-height: 44px;
+    padding: 12px 10px;
+    font-weight: 600;
+    font-size: 0.82rem;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.editAction:active {
+    background: rgba(10, 132, 255, 0.12);
 }
 
 .dragHandle:active {

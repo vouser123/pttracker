@@ -20,6 +20,7 @@ import { useToast } from '../../hooks/useToast';
 import { useMessages } from '../../hooks/useMessages';
 import { useUserContext } from '../../hooks/useUserContext';
 import { useExerciseSortState } from '../../hooks/useExerciseSortState';
+import { useTrackerDosageEditor } from '../../hooks/useTrackerDosageEditor';
 import AuthForm from '../../components/AuthForm';
 import NavMenu from '../../components/NavMenu';
 import HistoryPanel from '../../components/HistoryPanel';
@@ -36,6 +37,7 @@ const SessionLoggerModal = dynamic(() => import('../../components/SessionLoggerM
 const NextSetConfirmModal = dynamic(() => import('../../components/NextSetConfirmModal'), { loading: () => null });
 const SessionNotesModal = dynamic(() => import('../../components/SessionNotesModal'), { loading: () => null });
 const MessagesModal = dynamic(() => import('../../components/MessagesModal'), { loading: () => null });
+const DosageModal = dynamic(() => import('../../components/DosageModal'), { loading: () => null });
 
 export default function TrackerPage() {
     const { session, loading: authLoading, signIn } = useAuth();
@@ -67,14 +69,32 @@ export default function TrackerPage() {
     const [activeTab, setActiveTab] = useState('exercises');
     const [isMessagesOpen, setIsMessagesOpen] = useState(false);
     const [emailEnabled, setEmailEnabled] = useState(true);
+    const { showToast, toastMessage, toastType, toastVisible } = useToast();
 
     useEffect(() => {
         if (!userCtx.loading) setEmailEnabled(userCtx.emailEnabled);
     }, [userCtx.emailEnabled, userCtx.loading]);
 
+    const {
+        canEditDosage,
+        dosageTarget,
+        programsForTracker,
+        openDosageEditor,
+        closeDosageEditor,
+        saveDosage,
+    } = useTrackerDosageEditor({
+        session,
+        userRole: userCtx.userRole,
+        trackerPatientId,
+        exercises,
+        programs,
+        reload,
+        showToast,
+    });
+
     const pickerExercises = useMemo(() => {
-        if (programs.length === 0) return exercises;
-        return programs
+        if (programsForTracker.length === 0) return exercises;
+        return programsForTracker
             .map((program) => {
                 const exercise = program.exercises || {};
                 return {
@@ -89,15 +109,13 @@ export default function TrackerPage() {
                 };
             })
             .filter((exercise) => Boolean(exercise.id));
-    }, [exercises, programs]);
+    }, [exercises, programsForTracker]);
     const {
         sortMode,
         setSortMode,
         manualOrderIds,
         setManualOrderIds,
     } = useExerciseSortState(userId, pickerExercises);
-
-    const { showToast, toastMessage, toastType, toastVisible } = useToast();
 
     const manualOpenRef = useRef(() => {});
     const feedbackRef = useRef({
@@ -177,8 +195,8 @@ export default function TrackerPage() {
             return getAdherenceBadgeState(allLogs, exerciseId, canonicalName);
         };
 
-        if (programs.length > 0) {
-            return programs.map((program) => ({
+        if (programsForTracker.length > 0) {
+            return programsForTracker.map((program) => ({
                 ...program,
                 ...buildHistoryState(program.exercise_id, program?.exercises?.canonical_name ?? null),
             }));
@@ -187,7 +205,7 @@ export default function TrackerPage() {
             exercise_id: exercise.id,
             ...buildHistoryState(exercise.id, exercise.canonical_name ?? null),
         }));
-    }, [allLogs, exercises, historyLoading, logs.length, programs]);
+    }, [allLogs, exercises, historyLoading, logs.length, programsForTracker]);
     const sessionProgress = useMemo(() => buildSessionProgress(selectedExercise, draftSession?.sets ?? []), [draftSession?.sets, selectedExercise]);
 
     useEffect(() => {
@@ -342,6 +360,8 @@ export default function TrackerPage() {
                         programs={pickerPrograms}
                         selectedId={selectedExerciseId}
                         onSelect={handleExerciseSelect}
+                        onEditDosage={openDosageEditor}
+                        canEditDosage={canEditDosage}
                         sortMode={sortMode}
                         onSortChange={setSortMode}
                         manualOrderIds={manualOrderIds}
@@ -455,6 +475,15 @@ export default function TrackerPage() {
                     onMarkRead={msgs.markRead}
                     onEmailToggle={handleEmailToggle}
                     onOpened={msgs.markModalOpened}
+                />
+            )}
+
+            {dosageTarget && (
+                <DosageModal
+                    exercise={dosageTarget.exercise}
+                    program={dosageTarget.program}
+                    onSave={saveDosage}
+                    onClose={closeDosageEditor}
                 />
             )}
         </div>
