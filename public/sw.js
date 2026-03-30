@@ -12,7 +12,7 @@
 
 const CACHE_NAME = 'pt-tracker-v15';
 const STATIC_ASSETS = [
-  '/',
+  '/sign-in',
   '/reset-password',
   '/icons/icon.svg',
   '/manifest-tracker.json'
@@ -25,7 +25,7 @@ function normalizePathname(pathname) {
 
 function getNavigationFallback(pathname) {
   const normalized = normalizePathname(pathname);
-  const nextjsRoutes = ['/', '/reset-password'];
+  const nextjsRoutes = ['/sign-in', '/reset-password'];
   if (nextjsRoutes.includes(normalized)) return normalized;
   return '/';
 }
@@ -89,6 +89,7 @@ self.addEventListener('fetch', (event) => {
       .then((response) => {
         if (
           response.ok &&
+          !response.redirected &&
           response.type !== 'opaqueredirect' &&
           request.method === 'GET'
         ) {
