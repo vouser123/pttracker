@@ -10,12 +10,9 @@
  * Legacy HTML/CSS/JS were pruned from nextjs branch (pt-v4y). Do not re-add them.
  */
 
-const CACHE_NAME = 'pt-tracker-v14';
+const CACHE_NAME = 'pt-tracker-v15';
 const STATIC_ASSETS = [
   '/',
-  '/program',
-  '/pt-view',
-  '/rehab',
   '/reset-password',
   '/icons/icon.svg',
   '/manifest-tracker.json'
@@ -28,7 +25,7 @@ function normalizePathname(pathname) {
 
 function getNavigationFallback(pathname) {
   const normalized = normalizePathname(pathname);
-  const nextjsRoutes = ['/', '/program', '/pt-view', '/rehab', '/reset-password'];
+  const nextjsRoutes = ['/', '/reset-password'];
   if (nextjsRoutes.includes(normalized)) return normalized;
   return '/';
 }
@@ -90,7 +87,11 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(request)
       .then((response) => {
-        if (response.ok && request.method === 'GET') {
+        if (
+          response.ok &&
+          response.type !== 'opaqueredirect' &&
+          request.method === 'GET'
+        ) {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(request, responseClone);
