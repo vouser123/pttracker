@@ -52,8 +52,11 @@ export default function TrackerPage() {
         logs,
         loading,
         historyLoading,
+        historyLoadingMore,
+        historyHasMore,
         error,
         historyError,
+        loadMoreHistory,
         fromCache,
         reload,
     } = useIndexData(token, trackerPatientId);
@@ -352,6 +355,9 @@ export default function TrackerPage() {
                         activeExerciseName={activeExercise?.name ?? null}
                         onClearFilter={() => setActiveExercise(null)}
                         onEditLog={handleEditLog}
+                        historyHasMore={historyHasMore}
+                        historyLoadingMore={historyLoadingMore}
+                        onLoadMoreHistory={loadMoreHistory}
                     />
                 )}
             </main>

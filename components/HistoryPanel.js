@@ -15,8 +15,20 @@ import styles from './HistoryPanel.module.css';
  * @param {string|null} activeExerciseName  - Display name for the filter badge
  * @param {Function}    onClearFilter       - Called when user taps "Show all" in the filter badge
  * @param {Function}    onEditLog           - Open edit logger modal for selected log
+ * @param {boolean}     historyHasMore      - Whether older history exists beyond the loaded slice
+ * @param {boolean}     historyLoadingMore  - Whether an older page is currently loading
+ * @param {Function}    onLoadMoreHistory   - Load the next page of older history
  */
-export default function HistoryPanel({ logs, activeExerciseId, activeExerciseName, onClearFilter, onEditLog }) {
+export default function HistoryPanel({
+    logs,
+    activeExerciseId,
+    activeExerciseName,
+    onClearFilter,
+    onEditLog,
+    historyHasMore = false,
+    historyLoadingMore = false,
+    onLoadMoreHistory,
+}) {
     const [expandedSessions, setExpandedSessions] = useState(new Set());
 
     /** Toggle expanded state for a session card. */
@@ -55,6 +67,19 @@ export default function HistoryPanel({ logs, activeExerciseId, activeExerciseNam
                 onExerciseClick={() => {}} // no-op on index: exercise context set by ExercisePicker
                 onEditLog={onEditLog}
             />
+
+            {historyHasMore && (
+                <div className={styles.loadMoreWrap}>
+                    <button
+                        type="button"
+                        className={styles.loadMoreButton}
+                        onPointerUp={onLoadMoreHistory}
+                        disabled={historyLoadingMore}
+                    >
+                        {historyLoadingMore ? 'Loading older history...' : 'Load older history'}
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

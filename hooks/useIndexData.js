@@ -1,6 +1,12 @@
 // hooks/useIndexData.js — loads tracker bootstrap data (exercises, programs, logs) with loading/error state
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { fetchIndexExercises, fetchIndexLogs, fetchIndexPrograms } from '../lib/index-data';
+import {
+    fetchIndexExercises,
+    fetchIndexLogsPage,
+    fetchIndexPrograms,
+    INDEX_HISTORY_PAGE_SIZE,
+    mergeIndexLogPages,
+} from '../lib/index-data';
 import { offlineCache } from '../lib/offline-cache';
 import {
     markTrackerBootstrapStart,
@@ -33,12 +39,25 @@ function getCachedBootstrapSummary(cachedBootstrap) {
     };
 }
 
+function inferCachedHistoryPageState(cachedLogs) {
+    const normalizedLogs = cachedLogs ?? [];
+    const maybeHasMore = normalizedLogs.length >= INDEX_HISTORY_PAGE_SIZE;
+
+    return {
+        historyHasMore: maybeHasMore,
+        historyNextCursor: maybeHasMore ? (normalizedLogs[normalizedLogs.length - 1]?.performed_at ?? null) : null,
+    };
+}
+
 export function useIndexData(token, patientId) {
     const [exercises, setExercises] = useState([]);
     const [programs, setPrograms] = useState([]);
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(false);
     const [historyLoading, setHistoryLoading] = useState(false);
+    const [historyLoadingMore, setHistoryLoadingMore] = useState(false);
+    const [historyHasMore, setHistoryHasMore] = useState(false);
+    const [historyNextCursor, setHistoryNextCursor] = useState(null);
     const [error, setError] = useState(null);
     const [historyError, setHistoryError] = useState(null);
     const [fromCache, setFromCache] = useState(false);
@@ -69,9 +88,12 @@ export function useIndexData(token, patientId) {
                 } = getCachedBootstrapSummary(cachedBootstrap);
 
                 if (hasCachedData) {
+                    const cachedHistoryState = inferCachedHistoryPageState(cachedLogs);
                     setExercises(cachedExercises);
                     setPrograms(cachedPrograms);
                     setLogs(cachedLogs);
+                    setHistoryHasMore(cachedHistoryState.historyHasMore);
+                    setHistoryNextCursor(cachedHistoryState.historyNextCursor);
                     setFromCache(true);
                     setLoading(false);
                     setHistoryLoading(false);
@@ -120,9 +142,12 @@ export function useIndexData(token, patientId) {
                 } = getCachedBootstrapSummary(cachedBootstrap);
 
                 if (hasCachedData) {
+                    const cachedHistoryState = inferCachedHistoryPageState(cachedLogs);
                     setExercises(cachedExercises);
                     setPrograms(cachedPrograms);
                     setLogs(cachedLogs);
+                    setHistoryHasMore(cachedHistoryState.historyHasMore);
+                    setHistoryNextCursor(cachedHistoryState.historyNextCursor);
                     setFromCache(true);
                     setHistoryError(null);
                     setHistoryLoading(false);
@@ -150,7 +175,8 @@ export function useIndexData(token, patientId) {
         }
 
         try {
-            const nextLogs = await fetchIndexLogs(token); // DN-059: no patientId — API resolves profile UUID from req.user.id
+            const historyPage = await fetchIndexLogsPage(token); // DN-059: no patientId — API resolves profile UUID from req.user.id
+            const nextLogs = historyPage.logs ?? [];
             if (typeof window !== 'undefined') {
                 await offlineCache.init();
                 await Promise.all([
@@ -163,6 +189,8 @@ export function useIndexData(token, patientId) {
                 ]);
             }
             setLogs(nextLogs);
+            setHistoryHasMore(Boolean(historyPage.hasMore));
+            setHistoryNextCursor(historyPage.nextCursor ?? null);
             setFromCache(false);
             setHistoryError(null);
             markTrackerHistoryReady();
@@ -179,7 +207,10 @@ export function useIndexData(token, patientId) {
                 const cachedLogs = cachedBootstrap?.logs ?? [];
 
                 if (cachedLogs.length > 0) {
+                    const cachedHistoryState = inferCachedHistoryPageState(cachedLogs);
                     setLogs(cachedLogs);
+                    setHistoryHasMore(cachedHistoryState.historyHasMore);
+                    setHistoryNextCursor(cachedHistoryState.historyNextCursor);
                     markTrackerHistoryReady();
                     return;
                 }
@@ -196,6 +227,59 @@ export function useIndexData(token, patientId) {
             }
         }
     }, [token, patientId]);
+
+    const loadMoreHistory = useCallback(async () => {
+        if (!token || !patientId || historyLoadingMore || !historyHasMore || !historyNextCursor) {
+            return { loaded: 0, hasMore: historyHasMore };
+        }
+
+        setHistoryLoadingMore(true);
+        setHistoryError(null);
+
+        try {
+            const historyPage = await fetchIndexLogsPage(token, {
+                before: historyNextCursor,
+                limit: INDEX_HISTORY_PAGE_SIZE,
+                includeAll: true,
+            });
+            const nextLogs = historyPage.logs ?? [];
+            const mergedLogs = mergeIndexLogPages(logs, nextLogs);
+
+            setLogs(mergedLogs);
+
+            setHistoryHasMore(Boolean(historyPage.hasMore));
+            setHistoryNextCursor(historyPage.nextCursor ?? null);
+
+            if (typeof window !== 'undefined') {
+                await offlineCache.init();
+                await Promise.all([
+                    offlineCache.cacheLogs(mergedLogs),
+                    offlineCache.cacheTrackerBootstrap(patientId, {
+                        exercises,
+                        programs,
+                        logs: mergedLogs,
+                    }),
+                ]);
+            }
+
+            return {
+                loaded: nextLogs.length,
+                hasMore: Boolean(historyPage.hasMore),
+            };
+        } catch (err) {
+            const message = err instanceof Error
+                ? 'Failed to load older history. Check your connection.'
+                : 'Failed to load older history.';
+            setHistoryError(message);
+            return {
+                loaded: 0,
+                hasMore: historyHasMore,
+                error: message,
+            };
+        } finally {
+            setHistoryLoadingMore(false);
+        }
+    }, [exercises, historyHasMore, historyLoadingMore, historyNextCursor, logs, patientId, programs, token]);
 
     useEffect(() => {
         if (typeof window !== 'undefined' && token && patientId) {
@@ -221,6 +305,9 @@ export function useIndexData(token, patientId) {
             setLogs([]);
             setLoading(false);
             setHistoryLoading(false);
+            setHistoryLoadingMore(false);
+            setHistoryHasMore(false);
+            setHistoryNextCursor(null);
             setError(null);
             setHistoryError(null);
             setFromCache(false);
@@ -238,8 +325,11 @@ export function useIndexData(token, patientId) {
         logs,
         loading,
         historyLoading,
+        historyLoadingMore,
+        historyHasMore,
         error,
         historyError,
+        loadMoreHistory,
         fromCache,
         reload,
     };
