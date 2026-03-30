@@ -111,23 +111,33 @@ export function useProgramOfflineQueue({
   }, [session?.user?.id, syncProgramMutations]);
   const enqueueMutation = useCallback(async (mutation, nextSnapshot, successMessage, previousSnapshot) => {
     const nextQueue = mergeProgramMutationQueue(queueRef.current, mutation);
+    const shouldAttemptImmediateSave = Boolean(
+      session?.access_token
+      && session?.user?.id
+      && navigator.onLine
+      && nextQueue.length === 1
+    );
     commitSnapshot(nextSnapshot);
+    if (shouldAttemptImmediateSave) {
+      // Set the lock before queue state updates so the mutationQueue.length
+      // effect cannot replay this same mutation concurrently.
+      syncInFlightRef.current = true;
+    }
     await persistQueue(nextQueue);
     if (!session?.access_token || !session?.user?.id || !navigator.onLine) {
+      syncInFlightRef.current = false;
       setQueueError('Offline - changes will sync later');
       showToast('Offline - changes will sync later', 'error');
       return;
     }
     if (nextQueue.length > 1) {
       // Queue backlog — let syncProgramMutations handle the toast when done
+      syncInFlightRef.current = false;
       syncProgramMutations();
       return;
     }
 
     try {
-      // Prevent the mutationQueue.length useEffect from triggering a concurrent
-      // syncProgramMutations call while we're already performing this mutation directly.
-      syncInFlightRef.current = true;
       await performProgramMutation(session.access_token, mutation);
       await persistQueue([]);
       setQueueError(null);
