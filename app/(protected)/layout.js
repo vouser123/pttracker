@@ -13,6 +13,7 @@
 import { cache } from 'react';
 import { redirect } from 'next/navigation';
 import { getServerSupabaseClient } from '../../lib/supabase-server';
+import ProtectedClientWarmers from './ProtectedClientWarmers';
 
 const getUser = cache(async () => {
     const supabase = await getServerSupabaseClient();
@@ -25,5 +26,10 @@ export default async function ProtectedLayout({ children }) {
     if (!user) {
         redirect('/sign-in');
     }
-    return children;
+    return (
+        <>
+            <ProtectedClientWarmers />
+            {children}
+        </>
+    );
 }

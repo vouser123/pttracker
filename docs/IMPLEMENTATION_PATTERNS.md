@@ -46,6 +46,7 @@ Treat the static legacy surface as frozen for routine cleanup. Only apply these 
 
 - Use [`lib/offline-cache.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib/offline-cache.js) for shared IndexedDB-backed route bootstrap and auth persistence.
 - Use [`lib/index-offline.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib/index-offline.js) with [`hooks/useIndexOfflineQueue.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useIndexOfflineQueue.js) for tracker offline queue behavior.
+- Use [`hooks/useProgramBootstrapWarmup.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useProgramBootstrapWarmup.js) for authenticated warm-up of `/program` editor bootstrap data when first offline visits to `/program` must work after earlier app use.
 - Use [`hooks/useProgramOfflineQueue.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useProgramOfflineQueue.js) for `/program` offline mutation queue lifecycle.
 - Do not introduce new app-data persistence in `localStorage`.
 - Do not put IndexedDB queue rules directly into page components when a shared offline helper or hook already owns them.
