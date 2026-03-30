@@ -13,10 +13,10 @@
     width: min(640px, 100%);
     max-height: 90vh;
     overflow: auto;
-    background: #101828;
-    color: #f8fafc;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
     border-radius: 16px;
-    border: 1px solid #223249;
+    border: 1px solid var(--border-color);
     padding: 16px;
 }
 
@@ -35,7 +35,7 @@
 .subtitle {
     margin: 4px 0 0;
     font-size: 0.95rem;
-    color: #cbd5e1;
+    color: var(--text-secondary);
 }
 
 .closeBtn,
@@ -49,7 +49,7 @@
 .counterDisplay {
     min-height: 44px;
     border-radius: 10px;
-    border: 1px solid #334155;
+    border: 1px solid var(--border-color);
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
 }
@@ -57,8 +57,8 @@
 .closeBtn,
 .secondaryBtn,
 .backBtn {
-    background: #111827;
-    color: #e2e8f0;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
 }
 
 .sideRow,
@@ -74,7 +74,7 @@
 .sideLabel {
     display: block;
     margin-bottom: 8px;
-    color: #cbd5e1;
+    color: var(--text-secondary);
 }
 
 .sideButtons {
@@ -84,13 +84,13 @@
 }
 
 .sideBtn {
-    background: #111827;
-    color: #cbd5e1;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
 }
 
 .sideActive {
-    background: #1d4ed8;
-    border-color: #1d4ed8;
+    background: var(--accent-color);
+    border-color: var(--accent-color);
     color: #fff;
 }
 
@@ -98,8 +98,8 @@
 .setInfo {
     padding: 14px;
     border-radius: 12px;
-    border: 1px solid #243447;
-    background: #0b1220;
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
 }
 
 .counterLabel,
@@ -107,13 +107,13 @@
 .targetText {
     margin: 0 0 10px;
     text-align: center;
-    color: #cbd5e1;
+    color: var(--text-secondary);
 }
 
 .statusMessage {
     margin: 0 0 10px;
     text-align: center;
-    color: #86efac;
+    color: var(--success-color);
     font-weight: 600;
 }
 
@@ -123,8 +123,8 @@
     margin: 0 auto 10px;
     display: grid;
     place-items: center;
-    background: #1d4ed8;
-    border-color: #1d4ed8;
+    background: var(--accent-color);
+    border-color: var(--accent-color);
     color: #fff;
     font-size: 3rem;
     font-weight: 700;
@@ -139,7 +139,7 @@
 }
 
 .timerDisplay {
-    color: #7dd3fc;
+    color: var(--accent-color);
 }
 
 .controlRow,
@@ -156,8 +156,8 @@
 }
 
 .primaryBtn {
-    background: #2563eb;
-    border-color: #2563eb;
+    background: var(--accent-color);
+    border-color: var(--accent-color);
     color: #fff;
 }
 
@@ -176,13 +176,13 @@
     display: flex;
     justify-content: space-between;
     gap: 12px;
-    color: #cbd5e1;
+    color: var(--text-secondary);
 }
 
 .pocketBtn {
     width: 100%;
-    background: #111827;
-    color: #f8fafc;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
 }
 
 .finishBtn,
