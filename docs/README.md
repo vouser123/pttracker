@@ -12,7 +12,7 @@ Use this file to decide which doc to open next.
   - Answers: "Where are we in the Next.js migration?"
 - [`NEXTJS_CODE_STRUCTURE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/NEXTJS_CODE_STRUCTURE.md)
   - Open when: you are adding, splitting, or reorganizing Next.js files.
-  - Answers: "How should Next.js code be structured?"
+  - Answers: "How should Next.js code be structured?" and "What does the framework enforce versus what still needs repo rules?"
 - [`SYSTEM_ARCHITECTURE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/SYSTEM_ARCHITECTURE.md)
   - Open when: you need the current hybrid architecture, data flow, offline/storage model, or deployment guardrails.
   - Answers: "How does the live system fit together?"

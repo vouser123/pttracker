@@ -244,6 +244,83 @@ Keep a file server-side when it is pure display or server-safe wiring:
 
 If a future edit would force `'use client'` onto `app/**/page.js`, pause and ask whether the interactive concern belongs in a route-local `*Page.js` or a deeper child component instead.
 
+---
+
+## What Next.js Enforces Vs What The Repo Still Enforces
+
+Next.js gives this repo better guardrails than the old mixed static/Pages Router shape, but it does not fully enforce the architecture by itself.
+
+Use this section when the question is:
+- "Will the framework catch this for me?"
+- "What still needs repo rules or review discipline?"
+- "What can we eventually automate with hooks, scripts, or CI?"
+
+### 1. Framework-enforced boundaries
+
+These are the things Next.js and the build system already help enforce:
+
+- `app/**/page.js`, `app/**/layout.js`, and `app/**/route.js` have distinct framework jobs
+- Server and client boundaries are explicit through `'use client'`
+- browser-only APIs cannot run safely in Server Components
+- duplicate route ownership and invalid route shapes often fail at build time
+- `app/` route structure makes route ownership more obvious than large mixed files did
+
+Examples:
+- Putting stateful React hooks in a Server Component will fail
+- Defining the same path in conflicting ways can fail the build
+- Route handlers and route pages already live in clearly different framework slots
+
+### 2. Repo-enforced architecture rules
+
+These rules are still ours to enforce even when the code is technically valid:
+
+- `app/**/page.js` must stay a thin route entry, not a feature host
+- route client hosts such as `*Page.js` are orchestrators, not dumping grounds
+- business logic belongs in `lib/`, not in route files or UI components
+- state/effect workflows belong in focused `hooks/`, not in route entries
+- reusable UI belongs in `components/`, not copied inline across routes
+- domain data must not become new hardcoded option lists without explicit sign-off
+
+Examples:
+- A `page.js` file that imports data helpers, hooks, and large JSX blocks might still compile, but it is architecturally wrong here
+- A client host may be under the line cap and still own too many unrelated concerns
+- A route can technically add a second mutation path inline even when a shared mutation hook already owns that concern
+
+### 3. What can be automated later
+
+Some repo rules are good candidates for mechanical enforcement:
+
+- fail if `app/**/page.js` imports hooks, `lib/`, or shared components directly instead of delegating to a route host
+- fail if `app/**/page.js` contains hooks, local state, or non-trivial logic
+- fail if `pages/` route files reappear after cut-over
+- warn or fail when route hosts, hooks, or shared files exceed agreed caps
+- warn when banned layer imports appear, such as React hooks inside `lib/`
+
+These are strong candidates for a future structure-check script, pre-commit hook, or CI rule.
+
+### 4. What still needs human or agent judgment
+
+Some architecture decisions remain partly judgment-based even with good automation:
+
+- whether a concern is truly one domain or two concerns mixed together
+- whether a helper belongs in a route host, hook, component, or `lib/`
+- whether a feature request is "small UI" or actually a shared write path
+- whether deferring a decision is harmless scope control or the start of another rebuild later
+
+Examples:
+- "Add dosage edit to tracker" sounds small, but it is really a shared program-data write path
+- "We can defer history/versioning/soft-delete work" may sound reasonable, but those are often foundation decisions rather than polish
+
+### Operator shortcut
+
+When evaluating agent work, use this quick test:
+
+- If the framework/build fails, that is a hard boundary problem
+- If the change compiles but puts the wrong kind of code in the wrong layer, that is still a real problem here
+- If the change introduces a second ownership path for shared data, treat it as architecture work, not a convenience tweak
+
+In short: Next.js catches more than the old structure did, but it does not replace the repo's ownership rules. The framework helps us see boundaries sooner; it does not decide all boundaries for us.
+
 ## README Maintenance (Required)
 
 `README.md` is the landing reference for the current architecture. Keep it aligned with the live codebase.
