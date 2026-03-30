@@ -10,19 +10,12 @@
  * Client components within protected routes still use useAuth() for client-side
  * session management and sign-out flows — this layout is additive, not a replacement.
  */
-import { cache } from 'react';
 import { redirect } from 'next/navigation';
-import { getServerSupabaseClient } from '../../lib/supabase-server';
+import { getServerUser } from '../../lib/server-user';
 import ProtectedClientWarmers from './ProtectedClientWarmers';
 
-const getUser = cache(async () => {
-    const supabase = await getServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    return user;
-});
-
 export default async function ProtectedLayout({ children }) {
-    const user = await getUser();
+    const user = await getServerUser();
     if (!user) {
         redirect('/sign-in');
     }

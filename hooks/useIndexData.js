@@ -289,7 +289,7 @@ export function useIndexData(token, patientId) {
         }
 
         if (!token || !patientId) {
-            if (!token && hadAuthRef.current && typeof window !== 'undefined') {
+            if (hadAuthRef.current && typeof window !== 'undefined') {
                 void Promise.all([
                     offlineCache.clearExercises(),
                     offlineCache.clearPrograms(),
@@ -300,20 +300,18 @@ export function useIndexData(token, patientId) {
                 });
             }
 
-            if (!token) {
-                setExercises([]);
-                setPrograms([]);
-                setLogs([]);
-                setLoading(false);
-                setHistoryLoading(false);
-                setHistoryLoadingMore(false);
-                setHistoryHasMore(false);
-                setHistoryNextCursor(null);
-                setError(null);
-                setHistoryError(null);
-                setFromCache(false);
-                hadAuthRef.current = false;
-            }
+            setExercises([]);
+            setPrograms([]);
+            setLogs([]);
+            setLoading(false);
+            setHistoryLoading(false);
+            setHistoryLoadingMore(false);
+            setHistoryHasMore(false);
+            setHistoryNextCursor(null);
+            setError(null);
+            setHistoryError(null);
+            setFromCache(false);
+            hadAuthRef.current = false;
             return;
         }
 

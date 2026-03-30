@@ -1,7 +1,7 @@
 // app/(protected)/program/page.js — App Router entry for /program.
 // Server Component: exports metadata; delegates rendering to ProgramPage (client).
 
-import { getServerSupabaseClient } from '../../../lib/supabase-server';
+import { getServerUser } from '../../../lib/server-user';
 import ProgramPage from './ProgramPage';
 
 export const metadata = {
@@ -9,8 +9,7 @@ export const metadata = {
 };
 
 export default async function ProgramRoute() {
-    const supabase = await getServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getServerUser();
 
     return <ProgramPage initialAuthUserId={user?.id ?? null} />;
 }

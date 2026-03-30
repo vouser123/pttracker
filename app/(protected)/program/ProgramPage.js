@@ -52,7 +52,7 @@ export default function ProgramPage({ initialAuthUserId = null }) {
     const workspace = useProgramWorkspaceState({
         exercises,
         programs,
-        enabled: Boolean(session),
+        enabled: Boolean(session) || Boolean(initialAuthUserId),
     });
     const {
         search,
