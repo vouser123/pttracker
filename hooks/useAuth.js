@@ -72,6 +72,17 @@ export function useAuth() {
                 return;
             }
 
+            // Supabase refresh token errors (400 Invalid Refresh Token) occur when the
+            // token was rotated by another tab or SW instance. If we're offline we can't
+            // distinguish a genuinely revoked token from a network-blocked refresh, so
+            // keep the session alive and let the user continue with cached data.
+            const isRefreshTokenError =
+                userError.message?.includes('refresh_token') ||
+                userError.message?.includes('Refresh Token');
+            if (isRefreshTokenError && typeof navigator !== 'undefined' && navigator.onLine === false) {
+                return;
+            }
+
             // Token is actually invalid (revoked, password changed, etc.)
             // Sign out to clear stale IndexedDB state and prompt re-login.
             await supabase.auth.signOut();
