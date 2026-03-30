@@ -61,7 +61,7 @@ function buildCachedProgramSnapshot(cachedUsers, authUserId, cachedExercises, ca
  * @param {{ session: object|null }} params
  * @returns {object}
  */
-export function useProgramPageData({ session }) {
+export function useProgramPageData({ session, initialAuthUserId = null }) {
   const [state, setState] = useState(emptyProgramDataState);
   const persistProgramSnapshot = useCallback(async (snapshot) => {
     await offlineCache.init();
@@ -78,36 +78,45 @@ export function useProgramPageData({ session }) {
     }));
   }, []);
 
+  const restoreCachedProgramBootstrap = useCallback(async (authUserId) => {
+    if (!authUserId) return null;
+
+    await offlineCache.init();
+    const [
+      cachedUsers,
+      cachedExercises,
+      cachedVocabularies,
+      cachedReferenceData,
+      cachedPrograms,
+    ] = await Promise.all([
+      offlineCache.getCachedUsers(),
+      offlineCache.getCachedExercises(),
+      offlineCache.getCachedProgramVocabularies(),
+      offlineCache.getCachedProgramReferenceData(),
+      offlineCache.getCachedPrograms(),
+    ]);
+
+    const cachedBootstrap = buildCachedProgramSnapshot(
+      cachedUsers,
+      authUserId,
+      cachedExercises,
+      cachedVocabularies,
+      cachedReferenceData,
+      cachedPrograms
+    );
+
+    if (cachedBootstrap) {
+      setState(cachedBootstrap);
+    }
+
+    return cachedBootstrap;
+  }, []);
+
   const loadData = useCallback(async (accessToken, authUserId) => {
     let cachedBootstrap = null;
 
     try {
-      await offlineCache.init();
-      const [
-        cachedUsers,
-        cachedExercises,
-        cachedVocabularies,
-        cachedReferenceData,
-        cachedPrograms,
-      ] = await Promise.all([
-        offlineCache.getCachedUsers(),
-        offlineCache.getCachedExercises(),
-        offlineCache.getCachedProgramVocabularies(),
-        offlineCache.getCachedProgramReferenceData(),
-        offlineCache.getCachedPrograms(),
-      ]);
-      cachedBootstrap = buildCachedProgramSnapshot(
-        cachedUsers,
-        authUserId,
-        cachedExercises,
-        cachedVocabularies,
-        cachedReferenceData,
-        cachedPrograms
-      );
-
-      if (cachedBootstrap) {
-        setState(cachedBootstrap);
-      }
+      cachedBootstrap = await restoreCachedProgramBootstrap(authUserId);
 
       const usersData = await fetchUsers(accessToken);
       await offlineCache.cacheUsers(usersData);
@@ -141,22 +150,7 @@ export function useProgramPageData({ session }) {
     } catch (err) {
       try {
         if (!cachedBootstrap) {
-          await offlineCache.init();
-          const [cachedUsers, cachedExercises, cachedVocabularies, cachedReferenceData, cachedPrograms] = await Promise.all([
-            offlineCache.getCachedUsers(),
-            offlineCache.getCachedExercises(),
-            offlineCache.getCachedProgramVocabularies(),
-            offlineCache.getCachedProgramReferenceData(),
-            offlineCache.getCachedPrograms(),
-          ]);
-          cachedBootstrap = buildCachedProgramSnapshot(
-            cachedUsers,
-            authUserId,
-            cachedExercises,
-            cachedVocabularies,
-            cachedReferenceData,
-            cachedPrograms
-          );
+          cachedBootstrap = await restoreCachedProgramBootstrap(authUserId);
         }
 
         if (!cachedBootstrap) throw err;
@@ -171,7 +165,23 @@ export function useProgramPageData({ session }) {
         return null;
       }
     }
-  }, [persistProgramSnapshot]);
+  }, [persistProgramSnapshot, restoreCachedProgramBootstrap]);
+
+  useEffect(() => {
+    if (session) return;
+
+    let cancelled = false;
+
+    void (async () => {
+      const fallbackAuthUserId = initialAuthUserId ?? await offlineCache.getAuthState('auth_user_id');
+      if (!fallbackAuthUserId || cancelled) return;
+      await restoreCachedProgramBootstrap(fallbackAuthUserId);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [initialAuthUserId, restoreCachedProgramBootstrap, session]);
 
   useEffect(() => {
     if (session) void loadData(session.access_token, session.user.id);

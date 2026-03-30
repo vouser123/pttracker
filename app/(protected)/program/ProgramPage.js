@@ -31,7 +31,7 @@ const ExerciseForm = dynamic(() => import('../../../components/ExerciseForm'), {
 const DosageModal = dynamic(() => import('../../../components/DosageModal'), { loading: () => null });
 const ProgramVocabEditor = dynamic(() => import('../../../components/ProgramVocabEditor'), { loading: () => null });
 
-export default function ProgramPage() {
+export default function ProgramPage({ initialAuthUserId = null }) {
     const { session, loading: authLoading, signIn, signOut } = useAuth();
     const [isVocabOpen, setIsVocabOpen] = useState(false);
     const {
@@ -47,7 +47,7 @@ export default function ProgramPage() {
         programPatientName,
         loadData,
         setProgramDataSnapshot,
-    } = useProgramPageData({ session });
+    } = useProgramPageData({ session, initialAuthUserId });
     const { commitProgramData } = useProgramDataSnapshot({ setProgramDataSnapshot });
     const workspace = useProgramWorkspaceState({
         exercises,

@@ -15,6 +15,7 @@
  * }}
  */
 import { useState, useEffect } from 'react';
+import { offlineCache } from '../lib/offline-cache';
 import { supabase } from '../lib/supabase';
 
 function isOfflineSignInError(error) {
@@ -31,37 +32,51 @@ export function useAuth() {
     const [session, setSession] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    function persistAuthUserId(userId) {
+        if (typeof window === 'undefined') return;
+        void offlineCache.setAuthState('auth_user_id', userId);
+    }
+
+    function clearAuthUserId() {
+        if (typeof window === 'undefined') return;
+        void offlineCache.removeAuthState('auth_user_id');
+    }
+
     useEffect(() => {
         // Check for an existing session on mount (handles page reload + return from OAuth).
         // Supabase auth persistence is backed by the shared IndexedDB storage adapter.
         //
         // getSession() trusts whatever is stored in IndexedDB without a server round-trip.
         // A stored session can be stale if the password was reset or the token was revoked
-        // server-side. We validate with getUser() (network call) when a session exists to
-        // catch this case — if validation fails, sign out to clear the stale session and
-        // let the page fall through to AuthForm.
+        // server-side. Restore the stored session immediately so offline-capable pages can
+        // bootstrap from cache first, then validate with getUser() in the background. If
+        // validation fails for a non-network reason, sign out to clear the stale session
+        // and let the page fall through to AuthForm.
         supabase.auth.getSession().then(async ({ data: { session: sess } }) => {
-            if (sess) {
-                const { error: userError } = await supabase.auth.getUser();
-                if (userError) {
-                    if (isOfflineSignInError(userError)) {
-                        // Network is down — trust the locally-stored session.
-                        // getSession() already validated it from IndexedDB; no server
-                        // round-trip needed for a warmed session when offline.
-                        setSession(sess);
-                    } else {
-                        // Token is actually invalid (revoked, password changed, etc.)
-                        // Sign out to clear stale IndexedDB state and prompt re-login.
-                        await supabase.auth.signOut();
-                        setSession(null);
-                    }
-                } else {
-                    setSession(sess);
-                }
-            } else {
+            if (!sess) {
                 setSession(null);
+                setLoading(false);
+                return;
             }
+
+            setSession(sess);
+            persistAuthUserId(sess.user.id);
             setLoading(false);
+
+            const { error: userError } = await supabase.auth.getUser();
+            if (!userError) return;
+
+            if (isOfflineSignInError(userError)) {
+                // Network is down — keep the locally-restored session active and let
+                // page-level data hooks decide whether to use cached or fresh data.
+                return;
+            }
+
+            // Token is actually invalid (revoked, password changed, etc.)
+            // Sign out to clear stale IndexedDB state and prompt re-login.
+            await supabase.auth.signOut();
+            clearAuthUserId();
+            setSession(null);
         });
 
         // Keep session state in sync with Supabase auth events.
@@ -69,8 +84,10 @@ export function useAuth() {
         // values that can occur during token refresh cycles.
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
             if (event === 'SIGNED_OUT') {
+                clearAuthUserId();
                 setSession(null);
             } else if (sess) {
+                persistAuthUserId(sess.user.id);
                 setSession(sess);
             }
         });
@@ -98,6 +115,7 @@ export function useAuth() {
     /** Sign out the current user and redirect to sign-in. */
     async function signOut() {
         await supabase.auth.signOut();
+        clearAuthUserId();
         window.location.href = '/sign-in';
     }
 

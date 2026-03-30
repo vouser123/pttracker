@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import { supabase } from '../lib/supabase';
 import { offlineCache } from '../lib/offline-cache';
 import {
   fetchExercises,
@@ -28,24 +27,20 @@ function hasCachedVocabularies(vocabularies) {
  * signal before /program is opened. This hook fills missing editor bootstrap
  * caches online so /program can cold-open offline later.
  */
-export function useProgramBootstrapWarmup() {
+export function useProgramBootstrapWarmup({ session }) {
   const syncInFlightRef = useRef(null);
 
   useEffect(() => {
-    let cancelled = false;
-
     async function warmProgramBootstrapCache() {
-      if (syncInFlightRef.current) return syncInFlightRef.current;
+      if (typeof window === 'undefined' || navigator.onLine === false) return;
+      if (!session?.access_token || !session.user?.id) return;
+
+      const activeWarm = syncInFlightRef.current;
+      if (activeWarm?.authUserId === session.user.id) {
+        return activeWarm.promise;
+      }
 
       const run = (async () => {
-        if (typeof window === 'undefined' || navigator.onLine === false) return;
-
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (!session?.access_token || !session.user?.id) return;
-
         await offlineCache.init();
 
         let [cachedUsers, cachedExercises, cachedVocabularies, cachedReferenceData, cachedPrograms] =
@@ -64,7 +59,6 @@ export function useProgramBootstrapWarmup() {
           resolvedContext = resolvePatientScopedUserContext(users, session.user.id);
         } catch {
           users = await fetchUsers(session.access_token);
-          if (cancelled) return;
           await offlineCache.cacheUsers(users);
           resolvedContext = resolvePatientScopedUserContext(users, session.user.id);
         }
@@ -79,7 +73,7 @@ export function useProgramBootstrapWarmup() {
         if ((cachedExercises?.length ?? 0) === 0) {
           cacheWrites.push(
             fetchExercises(session.access_token).then((exercises) => {
-              if (!cancelled) return offlineCache.cacheExercises(exercises);
+              return offlineCache.cacheExercises(exercises);
             })
           );
         }
@@ -87,7 +81,7 @@ export function useProgramBootstrapWarmup() {
         if (!hasCachedVocabularies(cachedVocabularies)) {
           cacheWrites.push(
             fetchVocabularies(session.access_token).then((vocabularies) => {
-              if (!cancelled) return offlineCache.cacheProgramVocabularies(vocabularies);
+              return offlineCache.cacheProgramVocabularies(vocabularies);
             })
           );
         }
@@ -95,7 +89,7 @@ export function useProgramBootstrapWarmup() {
         if (!hasCachedReferenceData(cachedReferenceData)) {
           cacheWrites.push(
             fetchReferenceData(session.access_token).then((referenceData) => {
-              if (!cancelled) return offlineCache.cacheProgramReferenceData(referenceData);
+              return offlineCache.cacheProgramReferenceData(referenceData);
             })
           );
         }
@@ -103,7 +97,7 @@ export function useProgramBootstrapWarmup() {
         if ((cachedPrograms?.length ?? 0) === 0) {
           cacheWrites.push(
             fetchPrograms(session.access_token, resolvedContext.patientUser.id).then((programMap) => {
-              if (!cancelled) return offlineCache.cachePrograms(Object.values(programMap ?? {}));
+              return offlineCache.cachePrograms(Object.values(programMap ?? {}));
             })
           );
         }
@@ -115,11 +109,18 @@ export function useProgramBootstrapWarmup() {
         console.error('useProgramBootstrapWarmup failed:', error);
       });
 
-      syncInFlightRef.current = run.finally(() => {
-        syncInFlightRef.current = null;
+      const trackedRun = run.finally(() => {
+        if (syncInFlightRef.current?.promise === trackedRun) {
+          syncInFlightRef.current = null;
+        }
       });
 
-      return syncInFlightRef.current;
+      syncInFlightRef.current = {
+        authUserId: session.user.id,
+        promise: trackedRun,
+      };
+
+      return trackedRun;
     }
 
     void warmProgramBootstrapCache();
@@ -131,8 +132,7 @@ export function useProgramBootstrapWarmup() {
     window.addEventListener('online', handleOnline);
 
     return () => {
-      cancelled = true;
       window.removeEventListener('online', handleOnline);
     };
-  }, []);
+  }, [session]);
 }
