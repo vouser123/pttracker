@@ -171,17 +171,6 @@ export default function ProgramPage() {
 
     return (
         <>
-            {session && (
-                <NavMenu
-                    user={session.user}
-                    isAdmin={currentUserRole === 'therapist' || currentUserRole === 'admin'}
-                    onSignOut={() => signOut?.() ?? supabase.auth.signOut()}
-                    currentPage="pt_editor"
-                    actions={[]}
-                    onAction={() => {}}
-                />
-            )}
-
             <main className={styles.main}>
                 {accessError ? <p className={styles.errorBanner}>{accessError}</p> : null}
                 {loadError ? <p className={styles.errorBanner}>{loadError}</p> : null}
@@ -213,9 +202,21 @@ export default function ProgramPage() {
 
                         <div className={styles.header}>
                             <h1 className={styles.title}>PT Editor</h1>
-                            <button className={styles.btnPrimary} onPointerUp={() => setActiveExercise('new')}>
-                                ➕ New
-                            </button>
+                            <div className={styles.headerActions}>
+                                <button className={styles.btnPrimary} onPointerUp={() => setActiveExercise('new')}>
+                                    ➕ New
+                                </button>
+                                {session && (
+                                    <NavMenu
+                                        user={session.user}
+                                        isAdmin={currentUserRole === 'therapist' || currentUserRole === 'admin'}
+                                        onSignOut={() => signOut?.() ?? supabase.auth.signOut()}
+                                        currentPage="pt_editor"
+                                        actions={[]}
+                                        onAction={() => {}}
+                                    />
+                                )}
+                            </div>
                         </div>
 
                         <ProgramExerciseSelector

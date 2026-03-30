@@ -11,9 +11,14 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1.25rem;
-  padding-top: 3.5rem; /* clear fixed NavMenu */
   padding-bottom: 1rem;
   border-bottom: 2px solid var(--border-color);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .title {
