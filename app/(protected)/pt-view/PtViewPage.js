@@ -108,7 +108,7 @@ export default function PtViewPage() {
 
     // ── Render ──
 
-    if (authLoading) return null;
+    if (authLoading) return <div className={styles.loading}>Loading…</div>;
 
     if (!session) {
         return <AuthForm onSignIn={signIn} />;
