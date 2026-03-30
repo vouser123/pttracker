@@ -47,13 +47,13 @@ export default function ProgramVocabEditor({
     }
   }, [categoryOptions, selectedCategory]);
 
+  const selectedTerms = vocabularies?.[selectedCategory] ?? [];
+
   useEffect(() => {
     if (!selectedTerms.some((term) => term.code === archiveReviewCode)) {
       setArchiveReviewCode(null);
     }
   }, [archiveReviewCode, selectedTerms]);
-
-  const selectedTerms = vocabularies?.[selectedCategory] ?? [];
 
   async function handleAddTerm() {
     setError(null);
