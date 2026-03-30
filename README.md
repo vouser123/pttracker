@@ -29,7 +29,7 @@ This is the current top-level structure that matters for app work:
 ```text
 pttracker/
 |- app/          App Router shell and migrated route entries
-|- pages/        Transitional compatibility surface while the last Pages Router bridge files are being retired
+|- pages/        Empty compatibility directory kept only because Next 16 dev still probes `pages/` even after route migration
 |- components/   Reusable React UI pieces and modal/panel building blocks
 |- hooks/        Shared React hooks for auth, data, logging, timers, and messaging
 |- lib/          Pure helpers and page-domain adapters used by Next.js code
@@ -45,6 +45,7 @@ pttracker/
 ```
 
 - [`app/layout.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/layout.js): App Router root shell. Owns shared metadata, manifest/icon links, analytics, Speed Insights, and the client-side service-worker registrar for routes that already live under `app/`.
+- [`pages/.gitkeep`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/.gitkeep): Sentinel file that keeps an otherwise-empty `pages/` directory in the repo. Do not add route code here. It exists only because Next 16 dev currently calls `readdir(pagesDir)` during setup and crashes with `ENOENT` if the directory is removed entirely.
 - [`app/(protected)/layout.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/(protected)/layout.js): Server-side auth gate for authenticated routes plus the protected-route client warmer bridge used to prefill shared offline caches needed by `/program`.
 - [`app/(protected)/ProtectedClientWarmers.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/(protected)/ProtectedClientWarmers.js): No-UI protected-route client bridge. Use it for shared authenticated warm tasks that should happen once per protected-route session instead of being reimplemented in individual pages.
 - [`app/components/ServiceWorkerRegistrar.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/components/ServiceWorkerRegistrar.js): Client-only service-worker registration bridge used by the App Router shell. Use it instead of duplicating registration logic in route files.
