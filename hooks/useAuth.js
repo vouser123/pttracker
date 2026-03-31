@@ -95,6 +95,10 @@ export function useAuth() {
         // values that can occur during token refresh cycles.
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
             if (event === 'SIGNED_OUT') {
+                // A SIGNED_OUT event while offline is almost certainly a failed background
+                // token refresh, not an explicit sign-out. Clearing the session offline
+                // wipes the users IDB store and destroys offline data. Ignore it.
+                if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
                 clearAuthUserId();
                 setSession(null);
             } else if (sess) {
