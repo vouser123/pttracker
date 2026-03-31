@@ -74,6 +74,7 @@ export function useIndexData(token, patientId) {
 
         let nextExercises = [];
         let nextPrograms = [];
+        let nextBootstrapLogs = [];
         let servedCachedBootstrap = false;
 
         if (typeof window !== 'undefined') {
@@ -98,6 +99,7 @@ export function useIndexData(token, patientId) {
                     setLoading(false);
                     setHistoryLoading(false);
                     servedCachedBootstrap = true;
+                    nextBootstrapLogs = cachedLogs;
                     markTrackerPrimaryReady();
                     markTrackerHistoryReady();
                 }
@@ -116,6 +118,11 @@ export function useIndexData(token, patientId) {
                 await Promise.all([
                     offlineCache.cacheExercises(nextExercises),
                     offlineCache.cachePrograms(nextPrograms),
+                    offlineCache.cacheTrackerBootstrap(patientId, {
+                        exercises: nextExercises,
+                        programs: nextPrograms,
+                        logs: nextBootstrapLogs,
+                    }),
                 ]);
             }
             setExercises(nextExercises);
@@ -177,6 +184,7 @@ export function useIndexData(token, patientId) {
         try {
             const historyPage = await fetchIndexLogsPage(token); // DN-059: no patientId — API resolves profile UUID from req.user.id
             const nextLogs = historyPage.logs ?? [];
+            nextBootstrapLogs = nextLogs;
             if (typeof window !== 'undefined') {
                 await offlineCache.init();
                 await Promise.all([
