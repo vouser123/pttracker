@@ -20,9 +20,10 @@ export const { dynamic, dynamicParams, revalidate, generateStaticParams, GET } =
     swSrc: 'app/sw.js',
     cwd,
     additionalPrecacheEntries: [
+        // /~offline is an App Router page — not in /_next/static/, must be explicit.
+        // /icons/icon.svg and /manifest-tracker.json are already picked up by Serwist's
+        // automatic /_next/static/** scan — adding them again causes conflicting-entries error.
         { url: '/~offline', revision },
-        { url: '/icons/icon.svg', revision },
-        { url: '/manifest-tracker.json', revision },
     ],
     // Native esbuild conflicts with Vercel's pinned esbuild@0.14.47.
     // Use esbuild-wasm instead (no version conflict).
