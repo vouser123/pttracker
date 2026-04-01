@@ -81,9 +81,6 @@ export function useIndexData(token, patientId) {
             try {
                 await offlineCache.init();
                 const cachedBootstrap = await offlineCache.getCachedTrackerBootstrap(patientId);
-                // --- OFFLINE DEBUG: remove after verifying pt-lqql ---
-                console.log('[useIndexData] reload: getCachedTrackerBootstrap:', cachedBootstrap ? `hit (patientId match: ${cachedBootstrap.patientId === patientId})` : 'miss', 'patientId:', patientId);
-                // --- END OFFLINE DEBUG ---
                 const {
                     cachedExercises,
                     cachedPrograms,
@@ -293,10 +290,6 @@ export function useIndexData(token, patientId) {
     }, [exercises, historyHasMore, historyLoadingMore, historyNextCursor, logs, patientId, programs, token]);
 
     useEffect(() => {
-        // --- OFFLINE DEBUG: remove after verifying pt-lqql ---
-        console.log('[useIndexData] effect, token:', !!token, 'patientId:', !!patientId, 'hadAuth:', hadAuthRef.current);
-        // --- END OFFLINE DEBUG ---
-
         if (typeof window !== 'undefined' && token && patientId) {
             void offlineCache.init().catch((cacheError) => {
                 console.error('useIndexData cache init failed:', cacheError);
@@ -304,13 +297,7 @@ export function useIndexData(token, patientId) {
         }
 
         if (!token || !patientId) {
-            // --- OFFLINE DEBUG: remove after verifying pt-lqql ---
-            console.log('[useIndexData] BAILING — missing token or patientId, clearing state');
-            // --- END OFFLINE DEBUG ---
             if (hadAuthRef.current && typeof window !== 'undefined') {
-                // --- OFFLINE DEBUG: remove after verifying pt-lqql ---
-                console.log('[useIndexData] hadAuth was true — CLEARING IDB caches');
-                // --- END OFFLINE DEBUG ---
                 void Promise.all([
                     offlineCache.clearExercises(),
                     offlineCache.clearPrograms(),

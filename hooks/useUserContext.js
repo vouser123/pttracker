@@ -92,10 +92,6 @@ export function useUserContext(session) {
     const hadSessionRef = useRef(false);
 
     useEffect(() => {
-        // --- OFFLINE DEBUG: remove after verifying pt-lqql ---
-        console.log('[useUserContext] effect, session:', !!session, 'hadSession:', hadSessionRef.current);
-        // --- END OFFLINE DEBUG ---
-
         if (!session) {
             // Only clear user cache on actual sign-out (session was previously set),
             // not on the initial null-session render before auth resolves. Clearing
@@ -103,9 +99,6 @@ export function useUserContext(session) {
             // transaction serializes ahead of the subsequent readonly getCachedUsers(),
             // so the users store is empty by the time the auth-resolved effect reads it.
             if (hadSessionRef.current) {
-                // --- OFFLINE DEBUG: remove after verifying pt-lqql ---
-                console.log('[useUserContext] CLEARING users store (sign-out path)');
-                // --- END OFFLINE DEBUG ---
                 void offlineCache.init()
                     .then(() => offlineCache.clearStore('users'))
                     .catch((err) => console.error('useUserContext cache clear failed:', err));
@@ -124,9 +117,6 @@ export function useUserContext(session) {
                 await offlineCache.init();
 
                 const cachedUsers = await offlineCache.getCachedUsers();
-                // --- OFFLINE DEBUG: remove after verifying pt-lqql ---
-                console.log('[useUserContext] getCachedUsers:', cachedUsers.length, 'online:', navigator.onLine);
-                // --- END OFFLINE DEBUG ---
                 if (cachedUsers.length) {
                     try {
                         cachedContext = deriveContext(cachedUsers, session.user.id);
