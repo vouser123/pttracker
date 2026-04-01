@@ -17,7 +17,7 @@
  *   loading          {boolean}      — true until first fetch resolves
  *   error            {string|null}  — error message if fetch failed
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { fetchUsers, resolvePatientScopedUserContext } from '../lib/users';
 import { offlineCache } from '../lib/offline-cache';
 
@@ -89,17 +89,32 @@ function isOfflineError(error) {
  */
 export function useUserContext(session) {
     const [state, setState] = useState(getDefaultState);
+    const hadSessionRef = useRef(false);
 
     useEffect(() => {
+        // --- OFFLINE DEBUG: remove after verifying pt-lqql ---
+        console.log('[useUserContext] effect, session:', !!session, 'hadSession:', hadSessionRef.current);
+        // --- END OFFLINE DEBUG ---
+
         if (!session) {
-            // Clear user cache on sign-out so stale data doesn't persist across accounts.
-            void offlineCache.init()
-                .then(() => offlineCache.clearStore('users'))
-                .catch((err) => console.error('useUserContext cache clear failed:', err));
+            // Only clear user cache on actual sign-out (session was previously set),
+            // not on the initial null-session render before auth resolves. Clearing
+            // on initial mount destroys the offline fallback: the IDB readwrite
+            // transaction serializes ahead of the subsequent readonly getCachedUsers(),
+            // so the users store is empty by the time the auth-resolved effect reads it.
+            if (hadSessionRef.current) {
+                // --- OFFLINE DEBUG: remove after verifying pt-lqql ---
+                console.log('[useUserContext] CLEARING users store (sign-out path)');
+                // --- END OFFLINE DEBUG ---
+                void offlineCache.init()
+                    .then(() => offlineCache.clearStore('users'))
+                    .catch((err) => console.error('useUserContext cache clear failed:', err));
+            }
             setState({ ...getDefaultState(), loading: false });
             return;
         }
 
+        hadSessionRef.current = true;
         let cancelled = false;
 
         async function load() {
@@ -109,6 +124,9 @@ export function useUserContext(session) {
                 await offlineCache.init();
 
                 const cachedUsers = await offlineCache.getCachedUsers();
+                // --- OFFLINE DEBUG: remove after verifying pt-lqql ---
+                console.log('[useUserContext] getCachedUsers:', cachedUsers.length, 'online:', navigator.onLine);
+                // --- END OFFLINE DEBUG ---
                 if (cachedUsers.length) {
                     try {
                         cachedContext = deriveContext(cachedUsers, session.user.id);

@@ -36,7 +36,7 @@ export default function RootLayout({ children }) {
     return (
         <html lang="en">
             <body>
-                <SerwistProvider swUrl="/serwist/sw.js">
+                <SerwistProvider swUrl="/serwist/sw.js" cacheOnNavigation>
                     <StrictMode>{children}</StrictMode>
                 </SerwistProvider>
                 <SpeedInsights />
