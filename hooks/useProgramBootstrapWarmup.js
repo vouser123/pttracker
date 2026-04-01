@@ -104,16 +104,20 @@ export function useProgramBootstrapWarmup({ session }) {
 
         if (cacheWrites.length > 0) {
           await Promise.all(cacheWrites);
+        }
 
-          // Warm the SW page cache for /program so it loads offline without a prior visit.
-          // Only runs when IDB data needed writing — if all caches are already populated,
-          // the SW was warmed in a prior session too. Fetches both the full-page HTML
-          // (hamburger/direct navigation) and RSC prefetch response (client-side next/link).
-          // Non-fatal — IDB data is already written above.
+        // Warm the SW page cache for /program so it loads offline without a prior visit.
+        // Runs once per session (sessionStorage flag) — IDB may already be populated so
+        // cacheWrites can be empty, but the SW page cache may still be cold (e.g. first
+        // session, or after 24hr SW cache expiry). Hidden hamburger links are never
+        // prefetched by Next.js on iOS so the SW won't cache /program without this.
+        // Fetches both full-page HTML (hamburger/direct) and RSC prefetch (next/link).
+        if (!sessionStorage.getItem('sw_program_warmed')) {
           await Promise.all([
             fetch('/program', { credentials: 'include' }),
             fetch('/program', { credentials: 'include', headers: { 'RSC': '1', 'Next-Router-Prefetch': '1' } }),
           ]).catch(() => {});
+          sessionStorage.setItem('sw_program_warmed', '1');
         }
       })().catch((error) => {
         console.error('useProgramBootstrapWarmup failed:', error);
