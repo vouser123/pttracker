@@ -114,12 +114,12 @@ If code is implemented but another agent still needs to validate it:
 
 - `verification` = browser checks, parity confirmation, acceptance validation, or other proof-gathering work whose main purpose is to verify behavior rather than change it
   Example: test a flow on iOS before closing, or confirm preview parity after code lands
+- `task` = implementation, investigation, refactor, setup, or other necessary work that is not best described as a bug, feature, or chore
+  Example: refactor a large file, set up tooling, or implement an agreed migration slice
 - `bug` = broken behavior, regressions, or parity mismatches that need repair
   Example: wrong patient context, regression in tracker behavior, or static-parity break
 - `feature` = additive capability that is not just a fix or migration follow-through
   Example: a genuinely new workflow or user-facing capability
-- `task` = implementation, investigation, refactor, setup, or other necessary work that is not best described as a bug, feature, or chore
-  Example: refactor a large file, set up tooling, or implement an agreed migration slice
 - `chore` = low-product-impact maintenance or housekeeping
   Example: tracker cleanup or low-risk tooling upkeep
 - `epic` = parent container for related child beads

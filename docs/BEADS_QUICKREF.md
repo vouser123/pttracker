@@ -33,6 +33,14 @@ bd create "Title" --body-file description.md
 bd update <id> --body-file description.md
 ```
 
+Status is still a separate step:
+
+```bash
+# bd create does not support --status
+bd create "Title" --description="..." --json
+bd update <id> --claim --status in_progress --json
+```
+
 ### Useful `bd 0.60.0`+ commands
 
 These are the commands and behaviors most likely to help in this workspace:
@@ -94,6 +102,36 @@ Practical notes:
 - This repo also tracks a local `.beads/hooks/commit-msg` warning hook for AI contribution trailers. It does not block commits. To bypass the warning for one commit:
   - PowerShell: `$env:PT_AI_TRAILER_OK="1"; git commit ...`
   - sh/bash: `PT_AI_TRAILER_OK=1 git commit ...`
+
+### Additional `bd 0.63.x` commands
+
+These are the newer commands and behaviors most likely to help in this workspace after the `0.63.x` update:
+
+```bash
+# Quick upgrade awareness from inside the repo
+bd info --whats-new
+bd upgrade status
+bd upgrade review
+bd upgrade ack
+
+# Top-level shortcuts for common issue updates
+bd comment <id> "Status note"
+bd assign <id> codex
+bd tag <id> needs-review
+bd priority <id> 1
+bd link <blocked-id> <blocker-id>
+
+# Batch-create a dependency graph from a plan file
+bd create --graph plan.json --dry-run
+bd create --graph plan.json
+```
+
+Practical notes:
+
+- New Beads installs now default to embedded Dolt, but this repo already has an established Beads store. Inspect the live backend with `bd context --json` before making mode assumptions.
+- `bd create --graph` replaces the older standalone `graph-apply` flow upstream.
+- The top-level aliases are conveniences only. The longer forms (`bd update`, `bd dep add`, `bd comments add`) remain valid and may still be clearer in repo docs and handoff notes.
+- `bd info --whats-new` is the fastest way to get a human-readable summary after a version bump. `bd upgrade review` is useful once version tracking has a previous version recorded.
 
 ### Repo formula for large migration graphs
 
@@ -175,12 +213,12 @@ Quick decision guide:
 - Type selection:
   - `verification` for browser checks, parity confirmation, acceptance validation, or other proof-gathering work whose main purpose is to verify behavior rather than change it
     Example: test an iOS flow before closure or confirm preview parity after code lands
+  - `task` for implementation, investigation, refactor, setup, or other necessary work that is not best described as a bug, feature, or chore
+    Example: refactor a file, set up tooling, or land an agreed migration slice
   - `bug` for broken behavior, regressions, or parity mismatches
     Example: a tracker regression, wrong patient context, or mismatched static parity behavior
   - `feature` for additive capability that is not just a fix or required migration follow-through
     Example: add a new workflow or user-facing capability that did not exist before
-  - `task` for implementation, investigation, refactor, setup, or other necessary work that is not best described as a bug, feature, or chore
-    Example: refactor a file, set up tooling, or land an agreed migration slice
   - `chore` for low-product-impact maintenance or housekeeping
     Example: tracker cleanup, housekeeping, or low-risk tooling upkeep
   - `epic` for parent containers only

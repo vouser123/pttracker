@@ -206,8 +206,10 @@ Full rules: `docs/BEADS_WORKFLOW.md`.
   - `bd ready --exclude-type chore --json`
   - `bd list --exclude-type chore --json`
 - Use issue types deliberately:
-  - `task` = necessary implementation, investigation, refactor, setup, follow-through, or verification work that is not best described as a bug, feature, or chore
-    Example: split an oversized file, set up Playwright, implement an agreed migration slice, or run browser/parity checks when the current Beads release does not support the custom `verification` type
+  - `verification` = browser checks, parity confirmation, acceptance validation, or other proof-gathering work whose main purpose is to verify behavior rather than change it
+    Example: verify preview behavior, confirm parity in a browser, or validate acceptance criteria after code lands
+  - `task` = necessary implementation, investigation, refactor, setup, or follow-through work that is not best described as a bug, feature, or chore
+    Example: split an oversized file, set up Playwright, or implement an agreed migration slice
   - `bug` = broken behavior, regressions, or parity mismatches that need repair
     Example: tracker history prefilter is wrong, or a queued write uses the wrong patient id
   - `feature` = additive capability that is not just a fix or migration follow-through
@@ -218,7 +220,6 @@ Full rules: `docs/BEADS_WORKFLOW.md`.
     Example: a parent bead for a parity domain, cutover track, or multi-step migration stream
   - `decision` = work whose main purpose is to get or record user input, approval, or cutover direction before execution
     Example: determine when to cut over to Next.js, or capture a user approval needed before continuing
-  - Temporary limitation: do not use the custom `verification` issue type in this repo until the upstream Beads custom-type fix lands; use `task` for browser checks, parity confirmation, and other proof-gathering work.
 - Install the repo-local commit hooks when setting up a clone:
   - `npm run beads:install-commit-hook`
 - The hook install writes both `.beads/hooks/commit-msg` and `.beads/hooks/pre-commit`.
