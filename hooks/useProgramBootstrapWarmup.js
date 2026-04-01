@@ -105,6 +105,19 @@ export function useProgramBootstrapWarmup({ session }) {
         if (cacheWrites.length > 0) {
           await Promise.all(cacheWrites);
         }
+
+        // Warm the SW page cache for /program so it loads offline without a prior visit.
+        // The SW NetworkFirst strategy only caches /program HTML when the user navigates
+        // there while online. Hidden hamburger menu links are never prefetched by Next.js
+        // on iOS, so the SW cache stays empty. Fetching here forces the SW to cache both
+        // the full-page HTML (hamburger/direct navigation) and the RSC prefetch response
+        // (client-side next/link navigation).
+        await Promise.all([
+          fetch('/program', { credentials: 'include' }),
+          fetch('/program', { credentials: 'include', headers: { 'RSC': '1', 'Next-Router-Prefetch': '1' } }),
+        ]).catch(() => {
+          // Non-fatal — best-effort SW cache warm. IDB data is already written above.
+        });
       })().catch((error) => {
         console.error('useProgramBootstrapWarmup failed:', error);
       });
