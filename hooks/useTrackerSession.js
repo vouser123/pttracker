@@ -104,8 +104,17 @@ export function useTrackerSession({
             selectedExercise,
             selectedExercise.pattern === 'side' ? (setPatch.side ?? 'right') : null
         );
-        setPendingSetPatch({ ...setPatch, form_data: setPatch.form_data ?? exerciseWithContext?.default_form_data ?? null });
-    }, [buildExerciseFormContext, selectedExercise]);
+        const resolvedFormData = setPatch.form_data ?? exerciseWithContext?.default_form_data ?? null;
+        const hasRequiredParams = (selectedExercise.form_parameters_required ?? []).length > 0;
+        if (hasRequiredParams && !resolvedFormData) {
+            // No history yet — open manual logger so user can enter required params
+            // (weight, resistance band, strap position, etc.). seedSet pre-populates
+            // the timer values (reps/seconds/distance) so the user only enters params. // pt-80py
+            openManualLog({ side: setPatch.side, seedSet: { ...setPatch, form_data: [] } });
+            return;
+        }
+        setPendingSetPatch({ ...setPatch, form_data: resolvedFormData });
+    }, [buildExerciseFormContext, openManualLog, selectedExercise]);
 
     const handleTimerOpenManual = useCallback((options = {}) => openManualLog(options), [openManualLog]);
 
