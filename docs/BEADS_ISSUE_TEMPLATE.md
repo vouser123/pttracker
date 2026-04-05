@@ -2,6 +2,12 @@
 
 Use this template for all `bd create` issues in `pt-rebuild`.
 
+Repo behavior:
+- The repo enables Beads built-in create validation with `validation.on-create: warn` in [`.beads/config.yaml`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/.beads/config.yaml).
+- The warning is non-blocking. The issue is still created.
+- The warning comes from Beads validation itself, not a repo-local `on_create` script.
+- This built-in warning is helpful, but it does not replace the full PT Tracker template requirement in this document. Agents still need to create issues using the template below.
+
 ## Required Description Template
 
 ```md
@@ -102,6 +108,8 @@ bd create \
   --labels "nextjs,pilot,migration,ui,agent:codex" \
   --description "<paste template body>"
 ```
+
+Beads create validation is enabled and may warn on incomplete issue structure. It does not block the create, and it should be treated as a backstop rather than a substitute for using the full PT Tracker template.
 
 ## Update Example
 

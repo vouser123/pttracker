@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "description": "PT Tracker Rebuild - Supabase + Vercel",
   "scripts": {
-    "beads:install-commit-hook": "node ../scripts/install-beads-hooks.mjs",
-    "readme:check": "node scripts/check-readme-update.mjs",
+    "beads:install-commit-hook": "git config core.hooksPath .beads/hooks && bd hooks install --beads",
     "dev": "next dev",
     "build": "next build",
     "analyze:bundle": "next experimental-analyze -o",

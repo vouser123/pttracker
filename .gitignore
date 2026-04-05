@@ -2,11 +2,15 @@
 .env*.local
 .claude/
 .serena/
+.agents/
+skills-lock.json
 .beads/*
+!.beads/config.yaml
 !.beads/formulas/
 !.beads/formulas/*.formula.json
 !.beads/hooks/
 .beads/hooks/*
+!.beads/hooks/pre-commit
 !.beads/hooks/commit-msg
 
 .next/

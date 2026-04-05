@@ -229,6 +229,7 @@ For timer execution hook boundaries, see `Tracker Execution Stack` above.
 - [`docs/IMPLEMENTATION_PATTERNS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/IMPLEMENTATION_PATTERNS.md): Approved shared helpers, components, and do-this-not-that implementation guidance.
 - [`docs/TESTING_CHECKLISTS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/TESTING_CHECKLISTS.md): Canonical regression, parity, and performance evidence checklists for safe validation.
 - [`docs/BEADS_ISSUE_TEMPLATE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/BEADS_ISSUE_TEMPLATE.md): Required Beads issue template.
+- [`docs/BEADS_MOLECULES.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/BEADS_MOLECULES.md): Repo-specific guide to Beads formulas, molecules, protos, wisps, and the current formula inventory.
 
 ## README Maintenance Rules
 

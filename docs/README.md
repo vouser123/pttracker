@@ -34,6 +34,9 @@ Use this file to decide which doc to open next.
 - [`BEADS_ISSUE_TEMPLATE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/BEADS_ISSUE_TEMPLATE.md)
   - Open when: you are creating or reshaping a Beads issue.
   - Answers: "What must a correct Beads issue include?"
+- [`BEADS_MOLECULES.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/BEADS_MOLECULES.md)
+  - Open when: you need the repo-specific overview of Beads formulas, molecules, protos, wisps, or the current template inventory.
+  - Answers: "How do Beads workflow templates work here?" and "Which formulas exist right now?"
 - [`DATA_VOCABULARIES.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/DATA_VOCABULARIES.md)
   - Open when: you need canonical field names, lifecycle terms, or controlled vocabulary guidance.
   - Answers: "What do we call this field or value?"
