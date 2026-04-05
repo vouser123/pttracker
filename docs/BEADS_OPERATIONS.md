@@ -112,7 +112,10 @@ Use dependency types deliberately:
 
 - For this repo, use normal Beads issues only.
 - Do not use `bd close --claim-next`.
-- Do not use `bd create --no-history`, `bd create --ephemeral`, `bd create --wisp-type`, or `bd mol wisp` flows for project tracking.
+- Do not use `bd create --no-history` or `bd create --ephemeral`.
+- Do not use `bd create --wisp-type` for ad hoc issue creation.
+- `bd mol wisp` flows are allowed for bounded operational work such as truth-check, scouting, or cleanup investigation when the temporary workflow output should stay off the target bead unless the main pass decides it matters.
+- Use a persistent molecule instead when the workflow itself needs a durable audit trail, coordination handoff, or a parent/child graph that should remain visible in the long-term tracker.
 - If work matters for coordination, handoff, parity tracking, or audit, it must be a normal Beads issue with Dolt history.
 
 ## Command Patterns
@@ -209,7 +212,17 @@ Practical notes:
 - `bd init` now warns when the git remote already appears to contain a Beads database.
 - `bd doctor` now auto-starts Dolt more reliably on cold standalone checks.
 - `--format json` is now accepted as an alias for `--json`, but the repo examples should keep using `--json` for consistency.
-- This repo also tracks a local `.beads/hooks/commit-msg` warning hook for AI contribution trailers. It does not block commits. To bypass the warning for one commit:
+- This repo also tracks a local `.beads/hooks/commit-msg` gate for AI contribution trailers.
+- It blocks commits that lack a recognized agent trailer when an agent materially contributed.
+- The hook matches on the stable agent email, not one exact display name, so names like `Codex`, `Codex GPT-5.4`, `Claude Sonnet 4.6`, or future model labels still pass as long as the email is recognized.
+- Recognized agent emails:
+  - `codex@openai.com`
+  - `noreply@anthropic.com`
+- Example footers:
+  - `Co-Authored-By: Codex <codex@openai.com>`
+  - `Co-Authored-By: Codex GPT-5.4 <codex@openai.com>`
+  - `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>`
+- One-time override when no agent attribution should be recorded:
   - PowerShell: `$env:PT_AI_TRAILER_OK="1"; git commit ...`
   - sh/bash: `PT_AI_TRAILER_OK=1 git commit ...`
 
@@ -239,26 +252,32 @@ bd create --graph plan.json
 Practical notes:
 
 - New Beads installs now default to embedded Dolt, but this repo already has an established Beads store. Inspect the live backend with `bd context --json` before making mode assumptions.
+- Current PT Tracker repo note (April 4, 2026): this workspace is using a custom Windows `bd.exe` build with embedded Dolt, not the stock release binary. Treat the live behavior here as repo-specific until proven otherwise.
 - `bd create --graph` replaces the older standalone `graph-apply` flow upstream.
 - The top-level aliases are conveniences only. The longer forms (`bd update`, `bd dep add`, `bd comments add`) remain valid and may still be clearer in repo docs and handoff notes.
 - `bd info --whats-new` is the fastest way to get a human-readable summary after a version bump. `bd upgrade review` is useful once version tracking has a previous version recorded.
 
-### Repo formula for large migration graphs
+### Repo formulas and molecules
 
-For this repo's App Router transition work, there is now a project-level formula at `.beads/formulas/mol-app-router-migration.formula.json`.
+Repo-specific workflow template guidance now lives in [`BEADS_MOLECULES.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/BEADS_MOLECULES.md).
 
-Use it when a future session needs to create the full migration graph in one pass instead of hand-creating every child bead:
+Use that document for:
+- the repo overview of formulas, protos, molecules, and wisps
+- the current formula inventory
+- usage notes that are not obvious from `bd formula list`
+- maintenance rules for keeping formula docs aligned with workflow changes
+
+Quick commands:
 
 ```bash
 bd formula list
-bd mol pour mol-app-router-migration --var title="Migrate <surface> to App Router before cut-over"
+bd formula show <formula-name>
+bd mol pour <formula-name> --var key=value
 ```
 
-Practical notes:
+Current repo note:
 
-- This formula uses `pour=true`, so it creates the root epic and the child work graph, not just an inline root issue.
-- Supply a real `title` value. Without a title variable, Beads uses the formula name as the root issue title.
-- If the workflow shape changes materially, update the live epic first and then refresh the formula so the template stays aligned with actual practice.
+- The project-level formula inventory is intentionally small. Add formulas only when the workflow is repeatable enough to justify a maintained template.
 <!-- QUICKREF:END -->
 
 ## Create vs Update Rules
@@ -523,7 +542,21 @@ Because `.beads/hooks` is git-ignored, the local commit hooks are installed from
 npm run beads:install-commit-hook
 ```
 
-This writes `.beads/hooks/commit-msg` and `.beads/hooks/pre-commit` for the current clone. The commit-msg hook rejects commit messages that do not include a Beads ID in parentheses. The pre-commit hook blocks commits that touch shared ownership or route-shape files without either staging `README.md` or using the explicit bypass when the README is still accurate:
+This writes repo-local hooks for the current clone. PT Tracker restores them with:
+
+```bash
+npm run beads:install-commit-hook
+```
+
+Current local hook behavior:
+- [`.beads/hooks/commit-msg`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/.beads/hooks/commit-msg) rejects commit messages that do not include a Beads ID in parentheses and also rejects messages that lack a recognized agent trailer unless `PT_AI_TRAILER_OK=1` is set for that commit
+- [`.beads/hooks/pre-commit`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/.beads/hooks/pre-commit) blocks commits that touch shared ownership or route-shape files without either staging `README.md` or using the explicit bypass when the README is still accurate
+- [`.beads/config.yaml`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/.beads/config.yaml) sets `validation.on-create: warn`, so regular `bd create` commands get Beads built-in non-blocking validation without a custom `on_create` hook
+
+Important note:
+- Beads built-in create validation is a useful backstop, but it is not the same as a repo-specific PT Tracker template parser. The canonical PT Tracker issue template still lives in [`docs/BEADS_ISSUE_TEMPLATE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/BEADS_ISSUE_TEMPLATE.md), and agents are still expected to use it.
+
+README bypass:
 
 ```bash
 PT_README_OK=1 git commit ...
@@ -590,6 +623,45 @@ bd ready --json
 <!-- QUICKREF:END -->
 
 ## Windows / Dolt Troubleshooting
+
+### Current PT Tracker backend context
+
+As of April 4, 2026, this repo is not using the typical Windows Beads setup.
+
+- The active `bd` binary is a custom Windows build with embedded Dolt enabled.
+- The repo-local Beads store is expected to run in embedded mode.
+- Standard Windows/server-mode advice from upstream docs may be wrong for this workspace unless `bd context --json` shows otherwise.
+
+This matters most when you are:
+
+- troubleshooting startup, recovery, or missing-database errors
+- interpreting `bd doctor`, `bd context`, `bd where`, or `bd dolt *` output
+- deciding whether to start or stop a Dolt server
+- considering a reinstall or binary replacement
+- using PT_Backup Beads docs to infer the next recovery step
+
+Do:
+
+- check `bd context --json` and repo-local `.beads/metadata.json` before making backend assumptions
+- treat embedded-mode reads and recovery as the default PT Tracker path unless current command output proves otherwise
+- keep machine-specific binary/build details in local memory files, not in tracked repo docs
+- protect the current `.beads` store before any binary swap or recovery experiment
+
+Do not:
+
+- assume Windows here means stock release binary plus external Dolt server
+- run `bd dolt start` or `bd dolt stop` just because older notes mention server lifecycle
+- reinstall the official release as a first troubleshooting step
+- overwrite `.beads`, metadata, or backups while testing binary changes
+
+If behavior looks inconsistent, verify whether the problem is:
+
+- binary/runtime mode confusion
+- repo metadata/config drift
+- embedded-store recovery state
+- or a true upstream Beads/Dolt problem
+
+Only move to generic upstream Windows guidance after the local mode and metadata have been verified.
 
 ### Session Start (required every session)
 
@@ -836,10 +908,16 @@ git pull
 This updates the docs only — it does not update the `bd` binary. To update the bd tool itself, use the established install method for this workspace:
 
 ```bash
-go install github.com/steveyegge/beads/cmd/bd@latest
+cd "C:\Users\cindi\OneDrive\Documents\PT_Backup\beads"
+CGO_ENABLED=1 CC=gcc go install -tags "embeddeddolt gms_pure_go" ./cmd/bd/
 ```
 
 This installs to `C:\Users\cindi\go\bin\bd.exe`. Do NOT use winget, scoop, or other package managers — they install to different paths and create conflicting binaries.
+
+Important:
+
+- This repo is currently using a custom embedded-Dolt Windows build. Do not replace it with `go install ...@latest` unless the user explicitly asks for an official binary change.
+- Before any reinstall or rebuild, preserve the current `bd.exe` and do not modify the live `.beads` store as part of the binary swap.
 
 Key local docs for operational reference:
 - `AGENT_INSTRUCTIONS.md` — agent session workflow, session-end checklist
@@ -863,3 +941,4 @@ Current repo note:
 
 - As of March 31, 2026, local `bd` is `0.63.3`.
 - The local mirror at `C:\Users\cindi\OneDrive\Documents\PT_Backup\beads` was refreshed on March 31, 2026.
+- As of April 4, 2026, PT Tracker is intentionally using a custom Windows `bd.exe` build with embedded Dolt plus `gms_pure_go`. Do not assume the stock Windows/server-mode troubleshooting path in this repo.

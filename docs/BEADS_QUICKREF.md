@@ -99,7 +99,17 @@ Practical notes:
 - `bd init` now warns when the git remote already appears to contain a Beads database.
 - `bd doctor` now auto-starts Dolt more reliably on cold standalone checks.
 - `--format json` is now accepted as an alias for `--json`, but the repo examples should keep using `--json` for consistency.
-- This repo also tracks a local `.beads/hooks/commit-msg` warning hook for AI contribution trailers. It does not block commits. To bypass the warning for one commit:
+- This repo also tracks a local `.beads/hooks/commit-msg` gate for AI contribution trailers.
+- It blocks commits that lack a recognized agent trailer when an agent materially contributed.
+- The hook matches on the stable agent email, not one exact display name, so names like `Codex`, `Codex GPT-5.4`, `Claude Sonnet 4.6`, or future model labels still pass as long as the email is recognized.
+- Recognized agent emails:
+  - `codex@openai.com`
+  - `noreply@anthropic.com`
+- Example footers:
+  - `Co-Authored-By: Codex <codex@openai.com>`
+  - `Co-Authored-By: Codex GPT-5.4 <codex@openai.com>`
+  - `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>`
+- One-time override when no agent attribution should be recorded:
   - PowerShell: `$env:PT_AI_TRAILER_OK="1"; git commit ...`
   - sh/bash: `PT_AI_TRAILER_OK=1 git commit ...`
 
@@ -129,26 +139,32 @@ bd create --graph plan.json
 Practical notes:
 
 - New Beads installs now default to embedded Dolt, but this repo already has an established Beads store. Inspect the live backend with `bd context --json` before making mode assumptions.
+- Current PT Tracker repo note (April 4, 2026): this workspace is using a custom Windows `bd.exe` build with embedded Dolt, not the stock release binary. Treat the live behavior here as repo-specific until proven otherwise.
 - `bd create --graph` replaces the older standalone `graph-apply` flow upstream.
 - The top-level aliases are conveniences only. The longer forms (`bd update`, `bd dep add`, `bd comments add`) remain valid and may still be clearer in repo docs and handoff notes.
 - `bd info --whats-new` is the fastest way to get a human-readable summary after a version bump. `bd upgrade review` is useful once version tracking has a previous version recorded.
 
-### Repo formula for large migration graphs
+### Repo formulas and molecules
 
-For this repo's App Router transition work, there is now a project-level formula at `.beads/formulas/mol-app-router-migration.formula.json`.
+Repo-specific workflow template guidance now lives in [`BEADS_MOLECULES.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/BEADS_MOLECULES.md).
 
-Use it when a future session needs to create the full migration graph in one pass instead of hand-creating every child bead:
+Use that document for:
+- the repo overview of formulas, protos, molecules, and wisps
+- the current formula inventory
+- usage notes that are not obvious from `bd formula list`
+- maintenance rules for keeping formula docs aligned with workflow changes
+
+Quick commands:
 
 ```bash
 bd formula list
-bd mol pour mol-app-router-migration --var title="Migrate <surface> to App Router before cut-over"
+bd formula show <formula-name>
+bd mol pour <formula-name> --var key=value
 ```
 
-Practical notes:
+Current repo note:
 
-- This formula uses `pour=true`, so it creates the root epic and the child work graph, not just an inline root issue.
-- Supply a real `title` value. Without a title variable, Beads uses the formula name as the root issue title.
-- If the workflow shape changes materially, update the live epic first and then refresh the formula so the template stays aligned with actual practice.
+- The project-level formula inventory is intentionally small. Add formulas only when the workflow is repeatable enough to justify a maintained template.
 
 ---
 

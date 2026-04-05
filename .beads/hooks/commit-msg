@@ -1,0 +1,39 @@
+#!/usr/bin/env sh
+set -eu
+
+msg_file="${1:-}"
+
+if [ -z "$msg_file" ] || [ ! -f "$msg_file" ]; then
+  exit 0
+fi
+
+first_line="$(sed -n '1p' "$msg_file")"
+bead_pattern='\((pt-[a-z0-9][a-z0-9.-]*)(,[[:space:]]*pt-[a-z0-9][a-z0-9.-]*)*\)'
+
+if ! printf '%s\n' "$first_line" | grep -Eiq "$bead_pattern"; then
+  printf '%s\n' >&2 "error: commit title must include at least one Beads issue ID in parentheses"
+  printf '%s\n' >&2 "error: example: git commit -m \"Restore hook behavior (pt-msyc)\""
+  printf '%s\n' >&2 "error: multiple IDs are allowed: git commit -m \"Update tracker docs (pt-msyc, pt-ab12)\""
+  exit 1
+fi
+
+if [ "${PT_AI_TRAILER_OK:-0}" = "1" ]; then
+  exit 0
+fi
+
+if grep -Eiq '^Co-[Aa]uthored-[Bb]y: .*<(codex@openai\.com|noreply@anthropic\.com)>[[:space:]]*$' "$msg_file"; then
+  exit 0
+fi
+
+printf '%s\n' >&2 "error: commit message has no recognized AI contribution trailer"
+printf '%s\n' >&2 "error: add a Co-Authored-By footer with a recognized agent email when an agent materially contributed"
+printf '%s\n' >&2 "error: recognized emails are codex@openai.com and noreply@anthropic.com"
+printf '%s\n' >&2 "error: example footers:"
+printf '%s\n' >&2 "error:   Co-Authored-By: Codex <codex@openai.com>"
+printf '%s\n' >&2 "error:   Co-Authored-By: Codex GPT-5.4 <codex@openai.com>"
+printf '%s\n' >&2 "error:   Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+printf '%s\n' >&2 "error: override once only if no agent attribution should be recorded:"
+printf '%s\n' >&2 "error:   PowerShell: \$env:PT_AI_TRAILER_OK=\"1\"; git commit ..."
+printf '%s\n' >&2 "error:   sh/bash: PT_AI_TRAILER_OK=1 git commit ..."
+
+exit 1
