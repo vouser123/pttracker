@@ -7,7 +7,7 @@
  * reconnect recovery, history, logger modals, and messaging together.
  */
 import dynamic from 'next/dynamic';
-import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
+import { startTransition, useDeferredValue, useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useIndexData } from '../../hooks/useIndexData';
 import { useIndexOfflineQueue } from '../../hooks/useIndexOfflineQueue';
@@ -187,12 +187,13 @@ export default function TrackerPage() {
 
     const logger = useSessionLogging(token, trackerPatientId, reload, enqueue);
     const msgs = useMessages(token, userCtx.profileId);
+    const deferredLogs = useDeferredValue(allLogs);
     const pickerPrograms = useMemo(() => {
         const buildHistoryState = (exerciseId, canonicalName = null) => {
             if (historyLoading && logs.length === 0) {
                 return { history_pending: true };
             }
-            return getAdherenceBadgeState(allLogs, exerciseId, canonicalName);
+            return getAdherenceBadgeState(deferredLogs, exerciseId, canonicalName);
         };
 
         if (programsForTracker.length > 0) {
@@ -205,7 +206,7 @@ export default function TrackerPage() {
             exercise_id: exercise.id,
             ...buildHistoryState(exercise.id, exercise.canonical_name ?? null),
         }));
-    }, [allLogs, exercises, historyLoading, logs.length, programsForTracker]);
+    }, [deferredLogs, exercises, historyLoading, logs.length, programsForTracker]);
     const sessionProgress = useMemo(() => buildSessionProgress(selectedExercise, draftSession?.sets ?? []), [draftSession?.sets, selectedExercise]);
 
     useEffect(() => {
@@ -382,7 +383,15 @@ export default function TrackerPage() {
                 )}
             </main>
 
-            <BottomNav activeTab={activeTab} onTabChange={setActiveTab} pendingSync={pendingCount} />
+            <BottomNav
+                activeTab={activeTab}
+                onTabChange={(nextTab) => {
+                    startTransition(() => {
+                        setActiveTab(nextTab);
+                    });
+                }}
+                pendingSync={pendingCount}
+            />
 
             {isSessionLoggerOpen && (
                 <SessionLoggerModal
