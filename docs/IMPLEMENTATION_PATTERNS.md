@@ -12,6 +12,7 @@ Treat the static legacy surface as frozen for routine cleanup. Only apply these 
 ## Selects And Option Lists
 
 - Use [`components/NativeSelect.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/components/NativeSelect.js) for current app selects that need touch-safe, iPhone-safe behavior.
+- `NativeSelect` calls `onChange` with the selected string value, not the browser event object. When wiring state, use a string setter or `(value) => ...` callback instead of `event.target.value`.
 - Use [`lib/vocab-options.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib/vocab-options.js) to turn vocabulary rows into select options.
 - Use [`lib/text-format.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib/text-format.js) when a select or companion text field needs consistent typed-value labels.
 - Do not hand-roll a plain select plus custom "Other" logic when the current surface can already use `NativeSelect`.

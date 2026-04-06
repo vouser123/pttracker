@@ -113,6 +113,13 @@ export default function ExerciseFormCore({
     };
   }
 
+  function selectField(name) {
+    return {
+      value: basics[name] ?? '',
+      onChange: (value) => onBasicsChange({ ...basics, [name]: value }),
+    };
+  }
+
   function toggleModifier(mod) {
     const updated = patternModifiers.includes(mod)
       ? patternModifiers.filter(m => m !== mod)
@@ -148,7 +155,7 @@ export default function ExerciseFormCore({
               <label className={styles.fieldLabel}>Category *</label>
               <NativeSelect
                 className={styles.select}
-                {...field('pt_category')}
+                {...selectField('pt_category')}
                 placeholder="Select..."
                 options={mapVocabTermsToOptions(vocabularies?.pt_category ?? [])}
               />
@@ -157,7 +164,7 @@ export default function ExerciseFormCore({
               <label className={styles.fieldLabel}>Pattern *</label>
               <NativeSelect
                 className={styles.select}
-                {...field('pattern')}
+                {...selectField('pattern')}
                 placeholder="Select..."
                 options={mapVocabTermsToOptions(vocabularies?.pattern ?? [])}
               />

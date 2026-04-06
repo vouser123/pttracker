@@ -8,7 +8,7 @@ import styles from './NativeSelect.module.css';
  * Text input normalizes the value on blur using the optional formatValue function.
  *
  * @param {string}   value        - Current value (controlled)
- * @param {function} onChange     - Called with the new string value
+ * @param {function} onChange     - Called with the new string value, not the DOM event object
  * @param {Array}    options      - Array of strings or { value, label } objects
  * @param {boolean}  allowOther   - Whether to show Other... option (default false)
  * @param {string}   placeholder  - Placeholder text shown when no value is selected
