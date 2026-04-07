@@ -7,9 +7,9 @@ import { authenticateRoute, unauthorized, badRequest, serverError } from '../../
 const VALID_PATTERNS = ['side', 'both'];
 const VALID_MODIFIERS = ['duration_seconds', 'hold_seconds', 'distance_feet'];
 const VALID_GUIDANCE_SECTIONS = ['motor_cues', 'compensation_warnings', 'safety_flags', 'external_cues'];
-// Intentionally hardcoded behavior enum; approved by user on 2026-04-06.
+// Intentionally hardcoded behavior enum; approved by user on 2026-04-07.
 // Do not extend without explicit sign-off. These values drive lifecycle behavior.
-const VALID_LIFECYCLE_STATUSES = ['active', 'as_needed', 'archived', 'deprecated'];
+const VALID_LIFECYCLE_STATUSES = ['active', 'on_hold', 'as_needed', 'archived', 'deprecated'];
 const MAX_NAME_LENGTH = 200;
 const MAX_DESCRIPTION_LENGTH = 2000;
 const MAX_ARRAY_SIZE = 100;

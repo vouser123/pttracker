@@ -87,7 +87,7 @@ CREATE TABLE public.exercises (
   pt_category text NOT NULL CHECK (pt_category = ANY (ARRAY['back_sij'::text, 'knee'::text, 'ankle'::text, 'hip'::text, 'vestibular'::text, 'foot'::text, 'shoulder'::text, 'other'::text])),
   pattern text NOT NULL CHECK (pattern = ANY (ARRAY['side'::text, 'both'::text])),
   archived boolean NOT NULL DEFAULT false,
-  lifecycle_status text CHECK (lifecycle_status = ANY (ARRAY['active'::text, 'as_needed'::text, 'archived'::text, 'deprecated'::text])),
+  lifecycle_status text CHECK (lifecycle_status = ANY (ARRAY['active'::text, 'on_hold'::text, 'as_needed'::text, 'archived'::text, 'deprecated'::text])),
   lifecycle_effective_start_date date,
   lifecycle_effective_end_date date,
   supersedes_exercise_id text,

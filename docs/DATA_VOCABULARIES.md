@@ -34,6 +34,7 @@ This document lists the controlled vocabularies used by the rebuild APIs.
 ## Exercise lifecycle statuses (`lifecycle_status`)
 
 - `active`
+- `on_hold`
 - `as_needed`
 - `archived`
 - `deprecated`
@@ -41,6 +42,7 @@ This document lists the controlled vocabularies used by the rebuild APIs.
 Lifecycle meaning used by the current app:
 
 - `active` exercises are routine and count toward normal program and tracker flows.
+- `on_hold` exercises stay visible in `/program`, but they are paused and should stay out of tracker, rehab, and PT-review routine surfaces.
 - `as_needed` exercises stay available for selection and logging, but routine-counting and routine-attention surfaces should exclude them.
 - `archived` exercises are hidden unless a management surface explicitly shows archived items.
 - `deprecated` exercises are retired from active use.

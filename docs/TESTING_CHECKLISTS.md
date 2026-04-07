@@ -129,30 +129,36 @@ ORDER BY l.created_at DESC, s.set_number, f.parameter_name;
 
 ## Exercise Lifecycle Checklist
 
-**Trigger:** Any change to exercise lifecycle values, lifecycle-aware option lists, or the surfaces that count or hide PRN / as-needed exercises.
+**Trigger:** Any change to exercise lifecycle values, lifecycle-aware option lists, or the surfaces that count or hide non-routine lifecycle states such as PRN / as-needed or On Hold.
 
 ### Program surface
 - Create or edit an exercise with `lifecycle_status = as_needed`.
+- Create or edit an exercise with `lifecycle_status = on_hold`.
 - Confirm the lifecycle editor offers `as_needed` alongside the other lifecycle states.
+- Confirm the lifecycle editor offers `on_hold` with the user-facing label `On Hold`.
 - Confirm `/program` shows PRN exercises without requiring a separate PRN toggle.
-- Confirm routine exercises appear before PRN exercises in the selector lists.
-- Confirm PRN entries are visually separated and labeled clearly in `/program` selectors.
+- Confirm `/program` shows On Hold exercises without requiring a separate On Hold toggle.
+- Confirm routine exercises appear before On Hold exercises, and On Hold exercises appear before PRN exercises in the selector lists.
+- Confirm On Hold and PRN entries are visually separated and labeled clearly in `/program` selectors.
 - Confirm archived items still follow the existing archived visibility control on `/program`.
 
 ### Tracker surface
 - Load the tracker on a fresh session and confirm the default visibility is routine-only.
 - Switch the tracker visibility to PRN and to all, and confirm the picker updates accordingly.
+- Confirm On Hold exercises stay out of the tracker picker even when the tracker visibility is set to all.
 - Confirm the tracker visibility choice stays stable while the app remains open in the same session.
 - Confirm a full reload returns the tracker to the routine-only default.
 - Confirm PRN rows, when visible, are clearly marked in the tracker picker.
 
 ### PT view surface
 - Confirm PRN exercises do not appear in the routine needs-attention output.
+- Confirm On Hold exercises do not appear in the routine needs-attention output.
 - Confirm PRN exercises remain visible in history where history is supposed to reflect actual logged activity.
 - Confirm archived items still stay out of the normal PT-view program lists.
 
 ### Rehab surface
 - Confirm PRN exercises do not count toward rehab coverage totals or denominators.
+- Confirm On Hold exercises do not count toward rehab coverage totals or denominators.
 - Confirm archived behavior in rehab still matches the existing management visibility rules.
 
 ### Regression coverage

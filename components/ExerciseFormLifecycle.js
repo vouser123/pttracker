@@ -4,7 +4,9 @@ import styles from './ExerciseForm.module.css';
 import NativeSelect from './NativeSelect';
 import { toTitleCase } from '../lib/text-format';
 
-const LIFECYCLE_STATUSES = ['active', 'as_needed', 'archived', 'deprecated'];
+// Intentionally hardcoded behavior enum; approved by user on 2026-04-07.
+// Do not extend without explicit sign-off. These values drive lifecycle behavior.
+const LIFECYCLE_STATUSES = ['active', 'on_hold', 'as_needed', 'archived', 'deprecated'];
 
 /**
  * Exercise form section 6: Lifecycle & Status.
@@ -53,6 +55,7 @@ export default function ExerciseFormLifecycle({
           />
           <span className={styles.hint}>
             <strong>active</strong> — in use.&nbsp;
+            <strong>on hold</strong> — paused for now, but still shown in program so it can return to rotation later.&nbsp;
             <strong>as needed</strong> — available to log and manage, but excluded from routine counts and needs-attention surfaces.&nbsp;
             <strong>archived</strong> — temporarily set aside; appears when "Show archived" is on.&nbsp;
             <strong>deprecated</strong> — permanently removed from use; never appears in the exercise list.
