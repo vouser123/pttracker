@@ -10,7 +10,7 @@
 .controls {
     display: grid;
     gap: 8px;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr auto auto;
 }
 
 .search,
@@ -171,6 +171,17 @@
     padding: 2px 8px;
     font-size: 0.75rem;
     color: var(--text-secondary);
+}
+
+.prnBadge {
+    width: fit-content;
+    border-radius: 999px;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #9a4f00;
+    background: #ffe7c2;
+    border: 1px solid #f3c278;
 }
 
 .dragGhost {

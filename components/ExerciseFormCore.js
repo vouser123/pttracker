@@ -82,7 +82,7 @@ function SelectTagSection({
  * Renders exercise form sections 1–4.
  * All state is owned by the parent ExerciseForm; this component is purely presentational.
  *
- * @param {Object} basics         - { id, canonical_name, description, pt_category, pattern, archived }
+ * @param {Object} basics         - { id, canonical_name, description, pt_category, pattern }
  * @param {Function} onBasicsChange - (updatedBasics) => void
  * @param {Array} patternModifiers
  * @param {Function} onPatternModifiersChange - (updatedArray) => void

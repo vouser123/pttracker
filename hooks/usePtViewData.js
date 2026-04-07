@@ -16,6 +16,16 @@ import { useEffect, useState } from 'react';
 import { fetchLogs, fetchPrograms } from '../lib/pt-view';
 import { offlineCache } from '../lib/offline-cache';
 
+function getExerciseLifecycleStatus(exercise) {
+    return exercise?.lifecycle?.status
+        ?? exercise?.lifecycle_status
+        ?? 'active';
+}
+
+function isRoutineExercise(exercise) {
+    return getExerciseLifecycleStatus(exercise) === 'active';
+}
+
 function getDefaultState() {
     return {
         logs: [],
@@ -35,7 +45,7 @@ function buildCachedSnapshot(cachedLogs, cachedPrograms) {
 
     return {
         logs: cachedLogs ?? [],
-        programs: (cachedPrograms ?? []).filter((p) => !p.exercises?.archived),
+        programs: (cachedPrograms ?? []).filter((p) => isRoutineExercise(p?.exercises)),
         dataError: null,
         offlineNotice: null,
     };
@@ -100,7 +110,7 @@ export function usePtViewData({ token, patientId }) {
 
                 applyState({
                     logs: logsData ?? [],
-                    programs: (programsData ?? []).filter((p) => !p.exercises?.archived),
+                    programs: (programsData ?? []).filter((p) => isRoutineExercise(p?.exercises)),
                     dataError: null,
                     offlineNotice: null,
                 });

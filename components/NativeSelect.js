@@ -9,7 +9,7 @@ import styles from './NativeSelect.module.css';
  *
  * @param {string}   value        - Current value (controlled)
  * @param {function} onChange     - Called with the new string value, not the DOM event object
- * @param {Array}    options      - Array of strings or { value, label } objects
+ * @param {Array}    options      - Array of strings or { value, label, disabled? } objects
  * @param {boolean}  allowOther   - Whether to show Other... option (default false)
  * @param {string}   placeholder  - Placeholder text shown when no value is selected
  * @param {function} formatValue  - Optional: called on blur to normalize typed text (e.g. toLower)
@@ -93,8 +93,8 @@ export default function NativeSelect({
             {placeholder && !value && (
                 <option value="">{placeholder}</option>
             )}
-            {normalized.map(({ value: v, label }) => (
-                <option key={v} value={v}>{label}</option>
+            {normalized.map(({ value: v, label, disabled: optionDisabled = false }) => (
+                <option key={v} value={v} disabled={optionDisabled}>{label}</option>
             ))}
             {allowOther && (
                 <option value="__other__">Other...</option>

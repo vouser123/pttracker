@@ -1,22 +1,31 @@
 // hooks/useProgramWorkspaceState.js — /program editor workspace state and derived selections
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  compareExercisesByLifecycle,
+  isExerciseArchived,
+  isExerciseDeprecated,
+} from '../lib/exercise-lifecycle';
 
-function applyFilters(exercises, search, showArchived) {
+function matchesSearch(exercise, search) {
+  return !search || exercise.canonical_name.toLowerCase().includes(search.toLowerCase());
+}
+
+function applyFilters(exercises, search, showArchived, selectedId) {
   return exercises.filter((exercise) => {
-    if (exercise.lifecycle?.status === 'deprecated') return false;
-    if (!showArchived && exercise.archived) return false;
-    if (search && !exercise.canonical_name.toLowerCase().includes(search.toLowerCase())) return false;
+    if (isExerciseDeprecated(exercise)) return false;
+    if (!showArchived && isExerciseArchived(exercise) && exercise.id !== selectedId) return false;
+    if (!matchesSearch(exercise, search)) return false;
     return true;
-  });
+  }).sort(compareExercisesByLifecycle);
 }
 
 function filterWorkspaceOptions(exercises, selectedId, search) {
   return exercises.filter((exercise) => {
-    if (exercise.lifecycle?.status === 'deprecated') return false;
-    if (exercise.archived && exercise.id !== selectedId) return false;
-    if (search && !exercise.canonical_name.toLowerCase().includes(search.toLowerCase())) return false;
+    if (isExerciseDeprecated(exercise)) return false;
+    if (isExerciseArchived(exercise) && exercise.id !== selectedId) return false;
+    if (!matchesSearch(exercise, search)) return false;
     return true;
-  });
+  }).sort(compareExercisesByLifecycle);
 }
 
 /**
@@ -47,7 +56,10 @@ export function useProgramWorkspaceState({ exercises, programs, enabled }) {
     setActiveExercise(exercises.find((exercise) => exercise.id === exerciseId) ?? null);
   }, [exercises]);
 
-  const filtered = useMemo(() => (enabled ? applyFilters(exercises, search, showArchived) : []), [enabled, exercises, search, showArchived]);
+  const filtered = useMemo(
+    () => (enabled ? applyFilters(exercises, search, showArchived, activeExercise?.id ?? null) : []),
+    [activeExercise?.id, enabled, exercises, search, showArchived]
+  );
   const roleExerciseOptions = useMemo(() => (enabled ? filterWorkspaceOptions(exercises, roleExerciseId, roleSearch) : []), [enabled, exercises, roleExerciseId, roleSearch]);
   const dosageExerciseOptions = useMemo(() => (enabled ? filterWorkspaceOptions(exercises, dosageExerciseId, dosageSearch) : []), [enabled, exercises, dosageExerciseId, dosageSearch]);
   const formExercise = activeExercise === 'new' ? null : activeExercise;

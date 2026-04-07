@@ -1,7 +1,7 @@
 // hooks/useProgramMutationActions.js — optimistic mutation handlers for the /program editor
 
 import { useCallback } from 'react';
-import { buildOptimisticExercise, inferDosageType, mergeReferenceData } from '../lib/program-optimistic';
+import { buildOptimisticExercise, inferDosageType, mergeReferenceData, sortExercisesForProgramEditor } from '../lib/program-optimistic';
 import {
   createProgramMutation,
   isLocalRoleId,
@@ -29,9 +29,11 @@ export function useProgramMutationActions({
     const previousSnapshot = getSnapshot();
     const existingExercise = previousSnapshot.exercises.find((exercise) => exercise.id === savedExerciseId) ?? null;
     const optimisticExercise = buildOptimisticExercise(existingExercise, payload);
-    const nextExercises = wasNew
-      ? [...previousSnapshot.exercises, optimisticExercise].sort((left, right) => left.canonical_name.localeCompare(right.canonical_name))
-      : previousSnapshot.exercises.map((exercise) => (exercise.id === savedExerciseId ? optimisticExercise : exercise));
+    const nextExercises = sortExercisesForProgramEditor(
+      wasNew
+        ? [...previousSnapshot.exercises, optimisticExercise]
+        : previousSnapshot.exercises.map((exercise) => (exercise.id === savedExerciseId ? optimisticExercise : exercise))
+    );
 
     await enqueueMutation(
       createProgramMutation(wasNew ? 'exercise.create' : 'exercise.update', { exerciseId: savedExerciseId, payload }),

@@ -4,7 +4,7 @@ import styles from './ExerciseForm.module.css';
 import NativeSelect from './NativeSelect';
 import { toTitleCase } from '../lib/text-format';
 
-const LIFECYCLE_STATUSES = ['active', 'archived', 'deprecated'];
+const LIFECYCLE_STATUSES = ['active', 'as_needed', 'archived', 'deprecated'];
 
 /**
  * Exercise form section 6: Lifecycle & Status.
@@ -48,11 +48,12 @@ export default function ExerciseFormLifecycle({
             placeholder="None"
             options={LIFECYCLE_STATUSES.map((status) => ({
               value: status,
-              label: toTitleCase(status),
+              label: toTitleCase(status.replace(/_/g, ' ')),
             }))}
           />
           <span className={styles.hint}>
             <strong>active</strong> — in use.&nbsp;
+            <strong>as needed</strong> — available to log and manage, but excluded from routine counts and needs-attention surfaces.&nbsp;
             <strong>archived</strong> — temporarily set aside; appears when "Show archived" is on.&nbsp;
             <strong>deprecated</strong> — permanently removed from use; never appears in the exercise list.
           </span>

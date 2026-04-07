@@ -1,13 +1,16 @@
 // app/api/exercises/route.js — GET (list all exercises), POST (create exercise).
 
 import { getSupabaseWithAuth } from '../../../lib/db.js';
+import { buildExerciseLifecycle } from '../../../lib/exercise-lifecycle.js';
 import { authenticateRoute, unauthorized, badRequest, serverError } from '../../../lib/route-auth.js';
 
 // Intentionally hardcoded behavior enums; approved by user on 2026-03-19.
 const VALID_PATTERNS = ['side', 'both'];
 const VALID_MODIFIERS = ['duration_seconds', 'hold_seconds', 'distance_feet'];
 const VALID_GUIDANCE_SECTIONS = ['motor_cues', 'compensation_warnings', 'safety_flags', 'external_cues'];
-const VALID_LIFECYCLE_STATUSES = ['active', 'deprecated', 'archived'];
+// Intentionally hardcoded behavior enum; approved by user on 2026-04-06.
+// Do not extend without explicit sign-off. These values drive lifecycle behavior.
+const VALID_LIFECYCLE_STATUSES = ['active', 'as_needed', 'archived', 'deprecated'];
 const MAX_NAME_LENGTH = 200;
 const MAX_DESCRIPTION_LENGTH = 2000;
 const MAX_ARRAY_SIZE = 100;
@@ -155,11 +158,7 @@ export async function GET(request) {
             pt_category: ex.pt_category,
             pattern: ex.pattern,
             archived: ex.archived,
-            lifecycle: ex.lifecycle_status ? {
-                status: ex.lifecycle_status,
-                effective_start_date: ex.lifecycle_effective_start_date,
-                effective_end_date: ex.lifecycle_effective_end_date,
-            } : null,
+            lifecycle: buildExerciseLifecycle(ex),
             supersedes: ex.supersedes_exercise_id ? [ex.supersedes_exercise_id] : null,
             superseded_by: ex.superseded_by_exercise_id,
             superseded_date: ex.superseded_date,
@@ -214,18 +213,19 @@ export async function POST(request) {
         description,
         pt_category,
         pattern,
-        archived = false,
         pattern_modifiers = [],
         equipment = { required: [], optional: [] },
         primary_muscles = [],
         secondary_muscles = [],
         form_parameters_required = [],
         guidance = {},
-        lifecycle_status = null,
+        lifecycle_status = 'active',
         lifecycle_effective_start_date = null,
         lifecycle_effective_end_date = null,
         supersedes_exercise_id = null,
     } = payload;
+
+    const normalizedLifecycleStatus = lifecycle_status || 'active';
 
     const supabase = getSupabaseWithAuth(accessToken);
 
@@ -253,8 +253,10 @@ export async function POST(request) {
         const { data: exercise, error: exerciseError } = await supabase
             .from('exercises')
             .insert({
-                id, canonical_name, description, pt_category, pattern, archived,
-                lifecycle_status, lifecycle_effective_start_date, lifecycle_effective_end_date,
+                id, canonical_name, description, pt_category, pattern,
+                archived: normalizedLifecycleStatus === 'archived',
+                lifecycle_status: normalizedLifecycleStatus,
+                lifecycle_effective_start_date, lifecycle_effective_end_date,
                 supersedes_exercise_id: supersedes_exercise_id || null,
                 added_date: new Date().toISOString(),
             })

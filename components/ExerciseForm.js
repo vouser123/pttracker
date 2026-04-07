@@ -1,5 +1,6 @@
 // ExerciseForm.js — exercise form orchestrator: state management, save/cancel, composes Core + Cues + Lifecycle
 
+import { buildExerciseLifecycle } from '../lib/exercise-lifecycle';
 import { useState, useEffect } from 'react';
 import { createExercise, updateExercise } from '../lib/pt-editor';
 import ExerciseFormCore from './ExerciseFormCore';
@@ -8,10 +9,10 @@ import ExerciseFormLifecycle from './ExerciseFormLifecycle';
 import styles from './ExerciseForm.module.css';
 
 const EMPTY_BASICS = {
-  id: '', canonical_name: '', description: '', pt_category: '', pattern: '', archived: false,
+  id: '', canonical_name: '', description: '', pt_category: '', pattern: '',
 };
 const EMPTY_LIFECYCLE = {
-  status: null, effective_start_date: null, effective_end_date: null,
+  status: 'active', effective_start_date: null, effective_end_date: null,
   added_date: null, updated_date: null,
   superseded_by: null, superseded_date: null,
 };
@@ -54,7 +55,6 @@ export default function ExerciseForm({ exercise, exercises, referenceData, vocab
         description: exercise.description ?? '',
         pt_category: exercise.pt_category ?? '',
         pattern: exercise.pattern ?? '',
-        archived: exercise.archived ?? false,
       });
       setPatternModifiers(exercise.pattern_modifiers ?? []);
       setEquipment({
@@ -67,10 +67,11 @@ export default function ExerciseForm({ exercise, exercises, referenceData, vocab
       });
       setFormParameters(exercise.form_parameters_required ?? []);
       setGuidance(exercise.guidance ?? {});
+      const exerciseLifecycle = buildExerciseLifecycle(exercise);
       setLifecycle({
-        status: exercise.lifecycle?.status ?? null,
-        effective_start_date: exercise.lifecycle?.effective_start_date ?? null,
-        effective_end_date: exercise.lifecycle?.effective_end_date ?? null,
+        status: exerciseLifecycle.status,
+        effective_start_date: exerciseLifecycle.effective_start_date,
+        effective_end_date: exerciseLifecycle.effective_end_date,
         added_date: exercise.added_date ?? null,
         updated_date: exercise.updated_date ?? null,
         superseded_by: exercise.superseded_by ?? null,

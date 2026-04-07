@@ -7,7 +7,9 @@ import { authenticateRoute, unauthorized, badRequest, serverError } from '../../
 const VALID_PATTERNS = ['side', 'both'];
 const VALID_MODIFIERS = ['duration_seconds', 'hold_seconds', 'distance_feet'];
 const VALID_GUIDANCE_SECTIONS = ['motor_cues', 'compensation_warnings', 'safety_flags', 'external_cues'];
-const VALID_LIFECYCLE_STATUSES = ['active', 'deprecated', 'archived'];
+// Intentionally hardcoded behavior enum; approved by user on 2026-04-06.
+// Do not extend without explicit sign-off. These values drive lifecycle behavior.
+const VALID_LIFECYCLE_STATUSES = ['active', 'as_needed', 'archived', 'deprecated'];
 const MAX_NAME_LENGTH = 200;
 const MAX_DESCRIPTION_LENGTH = 2000;
 const MAX_ARRAY_SIZE = 100;
@@ -92,7 +94,7 @@ export async function PUT(request, { params }) {
     const payload = rawBody?.exercise ?? rawBody;
 
     const {
-        canonical_name, description, pt_category, pattern, archived,
+        canonical_name, description, pt_category, pattern,
         pattern_modifiers, equipment, primary_muscles, secondary_muscles,
         form_parameters_required, guidance, lifecycle_status,
         lifecycle_effective_start_date, lifecycle_effective_end_date,
@@ -126,7 +128,6 @@ export async function PUT(request, { params }) {
         if (description !== undefined) updates.description = description;
         if (pt_category !== undefined) updates.pt_category = pt_category;
         if (pattern !== undefined) updates.pattern = pattern;
-        if (archived !== undefined) updates.archived = archived;
         if (lifecycle_status !== undefined) {
             updates.lifecycle_status = lifecycle_status;
             updates.archived = lifecycle_status === 'archived';
@@ -219,7 +220,7 @@ export async function PUT(request, { params }) {
 }
 
 /**
- * DELETE /api/exercises/:id — Archive exercise (soft delete: sets archived=true).
+ * DELETE /api/exercises/:id — Archive exercise (soft delete: lifecycle_status=archived).
  */
 export async function DELETE(request, { params }) {
     const { user, accessToken, error } = await authenticateRoute(request);
@@ -231,7 +232,11 @@ export async function DELETE(request, { params }) {
     try {
         const { data: exercise, error: dbError } = await supabase
             .from('exercises')
-            .update({ archived: true, updated_date: new Date().toISOString() })
+            .update({
+                archived: true,
+                lifecycle_status: 'archived',
+                updated_date: new Date().toISOString(),
+            })
             .eq('id', exerciseId)
             .select()
             .single();

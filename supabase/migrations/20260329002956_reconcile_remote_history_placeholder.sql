@@ -1,0 +1,3 @@
+-- Placeholder local migration record for remote history entry 20260329002956.
+-- This file exists so local migration history matches the remote Supabase project.
+-- Follow-up bead should replace or document the actual migration contents if they are recovered.

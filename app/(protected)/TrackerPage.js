@@ -20,6 +20,7 @@ import { useToast } from '../../hooks/useToast';
 import { useMessages } from '../../hooks/useMessages';
 import { useUserContext } from '../../hooks/useUserContext';
 import { useExerciseSortState } from '../../hooks/useExerciseSortState';
+import { useTrackerPrnVisibility } from '../../hooks/useTrackerPrnVisibility';
 import { useTrackerDosageEditor } from '../../hooks/useTrackerDosageEditor';
 import AuthForm from '../../components/AuthForm';
 import NavMenu from '../../components/NavMenu';
@@ -116,6 +117,10 @@ export default function TrackerPage() {
         manualOrderIds,
         setManualOrderIds,
     } = useExerciseSortState(userId, pickerExercises);
+    const {
+        lifecycleFilter,
+        setLifecycleFilter,
+    } = useTrackerPrnVisibility(userId);
 
     const manualOpenRef = useRef(() => {});
     const feedbackRef = useRef({
@@ -365,6 +370,8 @@ export default function TrackerPage() {
                         canEditDosage={canEditDosage}
                         sortMode={sortMode}
                         onSortChange={setSortMode}
+                        lifecycleFilter={lifecycleFilter}
+                        onLifecycleFilterChange={setLifecycleFilter}
                         manualOrderIds={manualOrderIds}
                         onManualOrderChange={setManualOrderIds}
                     />

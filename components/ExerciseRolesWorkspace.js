@@ -2,6 +2,7 @@
 
 import NativeSelect from './NativeSelect';
 import ProgramRolesSection from './ProgramRolesSection';
+import { buildGroupedLifecycleOptions } from '../lib/exercise-lifecycle';
 import styles from './ExerciseRolesWorkspace.module.css';
 
 export default function ExerciseRolesWorkspace({
@@ -35,10 +36,7 @@ export default function ExerciseRolesWorkspace({
           value={roleExerciseId}
           onChange={onRoleExerciseChange}
           placeholder="-- Choose an exercise --"
-          options={roleExerciseOptions.map((exercise) => ({
-            value: exercise.id,
-            label: `${exercise.archived ? '[archived] ' : ''}${exercise.canonical_name}`,
-          }))}
+          options={buildGroupedLifecycleOptions(roleExerciseOptions)}
         />
       </div>
       <ProgramRolesSection

@@ -40,7 +40,7 @@ CREATE TABLE exercises (
   pt_category TEXT NOT NULL CHECK (pt_category IN ('back_sij', 'knee', 'ankle', 'hip', 'vestibular', 'foot', 'shoulder', 'other')),
   pattern TEXT NOT NULL CHECK (pattern IN ('side', 'both')),
   archived BOOLEAN NOT NULL DEFAULT FALSE,
-  lifecycle_status TEXT CHECK (lifecycle_status IN ('active', 'archived', 'deprecated')),
+  lifecycle_status TEXT CHECK (lifecycle_status IN ('active', 'as_needed', 'archived', 'deprecated')),
   lifecycle_effective_start_date DATE,
   lifecycle_effective_end_date DATE,
   supersedes_exercise_id TEXT REFERENCES exercises(id) ON DELETE SET NULL,

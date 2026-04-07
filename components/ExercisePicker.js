@@ -7,6 +7,7 @@ import {
     reorderVisibleSubset,
     sortExercises,
 } from '../lib/exercise-sort';
+import { isExercisePrn } from '../lib/exercise-lifecycle';
 import { formatDosageSummary } from '../lib/dosage-summary';
 
 const DRAG_HOLD_DELAY_MS = 220;
@@ -34,6 +35,7 @@ const ExercisePickerCard = memo(function ExercisePickerCard({
     exerciseId,
     exerciseName,
     category,
+    isPrn,
     dosageText,
     dosageActionLabel,
     adherenceLabel,
@@ -71,6 +73,7 @@ const ExercisePickerCard = memo(function ExercisePickerCard({
                 type="button"
             >
                 <span className={styles.name}>{exerciseName}</span>
+                {isPrn && <span className={styles.prnBadge}>PRN</span>}
                 <span className={styles.dosage}>{dosageText}</span>
                 {adherenceLabel && (
                     <span className={`${styles.adherence} ${styles[adherenceTone]}`}>
@@ -126,6 +129,8 @@ export default function ExercisePicker({
     canEditDosage = false,
     sortMode = 'pt_order',
     onSortChange,
+    lifecycleFilter = 'routine',
+    onLifecycleFilterChange,
     manualOrderIds = [],
     onManualOrderChange,
 }) {
@@ -158,10 +163,11 @@ export default function ExercisePicker({
             exercises,
             programsByExercise,
             sortMode,
+            lifecycleFilter,
             query,
             manualOrderIds: activeManualOrderIds,
         });
-    }, [activeManualOrderIds, exercises, programsByExercise, query, sortMode]);
+    }, [activeManualOrderIds, exercises, lifecycleFilter, programsByExercise, query, sortMode]);
 
     const visibleExerciseIds = useMemo(() => visibleExercises.map((exercise) => exercise.id), [visibleExercises]);
     const isManualMode = sortMode === 'manual';
@@ -372,6 +378,16 @@ export default function ExercisePicker({
                     aria-label="Search exercises"
                 />
                 <NativeSelect
+                    value={lifecycleFilter}
+                    onChange={(val) => onLifecycleFilterChange?.(val)}
+                    options={[
+                        { value: 'routine', label: 'Routine only' },
+                        { value: 'prn', label: 'PRN only' },
+                        { value: 'all', label: 'Show all' },
+                    ]}
+                    className={styles.sortSelect}
+                />
+                <NativeSelect
                     value={sortMode}
                     onChange={(val) => onSortChange?.(val)}
                     options={[
@@ -405,6 +421,7 @@ export default function ExercisePicker({
                             exerciseId={exercise.id}
                             exerciseName={exercise.canonical_name}
                             category={exercise.pt_category ?? ''}
+                            isPrn={isExercisePrn(exercise)}
                             dosageText={dosageText}
                             dosageActionLabel={dosageActionLabel}
                             adherenceLabel={adherence?.label ?? null}

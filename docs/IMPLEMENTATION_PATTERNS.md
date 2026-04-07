@@ -18,6 +18,16 @@ Treat the static legacy surface as frozen for routine cleanup. Only apply these 
 - Do not hand-roll a plain select plus custom "Other" logic when the current surface can already use `NativeSelect`.
 - Do not hardcode extendable dropdown option lists without explicit sign-off. Domain data belongs in vocab/reference data, not inline arrays.
 
+## Exercise Lifecycle And Visibility
+
+- Treat [`docs/DATA_VOCABULARIES.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/DATA_VOCABULARIES.md) as the canonical lifecycle vocabulary for exercises.
+- Use `lifecycle_status` as the source of truth for exercise visibility, grouping, and routine-counting behavior on lifecycle-aware surfaces.
+- `as_needed` means the exercise is still selectable and loggable, but routine-counting and routine-attention surfaces should exclude it.
+- Keep lifecycle-aware option construction and label formatting in shared helpers instead of repeating archived-only or PRN-only logic inline in components.
+- For `/program`, show routine exercises first, then PRN exercises with a visible prefix and grouping separator when the surface uses a native select.
+- For `/tracker`, keep PRN visible in the picker only when the session-scoped visibility control includes it, and use a distinct badge in the custom card UI.
+- Avoid adding new behavior decisions around the legacy boolean `archived` field on surfaces that are moving to lifecycle-first rules.
+
 ## Formatting And Labels
 
 - Use [`lib/text-format.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib/text-format.js) for typed values, labels, and value-display formatting.

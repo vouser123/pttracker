@@ -2,6 +2,7 @@
 
 import NativeSelect from './NativeSelect';
 import { formatDosageSummary } from '../lib/dosage-summary';
+import { buildGroupedLifecycleOptions } from '../lib/exercise-lifecycle';
 import styles from './ProgramDosageWorkspace.module.css';
 
 export default function ProgramDosageWorkspace({
@@ -41,10 +42,7 @@ export default function ProgramDosageWorkspace({
           value={dosageExerciseId}
           onChange={onDosageExerciseChange}
           placeholder="-- Choose an exercise --"
-          options={dosageExerciseOptions.map((exercise) => ({
-            value: exercise.id,
-            label: `${exercise.archived ? '[archived] ' : ''}${exercise.canonical_name}`,
-          }))}
+          options={buildGroupedLifecycleOptions(dosageExerciseOptions)}
         />
       </div>
       {dosageExercise ? (

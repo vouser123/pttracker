@@ -8,7 +8,7 @@ import { authenticateRoute, unauthorized, forbidden, badRequest, serverError } f
  * GET /api/roles?exercise_id=X — filter to specific exercise
  *
  * Returns exercise roles (region × capacity × focus × contribution).
- * Excludes archived exercises and inactive roles.
+ * Excludes non-routine exercises and inactive roles.
  */
 export async function GET(request) {
     const { user, accessToken, error } = await authenticateRoute(request);
@@ -25,10 +25,10 @@ export async function GET(request) {
                 exercises!inner (
                     id,
                     canonical_name,
-                    archived
+                    lifecycle_status
                 )
             `)
-            .eq('exercises.archived', false)
+            .eq('exercises.lifecycle_status', 'active')
             .eq('active', true);
 
         if (exercise_id) {
