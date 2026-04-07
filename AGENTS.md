@@ -4,20 +4,16 @@ This file governs agent behavior for work in this repo.
 
 ## Canonical References
 
-- `docs/README.md` - docs index that explains which doc to open and when
-- `README.md` - landing reference for the live codebase shape, shared components/hooks/utilities, timer/audio wiring, and legacy-to-Next.js page mapping
-- `https://nextjs.org/docs` - primary upstream Next.js framework documentation for version, App Router, and framework-behavior reference during migration or upgrade work
-- `https://github.com/vercel/next.js` - upstream Next.js framework source and issue tracker for deeper investigation when docs are not enough
-- `docs/NEXTJS_CODE_STRUCTURE.md` - file size limits, split rules, cohesion checks, folder structure, naming conventions
-- `docs/SYSTEM_ARCHITECTURE.md` - current hybrid architecture and implementation guardrails
-- `docs/IMPLEMENTATION_PATTERNS.md` - approved shared helpers, components, and do-this-not-that implementation guidance
-- `docs/DATA_VOCABULARIES.md` - canonical field names and data contracts
-- `docs/TESTING_CHECKLISTS.md` - all regression, parity, and verification checklists for this repo
-- `docs/BEADS_WORKFLOW.md` - required bead lifecycle, including when to close work and how to handle verification-focused task beads
-- `docs/BEADS_OPERATIONS.md` - canonical Beads operating rules, parallel-thread guidance, and Dolt troubleshooting
-- `docs/BEADS_QUICKREF.md` - generated quick reference derived from `BEADS_OPERATIONS.md` for agent session startup and recovery
-- `docs/archive/dev-notes/dev_notes.json` - legacy tracking archive; no longer the active intake queue
-- `docs/archive/dev-notes/DEV_NOTES.md` - generated legacy archive view derived from `dev_notes.json`
+- `docs/README.md` - docs index; open this first to decide which repo doc is relevant
+- `README.md` - live codebase map and file ownership
+- `docs/AGENT_PLAYBOOK.md` - longer agent workflow detail; open only when the rule in AGENTS says it is applicable
+- `docs/NEXTJS_CODE_STRUCTURE.md` - open when editing file placement, layering, or split boundaries
+- `docs/IMPLEMENTATION_PATTERNS.md` - open when you need the approved shared pattern for a change
+- `docs/DATA_VOCABULARIES.md` - open when you need canonical field names or controlled values
+- `docs/TESTING_CHECKLISTS.md` - open when validating behavior changes
+- `docs/BEADS_WORKFLOW.md` - open for the required bead lifecycle
+- `docs/BEADS_OPERATIONS.md` - open only when detailed tracker/Dolt operations are needed
+- `https://nextjs.org/docs` and `https://github.com/vercel/next.js` - open only when repo docs do not answer a framework-specific question
 
 ## Local Memory Files (Outside GitHub Repo)
 
@@ -29,46 +25,19 @@ These local files are operator memory for agents and are not committed to GitHub
 
 Session-start requirement:
 
-- Read the shared file plus the actor-specific file if present before work begins.
-- Claude reads:
-  - `C:\Users\cindi\OneDrive\Documents\claude-memory\MEMORY.md`
-  - `C:\Users\cindi\OneDrive\Documents\PT_Backup\agent_memory\MEMORY.md`
-- Codex reads:
-  - `C:\Users\cindi\OneDrive\Documents\codex-memory\MEMORY.md`
-  - `C:\Users\cindi\OneDrive\Documents\PT_Backup\agent_memory\MEMORY.md`
-- If guidance conflicts, prefer the file with the newer `LastWriteTime` and note the conflict in session updates.
-- Run `bd prime` after reading local memory and before starting work. `bd prime` is the Beads single source of truth for current workflow guidance, and it auto-injects remembered Beads memories at prime time.
-- Run `bd prime` again before compaction or handoff if session context may be stale.
-- `BEADS_ACTOR` provides attribution, but current Beads memory injection is not actor-filtered on read. Do not store agent-private workflow notes in `bd remember` unless they are intentionally shared across agents; keep private operational notes in the local memory files instead.
-- When adding durable shared operational notes, update the shared file and the actor-specific file together only if both agents should inherit the same guidance. Keep Codex-only notes in the Codex memory file.
+- Read the shared file plus the actor-specific file before work begins.
+- Run `bd prime` after reading local memory and again before compaction or handoff if context may be stale.
+- Keep agent-private workflow notes in the local memory files, not in `bd remember`, unless the guidance is intentionally shared.
+- Open [`docs/AGENT_PLAYBOOK.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/AGENT_PLAYBOOK.md) if you need the full session-start detail and exact file list.
 
 ## Pre-Coding Layer Check (Required Before Writing Any Code)
 
-**Before writing any code to an existing file, you must ask: "What layer does this belong in?"**
+**Before writing any code to an existing file, ask: `What layer does this belong in?`**
 
-The answer determines where the code goes. Line count does not. A file being under its cap is not permission to add code that belongs elsewhere.
-
-| Layer | Only contains | Must not contain |
-|-------|--------------|-----------------|
-| `pages/` | Auth guard, route-level state, wiring hooks + components together | Feature UI, mutation logic, data transformation, form state, business logic |
-| `components/` | JSX and presentation logic; all data arrives via props | API calls, business logic, calculations, hooks |
-| `hooks/` | State + effects for one concern | JSX, API calls that don't belong to the hook's concern |
-| `lib/` | Pure functions for one domain | React imports, hooks, side effects |
-
-**Page = orchestrator. This is a hard rule, not a guideline.**
-
-A page file wires auth, route state, hooks, and components together. That is its entire job. If the code you are about to write is not wiring — if it is feature UI, mutation handling, data transformation, or form state — it does not go in the page file. It goes in a component or hook first, then the page wires it in.
-
-**This rule does not have a size exception.** A page at 200 lines must still reject non-orchestrator code. A page at 490 lines (just under the 500L cap) must still reject non-orchestrator code. The cap is a backstop that signals something already went wrong — not a budget to spend.
-
-**This is why fixed pages regress.** An agent sees room under the cap and adds non-orchestrator code. The fix is to never ask "is there room?" — only ask "does this belong here?"
-
-Before writing to a page file:
-1. Identify what the code does
-2. If it is not pure wiring (auth, route state, composing hooks/components) → stop
-3. Determine which layer it belongs in (component or hook)
-4. Create or extend that file instead
-5. Then wire it into the page
+- `pages/` are orchestrators only.
+- If the code is not pure wiring, it does not belong in the page file.
+- Do not use file size as permission to add the wrong kind of code to a file.
+- Open [`docs/AGENT_PLAYBOOK.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/AGENT_PLAYBOOK.md) and [`docs/NEXTJS_CODE_STRUCTURE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/NEXTJS_CODE_STRUCTURE.md) if you need the full layer table or split workflow.
 
 ---
 
@@ -121,28 +90,21 @@ This project is operated by a non-technical user. Agents must not assume technic
 
 ## Validation Preference
 
-- Prefer Vercel deployment checks/logs as the default validation path for routine changes.
-- Run local `npm run build` only when Vercel signal is insufficient, when debugging environment-specific issues, or before especially risky refactors.
+- Vercel deployment checks/logs are the default validation path for routine changes. Use Vercel first.
+- After push, wait an appropriate amount of time for the deployment to start or finish before checking status again. Prefer a short deliberate pause over immediate repeat polling or falling back to a local build too early.
+- Do not run local `npm run build` by default when a Vercel deploy will provide the same signal.
+- Run local `npm run build` only when there is a specific documented reason it adds value beyond Vercel, such as:
+  - Vercel signal is unavailable or insufficient
+  - debugging a local or environment-specific issue that cannot be resolved from Vercel output
+  - a particularly risky refactor where an immediate pre-push build materially reduces rollback risk
+- If you choose a local build, state the specific reason in a short progress update or bead note.
 
-### Legacy Dev Notes Archive
+Legacy dev-notes files are archive-only. Do not use them for active intake, assignment, or status management.
 
-- `docs/archive/dev-notes/dev_notes.json` is retained for historical reference.
-- `docs/archive/dev-notes/DEV_NOTES.md` is generated from the JSON and should never be hand-edited.
-- If the legacy archive is updated for documentation reasons, run `npm run dev-notes:build` and `npm run dev-notes:check`.
-- Do not use the archive for active intake, assignment, or status management.
+## Parity Checking
 
-## Routine Codex Use: Parity Checking
-
-Codex is effective at **behavioral parity checks** — comparing a new Next.js component against the corresponding static HTML to find differences in behavior, options, defaults, or logic.
-
-Use this routinely, not just when a problem is already suspected:
-- When a component is freshly ported from static HTML
-- When a component is modified as part of a migration fix
-- After a testing session surfaces a gap — ask Codex to scan for similar gaps elsewhere
-
-**How to assign:** Give Codex both the static source file (e.g. `public/index.html`) and the new component (e.g. `components/SessionLoggerModal.js`) and ask it to list behavioral differences. Be specific about which feature area to check (side selector, form params, timer behavior, etc.).
-
-Codex cannot live-test on preview, but it can read code and reason about behavior — which is most of what parity checking requires.
+- Use behavioral parity checking routinely on migrated Next.js surfaces, not only after a bug is already suspected.
+- Open [`docs/AGENT_PLAYBOOK.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/AGENT_PLAYBOOK.md) if you need the fuller parity workflow.
 
 ## Testing Checklists
 
@@ -160,12 +122,8 @@ See [`docs/TESTING_CHECKLISTS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttr
 
 ## Agent Ops Friction Logging
 
-- Use Beads epic `pt-uf1` ("Agent Ops Epic: tracker/tooling friction log") for system/process/tooling friction discovered during execution.
-- Create child issues from that epic for concrete incidents, include root cause + mitigation, and close child issues after fix.
-- Keep the epic open as the longitudinal signal for whether current tracker/process choices still serve agent throughput.
-- Child issue command pattern:
-  - `bd create "<title>" -t task -p 2 --deps discovered-from:pt-uf1 --description "<incident + impact + root cause + mitigation>" --json`
-  - Optional explicit parent-child link: `bd dep add <child-id> pt-uf1 --type parent-child`
+- Use Beads epic `pt-uf1` for execution friction that affects throughput.
+- Open [`docs/AGENT_PLAYBOOK.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/AGENT_PLAYBOOK.md) if you need the child-issue pattern.
 
 ## Beads Agent Discipline (Required)
 
@@ -184,81 +142,11 @@ An unclaimed bead looks untouched to the next agent. That agent will repeat your
 
 Full rules: `docs/BEADS_WORKFLOW.md`.
 
-- Required lifecycle rules live in `docs/BEADS_WORKFLOW.md`.
-- Detailed operating rules live in `docs/BEADS_OPERATIONS.md`.
-- Keep `AGENTS.md` as the policy surface; use the workflow doc for command patterns, parallel-thread rules, and Dolt cleanup steps.
-- Check `bd dolt status` before trying to start Dolt; only run `bd dolt start` when the server is not already running.
+- Keep `AGENTS.md` as the policy surface; open [`docs/BEADS_WORKFLOW.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/BEADS_WORKFLOW.md) for lifecycle rules and [`docs/BEADS_OPERATIONS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/BEADS_OPERATIONS.md) for detailed operations.
 - Do not use `bd edit` from agent sessions; use `bd update` flags instead.
-- Use `bd remember` only for durable guidance that should come back through `bd prime` for every agent in this repo. `BEADS_ACTOR` records who set the memory, but it does not currently isolate prime-time injection by actor, so agent-private workflow notes belong in the local memory files unless the user explicitly wants them shared.
-- Shared-branch commit ownership rule:
-  - This repo currently uses one shared branch/worktree because Beads usually keeps Codex and Claude in separate file lanes.
-  - An agent must not stage or commit files it did not edit.
-  - Before every `git add` or commit, run `git status --short` and verify every modified or staged file belongs to the current bead and current agent lane.
-  - If `git status` shows another agent's files, stop and leave them untouched.
-  - If another agent lands a commit during active work, treat that as a hard boundary: rerun `git status`, re-check file ownership, and continue only with files that are still clearly in your lane.
-- Claim first in multi-agent workflows:
-  - `bd update <id> --claim --assignee codex` (or `claude`)
-- Search before create to reduce duplicate issues:
-  - `bd list --json` then title/label search before `bd create`
-- For short progress or handoff notes on an existing bead, prefer:
-  - `bd note <id> "..."` (or `bd update <id> --append-notes "..."`)
-- If list/ready output is noisy, you can filter issue types directly:
-  - `bd ready --exclude-type chore --json`
-  - `bd list --exclude-type chore --json`
-- Use issue types deliberately:
-  - `verification` = browser checks, parity confirmation, acceptance validation, or other proof-gathering work whose main purpose is to verify behavior rather than change it
-    Example: verify preview behavior, confirm parity in a browser, or validate acceptance criteria after code lands
-  - `task` = necessary implementation, investigation, refactor, setup, or follow-through work that is not best described as a bug, feature, or chore
-    Example: split an oversized file, set up Playwright, or implement an agreed migration slice
-  - `bug` = broken behavior, regressions, or parity mismatches that need repair
-    Example: tracker history prefilter is wrong, or a queued write uses the wrong patient id
-  - `feature` = additive capability that is not just a fix or migration follow-through
-    Example: add a genuinely new app capability or new operator-facing workflow that did not exist before
-  - `chore` = low-product-impact maintenance or housekeeping
-    Example: clean up stale tracker/admin items or perform low-risk tooling upkeep
-  - `epic` = parent container for related child beads
-    Example: a parent bead for a parity domain, cutover track, or multi-step migration stream
-  - `decision` = work whose main purpose is to get or record user input, approval, or cutover direction before execution
-    Example: determine when to cut over to Next.js, or capture a user approval needed before continuing
-- Install the repo-local commit hooks when setting up a clone:
-  - `npm run beads:install-commit-hook`
-- The hook install writes both `.beads/hooks/commit-msg` and `.beads/hooks/pre-commit`.
-- When the pre-commit hook flags shared ownership or route-shape changes, either stage `README.md` in the same commit or use the explicit bypass only if the README remains accurate:
-  - PowerShell: `$env:PT_README_OK="1"; git commit ...`
-- Use dependency types correctly:
-  - Only `blocks` should gate readiness
-  - Use `related`, `parent-child`, and `discovered-from` for context/structure
-- Set dependencies at creation time using `--deps` in `bd create` — do NOT follow up with `bd dep add` for the same link (creates duplicates):
-  ```bash
-  bd create "Title" --description="..." -p 1 --deps discovered-from:pt-abc --json
-  bd create "Title" --description="..." -p 1 --deps parent-child:pt-abc --json
-  ```
-- Use `bd dep add` only when adding a dependency to an **already-existing** issue:
-  ```bash
-  bd dep add <issue-id> <depends-on-id> --type discovered-from|parent-child|related|blocks
-  ```
-- Use `bd dep <id> --blocks <other-id>` to mark that `<id>` blocks `<other-id>`:
-  ```bash
-  bd dep pt-abc --blocks pt-xyz
-  ```
-- Keep ready queue clean:
-  - For non-actionable meta/friction items, use low priority + defer:
-  - `bd update <id> --priority 4 --defer +14d`
-- Land-the-plane rule:
-  - Update/close Beads items and push code before ending session; do not leave local-only state
-- Required execution order for every bead:
-  - `open bead` -> `claim / set in_progress when starting` -> `do the work and update notes / add discovered-from beads as needed` -> `close bead when the scoped work is finished`
-  - If the bead produces code changes, commit only after bead state is accurate.
-- Hard rule:
-  - Manual closure is required. Commits do not close beads automatically in the current Dolt-based workflow.
-  - Do not leave a bead open when its scoped work is done.
-  - Do not leave a verification-focused task bead open after the verification passes.
-  - If a parent bead stays open, close the completed child bead anyway and note the exact remaining open scope on the parent.
-- If code is implemented but waiting on another thread's verification-focused task:
-  - update the bead immediately with the pushed commit id and an explicit note that the status is `implemented, awaiting verification`
-  - do not leave the bead looking untouched or ambiguously open
-- Concurrency rule:
-  - Beads supports multi-agent coordination, but shared-file implementation still needs one owner at a time. Use parallel threads for review or verification-focused task work, or clearly separate file domains, not for the same helper/state path.
+- Shared-branch rule: stage and commit only files you changed, and re-check `git status --short` before every `git add` or commit.
+- Update or close Beads items before commit, and do not leave local-only state at session end.
+- Open [`docs/AGENT_PLAYBOOK.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/AGENT_PLAYBOOK.md) if you need the longer Beads detail or friction-logging pattern.
 
 Reference docs (local mirror for agents):
 - `C:\Users\cindi\OneDrive\Documents\PT_Backup\beads\AGENT_INSTRUCTIONS.md`

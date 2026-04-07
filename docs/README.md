@@ -7,6 +7,9 @@ Use this file to decide which doc to open next.
 
 ## Active Docs
 
+- [`AGENT_PLAYBOOK.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/AGENT_PLAYBOOK.md)
+  - Open when: `AGENTS.md` points you here for session-start detail, layer-check detail, parity workflow, or agent-ops friction logging.
+  - Answers: "What is the longer workflow guidance behind the short AGENTS rule?"
 - [`NEXTJS_MIGRATION_STATUS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/NEXTJS_MIGRATION_STATUS.md)
   - Open when: you need migration phase status, rollout history, or branch/cutover decisions.
   - Answers: "Where are we in the Next.js migration?"
