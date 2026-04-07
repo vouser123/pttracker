@@ -108,7 +108,7 @@ ORDER BY l.created_at DESC, s.set_number, f.parameter_name;
 - Re-run after dynamic imports or route-host refactors that are expected to reduce initial JS.
 
 ### Guardrail
-- The repo uses Next 16's built-in analyzer path (`next experimental-analyze -o`) instead of a separate analyzer plugin.
+- The repo uses Next 16's built-in web analyzer path (`next experimental-analyze`) instead of a separate analyzer plugin.
 - Bundle analysis is a build-time diagnostic only. It must not change normal `npm run build`, `npm run dev`, deployed runtime behavior, or Vercel config.
 
 ---

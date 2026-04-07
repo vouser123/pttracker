@@ -43,7 +43,7 @@ These are performance signals, not ownership rules. Route size does not decide w
 **Official guidance first:** Next.js and Vercel treat first-load JS as a budget to minimize, not something apps should casually exceed. Treat the commonly cited ~170 KB compressed target as the official performance signal. Do not claim that PT Tracker is exempt because it is “more complex than most apps” or because it uses Supabase. If a route remains above budget, the burden is on us to show what is in the bundle, what can be reduced now, and what explicit tradeoff we are accepting.
 
 **Current repo evidence (2026-03-29):**
-- Route baselines from `npm run analyze:bundle` (`.next/diagnostics/route-bundle-stats.json`):
+- Route baselines from `npm run analyze:bundle` (full web analyzer plus `.next/diagnostics/route-bundle-stats.json` output):
   - `/_not-found`: `520,901` bytes first-load uncompressed
   - `/`: `866,049`
   - `/pt-view`: `810,740`
@@ -74,7 +74,7 @@ These are performance signals, not ownership rules. Route size does not decide w
 - Isolate or narrow realtime usage if the message badge/subscription does not need to ride the default shared browser client on every route.
 - Prefer route/API data reads over browser-SDK reads when that keeps heavy client libraries out of the first-load path.
 
-Run `npm run analyze:bundle` → outputs at `.next/diagnostics/route-bundle-stats.json`, `.next/diagnostics/build-diagnostics.json`, `.next/diagnostics/framework.json`, and `.next/diagnostics/analyze/`.
+Run `npm run analyze:bundle` → starts the full web analyzer (typically at `http://localhost:4000/`) and writes diagnostics to `.next/diagnostics/route-bundle-stats.json`, `.next/diagnostics/build-diagnostics.json`, `.next/diagnostics/framework.json`, and `.next/diagnostics/analyze/`.
 
 Helpful local analyzers when the treemap needs repeatable evidence instead of manual clicking:
 - `npm run analyze:paths -- --route / --term supabase` → route-source chains plus emitted output files for the current route

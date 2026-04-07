@@ -25,55 +25,66 @@ fi
 # --- BEGIN PTTRACKER README CHECK ---
 readme_path="README.md"
 
-if [ "${PT_README_OK:-0}" = "1" ]; then
-  exit 0
-fi
+if [ "${PT_README_OK:-0}" != "1" ]; then
+  git_prefix="$(git rev-parse --show-prefix 2>/dev/null | tr '\\' '/' || true)"
+  staged_files="$(git diff --cached --name-only --diff-filter=ACMR | tr '\\' '/')"
 
-git_prefix="$(git rev-parse --show-prefix 2>/dev/null | tr '\\' '/' || true)"
-staged_files="$(git diff --cached --name-only --diff-filter=ACMR | tr '\\' '/')"
+  shared_files=""
+  for file in $staged_files; do
+    trimmed="$file"
+    if [ -n "$git_prefix" ]; then
+      case "$trimmed" in
+        "$git_prefix"*)
+          trimmed="${trimmed#"$git_prefix"}"
+          ;;
+      esac
+    fi
 
-shared_files=""
-for file in $staged_files; do
-  trimmed="$file"
-  if [ -n "$git_prefix" ]; then
     case "$trimmed" in
-      "$git_prefix"*)
-        trimmed="${trimmed#"$git_prefix"}"
+      pages/*|components/*|hooks/*|lib/*|api/*|styles/globals.css)
+        shared_files="${shared_files}${trimmed}\n"
+        ;;
+      public/index.html|public/pt_view.html|public/pt_editor.html|public/rehab_coverage.html|public/manifest.json|public/manifest-tracker.json)
+        shared_files="${shared_files}${trimmed}\n"
         ;;
     esac
+  done
+
+  if [ -n "$shared_files" ] && ! printf '%s\n' "$staged_files" | grep -Fxq "$readme_path"; then
+    printf '%s\n' >&2 "README review required before commit."
+    printf '%s\n' >&2 ""
+    printf '%s\n' >&2 "You staged shared ownership or route-shape files that can change the agent-ops map:"
+    printf '%b' "$shared_files" | while IFS= read -r shared_file; do
+      if [ -n "$shared_file" ]; then
+        printf '  - %s\n' "$shared_file" >&2
+      fi
+    done
+    printf '%s\n' >&2 ""
+    printf '%s\n' >&2 "Stage README.md if the ownership map, route map, or shared-file guidance changed."
+    printf '%s\n' >&2 "If the README remains accurate without edits, retry with:"
+    printf '%s\n' >&2 '  $env:PT_README_OK="1"; git commit ...'
+    printf '%s\n' >&2 ""
+    printf '%s\n' >&2 "See README.md and AGENTS.md."
+    exit 1
   fi
-
-  case "$trimmed" in
-    pages/*|components/*|hooks/*|lib/*|api/*|styles/globals.css)
-      shared_files="${shared_files}${trimmed}\n"
-      ;;
-    public/index.html|public/pt_view.html|public/pt_editor.html|public/rehab_coverage.html|public/manifest.json|public/manifest-tracker.json)
-      shared_files="${shared_files}${trimmed}\n"
-      ;;
-  esac
-done
-
-if [ -z "$shared_files" ]; then
-  exit 0
 fi
-
-if printf '%s\n' "$staged_files" | grep -Fxq "$readme_path"; then
-  exit 0
-fi
-
-printf '%s\n' >&2 "README review required before commit."
-printf '%s\n' >&2 ""
-printf '%s\n' >&2 "You staged shared ownership or route-shape files that can change the agent-ops map:"
-printf '%b' "$shared_files" | while IFS= read -r shared_file; do
-  if [ -n "$shared_file" ]; then
-    printf '  - %s\n' "$shared_file" >&2
-  fi
-done
-printf '%s\n' >&2 ""
-printf '%s\n' >&2 "Stage README.md if the ownership map, route map, or shared-file guidance changed."
-printf '%s\n' >&2 "If the README remains accurate without edits, retry with:"
-printf '%s\n' >&2 '  $env:PT_README_OK="1"; git commit ...'
-printf '%s\n' >&2 ""
-printf '%s\n' >&2 "See README.md and AGENTS.md."
-exit 1
 # --- END PTTRACKER README CHECK ---
+
+# --- BEGIN PTTRACKER BIOME AUTOFORMAT ---
+if command -v node >/dev/null 2>&1; then
+  node scripts/run-biome-staged.mjs
+  _biome_exit=$?
+  if [ $_biome_exit -ne 0 ]; then exit $_biome_exit; fi
+  node scripts/check-structure.mjs --staged
+  _structure_exit=$?
+  if [ $_structure_exit -ne 0 ]; then exit $_structure_exit; fi
+fi
+# --- END PTTRACKER BIOME AUTOFORMAT ---
+
+# --- BEGIN PTTRACKER GITLEAKS SECRET SCAN ---
+if command -v powershell >/dev/null 2>&1; then
+  powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-gitleaks-staged.ps1
+  _gitleaks_exit=$?
+  if [ $_gitleaks_exit -ne 0 ]; then exit $_gitleaks_exit; fi
+fi
+# --- END PTTRACKER GITLEAKS SECRET SCAN ---

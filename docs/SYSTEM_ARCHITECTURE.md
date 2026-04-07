@@ -25,10 +25,10 @@ This architecture is intentional during the migration. Do not assume the repo is
 - React `19.2.4`
 - React DOM `19.2.4`
 
-Route bundle analysis now uses Next's native analyzer path:
+Route bundle analysis now uses Next's native web analyzer path:
 
 - `npm run analyze:bundle`
-- output written to `.next/diagnostics/route-bundle-stats.json` and related diagnostics files
+- opens the analyzer UI locally and writes `.next/diagnostics/route-bundle-stats.json` plus related diagnostics files
 
 Treat those diagnostics as profiling inputs, not as replacements for the repo's ownership and layer rules.
 

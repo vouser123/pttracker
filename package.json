@@ -6,7 +6,13 @@
     "beads:install-commit-hook": "git config core.hooksPath .beads/hooks && bd hooks install --beads",
     "dev": "next dev",
     "build": "next build",
-    "analyze:bundle": "next experimental-analyze -o",
+    "biome:check": "biome check .",
+    "biome:lint": "biome lint .",
+    "biome:format": "biome format --write .",
+    "biome:staged": "node scripts/run-biome-staged.mjs",
+    "structure:check": "node scripts/check-structure.mjs --staged",
+    "analyze:bundle": "next experimental-analyze",
+    "analyze:bundle:out": "next experimental-analyze -o",
     "analyze:paths": "node scripts/dump-analyzer-paths.mjs",
     "analyze:modules": "node scripts/dump-analyzer-module-graph.mjs",
     "start": "next start",
@@ -31,10 +37,11 @@
     "react-virtuoso": "^4.18.3"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.4.10",
     "@playwright/test": "^1.58.2",
     "@serwist/turbopack": "^9.5.7",
     "esbuild-wasm": "^0.27.4",
     "serwist": "^9.5.7",
-    "vercel": "^33.0.0"
+    "vercel": "^50.40.0"
   }
 }
