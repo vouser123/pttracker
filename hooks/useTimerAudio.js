@@ -1,116 +1,116 @@
 // hooks/useTimerAudio.js — audio and speech side effects for exercise execution feedback
 
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useBrowserAudioContext } from './useBrowserAudioContext';
+import { useBrowserSpeech } from './useBrowserSpeech';
 
 export function useTimerAudio() {
-    const audioContextRef = useRef(null);
+  const { ensureAudioReady, playBeep } = useBrowserAudioContext();
+  const { ensureSpeechReady, speakText, clearSpeechQueue } = useBrowserSpeech();
+  const effectQueueRef = useRef(Promise.resolve());
 
-    const ensureAudioReady = useCallback(() => {
-        try {
-            if (!audioContextRef.current) {
-                const Ctx = window.AudioContext || window.webkitAudioContext;
-                if (Ctx) audioContextRef.current = new Ctx();
-            }
-            if (audioContextRef.current?.state === 'suspended') {
-                audioContextRef.current.resume();
-            }
-        } catch {
-            audioContextRef.current = null;
-        }
-    }, []);
+  const waitForTimeout = useCallback(
+    (delayMs) =>
+      new Promise((resolve) => {
+        window.setTimeout(resolve, delayMs);
+      }),
+    [],
+  );
 
-    const playBeep = useCallback((frequency = 800, duration = 200, gain = 0.4) => {
-        try {
-            ensureAudioReady();
-            const context = audioContextRef.current;
-            if (!context) return;
+  const playCompletionSound = useCallback(async () => {
+    await playBeep(1000, 150);
+    await waitForTimeout(200);
+    await playBeep(1200, 150);
+    await waitForTimeout(200);
+    await playBeep(1400, 200);
+  }, [playBeep, waitForTimeout]);
 
-            const oscillator = context.createOscillator();
-            const gainNode = context.createGain();
-            oscillator.connect(gainNode);
-            gainNode.connect(context.destination);
-            oscillator.frequency.value = frequency;
-            oscillator.type = 'square';
+  const runEffect = useCallback(
+    async (effect) => {
+      switch (effect.type) {
+        case 'ensure_audio_ready':
+          await ensureAudioReady();
+          await ensureSpeechReady({ warmOnly: true });
+          break;
+        case 'play_soft_tick':
+          await playBeep(440, 80, 0.25);
+          break;
+        case 'play_start_confirm':
+          await playBeep(520, 90, 0.3);
+          break;
+        case 'play_countdown_warning':
+          await playBeep(600, 100, 0.35);
+          break;
+        case 'play_completion_triple':
+          await playCompletionSound();
+          break;
+        case 'play_partial_confirm':
+          await playBeep(500, 150, 0.4);
+          break;
+        case 'clear_speech_queue':
+          clearSpeechQueue();
+          break;
+        case 'speak_text':
+          if (effect.text) await speakText(effect.text);
+          break;
+        default:
+          break;
+      }
+    },
+    [
+      clearSpeechQueue,
+      ensureAudioReady,
+      ensureSpeechReady,
+      playBeep,
+      playCompletionSound,
+      speakText,
+    ],
+  );
 
-            const durationInSeconds = duration / 1000;
-            gainNode.gain.setValueAtTime(gain, context.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + durationInSeconds);
-            oscillator.start(context.currentTime);
-            oscillator.stop(context.currentTime + durationInSeconds);
-        } catch {
-            // Audio availability is best-effort only.
-        }
-    }, [ensureAudioReady]);
-
-    const playCompletionSound = useCallback(() => {
-        playBeep(1000, 150);
-        setTimeout(() => playBeep(1200, 150), 200);
-        setTimeout(() => playBeep(1400, 200), 400);
-    }, [playBeep]);
-
-    const speakText = useCallback((text) => {
-        try {
-            if (!('speechSynthesis' in window)) return;
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.rate = 1.0;
-            utterance.pitch = 1.0;
-            utterance.volume = 1.0;
-            window.speechSynthesis.speak(utterance);
-        } catch {
-            // Speech availability is best-effort only.
-        }
-    }, []);
-
-    const clearSpeechQueue = useCallback(() => {
-        try {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-            }
-        } catch {
-            // Speech availability is best-effort only.
-        }
-    }, []);
-
-    const executeEffects = useCallback((effects = []) => {
-        effects.forEach((effect) => {
-            switch (effect.type) {
-            case 'ensure_audio_ready':
-                ensureAudioReady();
-                break;
-            case 'play_soft_tick':
-                playBeep(440, 80, 0.25);
-                break;
-            case 'play_start_confirm':
-                playBeep(520, 90, 0.3);
-                break;
-            case 'play_countdown_warning':
-                playBeep(600, 100, 0.35);
-                break;
-            case 'play_completion_triple':
-                playCompletionSound();
-                break;
-            case 'play_partial_confirm':
-                playBeep(500, 150, 0.4);
-                break;
-            case 'clear_speech_queue':
-                clearSpeechQueue();
-                break;
-            case 'speak_text':
-                if (effect.text) speakText(effect.text);
-                break;
-            default:
-                break;
-            }
+  const executeEffects = useCallback(
+    (effects = []) => {
+      effectQueueRef.current = effectQueueRef.current
+        .catch(() => undefined)
+        .then(async () => {
+          for (const effect of effects) {
+            // Preserve cue order so warm-up completes before the next sound or spoken prompt.
+            await runEffect(effect);
+          }
         });
-    }, [clearSpeechQueue, ensureAudioReady, playBeep, playCompletionSound, speakText]);
+      return effectQueueRef.current;
+    },
+    [runEffect],
+  );
 
-    return useMemo(() => ({
-        ensureAudioReady,
-        playBeep,
-        playCompletionSound,
-        speakText,
-        clearSpeechQueue,
-        executeEffects,
-    }), [ensureAudioReady, playBeep, playCompletionSound, speakText, clearSpeechQueue, executeEffects]);
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const warmMedia = () => {
+      executeEffects([{ type: 'ensure_audio_ready' }]);
+    };
+    window.addEventListener('pointerup', warmMedia, { once: true });
+    return () => {
+      window.removeEventListener('pointerup', warmMedia);
+    };
+  }, [executeEffects]);
+
+  return useMemo(
+    () => ({
+      ensureAudioReady,
+      ensureSpeechReady,
+      playBeep,
+      playCompletionSound,
+      speakText,
+      clearSpeechQueue,
+      executeEffects,
+    }),
+    [
+      clearSpeechQueue,
+      ensureAudioReady,
+      ensureSpeechReady,
+      executeEffects,
+      playBeep,
+      playCompletionSound,
+      speakText,
+    ],
+  );
 }
