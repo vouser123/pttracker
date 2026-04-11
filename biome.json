@@ -1,7 +1,15 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.4.10/schema.json",
   "files": {
-    "includes": ["**", "!docs/archive", "!docs/history", "!.next", "!node_modules"]
+    "includes": [
+      "**",
+      "!docs/archive",
+      "!docs/history",
+      "!.beads",
+      "!.next",
+      "!.vercel",
+      "!node_modules"
+    ]
   },
   "formatter": {
     "enabled": true,
