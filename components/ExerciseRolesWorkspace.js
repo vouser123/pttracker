@@ -1,19 +1,21 @@
 // components/ExerciseRolesWorkspace.js — exercise roles workspace shell with selector controls
 
+import styles from './ExerciseRolesWorkspace.module.css';
 import NativeSelect from './NativeSelect';
 import ProgramRolesSection from './ProgramRolesSection';
-import { buildGroupedLifecycleOptions } from '../lib/exercise-lifecycle';
-import styles from './ExerciseRolesWorkspace.module.css';
 
 export default function ExerciseRolesWorkspace({
   roleSearch,
   onRoleSearchChange,
   roleExerciseId,
   onRoleExerciseChange,
-  roleExerciseOptions,
+  roleExerciseSelectOptions,
   roleExercise,
   rolesLoading,
-  vocabularies,
+  regionOptions,
+  capacityOptions,
+  focusOptions,
+  contributionOptions,
   onAddRole,
   onDeleteRole,
 }) {
@@ -21,7 +23,8 @@ export default function ExerciseRolesWorkspace({
     <section className={styles.section}>
       <h2 className={styles.title}>Assign Roles to Exercises</h2>
       <p className={styles.description}>
-        <strong>Roles</strong> define how an exercise contributes to different movement capacities in different body regions.
+        <strong>Roles</strong> define how an exercise contributes to different movement capacities
+        in different body regions.
       </p>
       <div className={styles.selectorStack}>
         <input
@@ -36,14 +39,17 @@ export default function ExerciseRolesWorkspace({
           value={roleExerciseId}
           onChange={onRoleExerciseChange}
           placeholder="-- Choose an exercise --"
-          options={buildGroupedLifecycleOptions(roleExerciseOptions)}
+          options={roleExerciseSelectOptions}
         />
       </div>
       <ProgramRolesSection
         exercise={roleExercise}
         roles={roleExercise?.roles ?? []}
         rolesLoading={rolesLoading}
-        vocabularies={vocabularies}
+        regionOptions={regionOptions}
+        capacityOptions={capacityOptions}
+        focusOptions={focusOptions}
+        contributionOptions={contributionOptions}
         onAddRole={onAddRole}
         onDeleteRole={onDeleteRole}
       />

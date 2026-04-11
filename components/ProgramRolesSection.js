@@ -1,38 +1,30 @@
-import { useMemo, useState } from 'react';
-import NativeSelect from './NativeSelect';
+// components/ProgramRolesSection.js — roles management section for the program workspace
+import { useState } from 'react';
 import styles from './ExerciseForm.module.css';
-import { mapVocabTermsToOptions } from '../lib/vocab-options';
+import NativeSelect from './NativeSelect';
 
 export default function ProgramRolesSection({
   exercise,
   roles,
   rolesLoading,
-  vocabularies,
+  regionOptions,
+  capacityOptions,
+  focusOptions,
+  contributionOptions,
   onAddRole,
   onDeleteRole,
 }) {
+  const fieldIds = {
+    region: 'program-role-region',
+    capacity: 'program-role-capacity',
+    focus: 'program-role-focus',
+    contribution: 'program-role-contribution',
+  };
   const [newRegion, setNewRegion] = useState('');
   const [newCapacity, setNewCapacity] = useState('');
   const [newFocus, setNewFocus] = useState('');
   const [newContribution, setNewContribution] = useState('');
   const [addRoleError, setAddRoleError] = useState(null);
-
-  const regionOptions = useMemo(
-    () => mapVocabTermsToOptions(vocabularies?.region ?? []),
-    [vocabularies?.region]
-  );
-  const capacityOptions = useMemo(
-    () => mapVocabTermsToOptions(vocabularies?.capacity ?? []),
-    [vocabularies?.capacity]
-  );
-  const focusOptions = useMemo(
-    () => mapVocabTermsToOptions(vocabularies?.focus ?? []),
-    [vocabularies?.focus]
-  );
-  const contributionOptions = useMemo(
-    () => mapVocabTermsToOptions(vocabularies?.contribution ?? []),
-    [vocabularies?.contribution]
-  );
 
   async function handleAddRole() {
     setAddRoleError(null);
@@ -66,7 +58,9 @@ export default function ProgramRolesSection({
 
   return (
     <div className={styles.sectionContent}>
-      <p className={styles.hint}>Managing roles for <strong>{exercise.canonical_name}</strong>.</p>
+      <p className={styles.hint}>
+        Managing roles for <strong>{exercise.canonical_name}</strong>.
+      </p>
 
       {roles && roles.length > 0 ? (
         <table className={styles.rolesTable}>
@@ -81,7 +75,11 @@ export default function ProgramRolesSection({
           </thead>
           <tbody>
             {roles.map((role, index) => (
-              <tr key={role.id ?? `${role.region}-${role.capacity}-${role.focus ?? 'general'}-${index}`}>
+              <tr
+                key={
+                  role.id ?? `${role.region}-${role.capacity}-${role.focus ?? 'general'}-${index}`
+                }
+              >
                 <td>{role.region}</td>
                 <td>{role.capacity}</td>
                 <td>{role.focus ?? '—'}</td>
@@ -110,8 +108,11 @@ export default function ProgramRolesSection({
         {addRoleError && <p className={styles.roleError}>{addRoleError}</p>}
         <div className={styles.formRow}>
           <div className={styles.formGroup}>
-            <label className={styles.fieldLabel}>Region *</label>
+            <label className={styles.fieldLabel} htmlFor={fieldIds.region}>
+              Region *
+            </label>
             <NativeSelect
+              id={fieldIds.region}
               className={styles.select}
               value={newRegion}
               onChange={setNewRegion}
@@ -121,8 +122,11 @@ export default function ProgramRolesSection({
             />
           </div>
           <div className={styles.formGroup}>
-            <label className={styles.fieldLabel}>Capacity *</label>
+            <label className={styles.fieldLabel} htmlFor={fieldIds.capacity}>
+              Capacity *
+            </label>
             <NativeSelect
+              id={fieldIds.capacity}
               className={styles.select}
               value={newCapacity}
               onChange={setNewCapacity}
@@ -134,8 +138,11 @@ export default function ProgramRolesSection({
         </div>
         <div className={styles.formRow}>
           <div className={styles.formGroup}>
-            <label className={styles.fieldLabel}>Focus</label>
+            <label className={styles.fieldLabel} htmlFor={fieldIds.focus}>
+              Focus
+            </label>
             <NativeSelect
+              id={fieldIds.focus}
               className={styles.select}
               value={newFocus}
               onChange={setNewFocus}
@@ -145,8 +152,11 @@ export default function ProgramRolesSection({
             />
           </div>
           <div className={styles.formGroup}>
-            <label className={styles.fieldLabel}>Contribution *</label>
+            <label className={styles.fieldLabel} htmlFor={fieldIds.contribution}>
+              Contribution *
+            </label>
             <NativeSelect
+              id={fieldIds.contribution}
               className={styles.select}
               value={newContribution}
               onChange={setNewContribution}

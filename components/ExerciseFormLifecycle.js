@@ -2,48 +2,47 @@
 
 import styles from './ExerciseForm.module.css';
 import NativeSelect from './NativeSelect';
-import { toTitleCase } from '../lib/text-format';
 
 // Intentionally hardcoded behavior enum; approved by user on 2026-04-07.
 // Do not extend without explicit sign-off. These values drive lifecycle behavior.
 const LIFECYCLE_STATUSES = ['active', 'on_hold', 'as_needed', 'archived', 'deprecated'];
 
-/**
- * Exercise form section 6: Lifecycle & Status.
- * Manages status, effective dates, supersedes relationship, and read-only audit fields.
- * Extracted from ExerciseFormCues so lifecycle concerns have a focused home and
- * can receive the exercises list (needed for the supersedes dropdown) without polluting cues.
- *
- * @param {Object} lifecycle            - { status, effective_start_date, effective_end_date,
- *                                         added_date, updated_date, superseded_by, superseded_date }
- * @param {Function} onLifecycleChange  - (updatedLifecycle) => void
- * @param {string|null} supersedes      - ID of the exercise this one supersedes (editable)
- * @param {Function} onSupersedingChange - (exerciseId|null) => void
- * @param {Array} exercises             - full exercise list for the supersedes dropdown
- * @param {string|null} currentExerciseId - ID of the exercise being edited (excluded from dropdown)
- */
-export default function ExerciseFormLifecycle({
-  lifecycle, onLifecycleChange,
-  supersedes, onSupersedingChange,
-  exercises, currentExerciseId,
-}) {
-  // Find the exercise that superseded this one (for read-only display)
-  const supersededByExercise = lifecycle.superseded_by
-    ? exercises.find(ex => ex.id === lifecycle.superseded_by)
-    : null;
+function toTitleCase(value) {
+  if (!value) return '';
+  return String(value)
+    .trim()
+    .replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
+}
 
-  // Exercises eligible for the supersedes dropdown: all except current exercise
-  const supersedableExercises = (exercises ?? []).filter(ex => ex.id !== currentExerciseId);
+export default function ExerciseFormLifecycle({
+  lifecycle,
+  onLifecycleChange,
+  supersedes,
+  onSupersedingChange,
+  exercises,
+  currentExerciseId,
+}) {
+  const fieldIds = {
+    status: 'exercise-lifecycle-status',
+    effectiveStart: 'exercise-lifecycle-effective-start',
+    effectiveEnd: 'exercise-lifecycle-effective-end',
+    supersedes: 'exercise-lifecycle-supersedes',
+  };
+  const supersededByExercise = lifecycle.superseded_by
+    ? exercises.find((ex) => ex.id === lifecycle.superseded_by)
+    : null;
+  const supersedableExercises = (exercises ?? []).filter((ex) => ex.id !== currentExerciseId);
 
   return (
     <details className={styles.section}>
       <summary className={styles.sectionHeader}>Lifecycle &amp; Status</summary>
       <div className={styles.sectionContent}>
-
-        {/* Status */}
         <div className={styles.formGroup}>
-          <label className={styles.fieldLabel}>Status</label>
+          <label className={styles.fieldLabel} htmlFor={fieldIds.status}>
+            Status
+          </label>
           <NativeSelect
+            id={fieldIds.status}
             className={styles.select}
             value={lifecycle.status ?? ''}
             onChange={(value) => onLifecycleChange({ ...lifecycle, status: value || null })}
@@ -55,39 +54,54 @@ export default function ExerciseFormLifecycle({
           />
           <span className={styles.hint}>
             <strong>active</strong> — in use.&nbsp;
-            <strong>on hold</strong> — paused for now, but still shown in program so it can return to rotation later.&nbsp;
-            <strong>as needed</strong> — available to log and manage, but excluded from routine counts and needs-attention surfaces.&nbsp;
-            <strong>archived</strong> — temporarily set aside; appears when "Show archived" is on.&nbsp;
-            <strong>deprecated</strong> — permanently removed from use; never appears in the exercise list.
+            <strong>on hold</strong> — paused for now, but still shown in program so it can return
+            to rotation later.&nbsp;
+            <strong>as needed</strong> — available to log and manage, but excluded from routine
+            counts and needs-attention surfaces.&nbsp;
+            <strong>archived</strong> — temporarily set aside; appears when "Show archived" is
+            on.&nbsp;
+            <strong>deprecated</strong> — permanently removed from use; never appears in the
+            exercise list.
           </span>
         </div>
 
-        {/* Effective dates */}
         <div className={styles.formRow}>
           <div className={styles.formGroup}>
-            <label className={styles.fieldLabel}>Effective Start</label>
+            <label className={styles.fieldLabel} htmlFor={fieldIds.effectiveStart}>
+              Effective Start
+            </label>
             <input
+              id={fieldIds.effectiveStart}
               type="date"
               className={styles.input}
               value={lifecycle.effective_start_date ?? ''}
-              onChange={e => onLifecycleChange({ ...lifecycle, effective_start_date: e.target.value || null })}
+              onChange={(e) =>
+                onLifecycleChange({ ...lifecycle, effective_start_date: e.target.value || null })
+              }
             />
           </div>
           <div className={styles.formGroup}>
-            <label className={styles.fieldLabel}>Effective End</label>
+            <label className={styles.fieldLabel} htmlFor={fieldIds.effectiveEnd}>
+              Effective End
+            </label>
             <input
+              id={fieldIds.effectiveEnd}
               type="date"
               className={styles.input}
               value={lifecycle.effective_end_date ?? ''}
-              onChange={e => onLifecycleChange({ ...lifecycle, effective_end_date: e.target.value || null })}
+              onChange={(e) =>
+                onLifecycleChange({ ...lifecycle, effective_end_date: e.target.value || null })
+              }
             />
           </div>
         </div>
 
-        {/* Supersedes: this exercise replaces another */}
         <div className={styles.formGroup}>
-          <label className={styles.fieldLabel}>Supersedes</label>
+          <label className={styles.fieldLabel} htmlFor={fieldIds.supersedes}>
+            Supersedes
+          </label>
           <NativeSelect
+            id={fieldIds.supersedes}
             className={styles.select}
             value={supersedes ?? ''}
             onChange={(value) => onSupersedingChange(value || null)}
@@ -97,41 +111,45 @@ export default function ExerciseFormLifecycle({
               label: ex.canonical_name,
             }))}
           />
-          <span className={styles.hint}>This exercise replaces the selected exercise. Saving updates the superseded exercise automatically.</span>
+          <span className={styles.hint}>
+            This exercise replaces the selected exercise. Saving updates the superseded exercise
+            automatically.
+          </span>
         </div>
 
-        {/* Superseded by: read-only — set automatically when another exercise supersedes this one */}
         <div className={styles.formGroup}>
-          <label className={styles.fieldLabel}>Superseded by</label>
+          <p className={styles.fieldLabel}>Superseded by</p>
           {lifecycle.superseded_by ? (
             <>
               <p className={styles.readonlyDate}>
-                {supersededByExercise ? supersededByExercise.canonical_name : lifecycle.superseded_by}
+                {supersededByExercise
+                  ? supersededByExercise.canonical_name
+                  : lifecycle.superseded_by}
                 {lifecycle.superseded_date ? ` (${lifecycle.superseded_date.split('T')[0]})` : ''}
               </p>
-              <span className={styles.hint}>Set automatically when another exercise supersedes this one.</span>
+              <span className={styles.hint}>
+                Set automatically when another exercise supersedes this one.
+              </span>
             </>
           ) : (
             <p className={styles.readonlyDate}>—</p>
           )}
         </div>
 
-        {/* Read-only audit dates — always shown; format strips time component from ISO timestamps */}
         <div className={styles.formRow}>
           <div className={styles.formGroup}>
-            <label className={styles.fieldLabel}>Added Date</label>
+            <p className={styles.fieldLabel}>Added Date</p>
             <p className={styles.readonlyDate}>
               {lifecycle.added_date ? lifecycle.added_date.split('T')[0] : '—'}
             </p>
           </div>
           <div className={styles.formGroup}>
-            <label className={styles.fieldLabel}>Last Updated</label>
+            <p className={styles.fieldLabel}>Last Updated</p>
             <p className={styles.readonlyDate}>
               {lifecycle.updated_date ? lifecycle.updated_date.split('T')[0] : '—'}
             </p>
           </div>
         </div>
-
       </div>
     </details>
   );

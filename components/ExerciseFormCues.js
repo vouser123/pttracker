@@ -11,6 +11,7 @@ import styles from './ExerciseForm.module.css';
  */
 function GuidanceSection({ label, items, onAdd, onRemove }) {
   const [input, setInput] = useState('');
+  const inputId = `guidance-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
 
   function handleAdd() {
     const val = input.trim();
@@ -22,33 +23,44 @@ function GuidanceSection({ label, items, onAdd, onRemove }) {
 
   return (
     <div className={styles.guidanceSection}>
-      <label className={styles.fieldLabel}>{label}</label>
+      <label className={styles.fieldLabel} htmlFor={inputId}>
+        {label}
+      </label>
       <div className={styles.tagInput}>
         <input
+          id={inputId}
           className={styles.input}
           value={input}
-          onChange={e => setInput(e.target.value)}
+          onChange={(e) => setInput(e.target.value)}
           placeholder="Enter text…"
-          onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleAdd())}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleAdd();
+            }
+          }}
         />
         <button type="button" onPointerUp={handleAdd} className={styles.btnSecondary}>
           Add
         </button>
       </div>
       <ol className={styles.guidanceList}>
-        {items.map((item, i) => (
-          <li key={i} className={styles.guidanceItem}>
-            <span>{item}</span>
-            <button
-              type="button"
-              className={styles.tagRemove}
-              onPointerUp={() => onRemove(i)}
-              aria-label="Remove"
-            >
-              ×
-            </button>
-          </li>
-        ))}
+        {items.map((item, i) => {
+          const occurrence = items.slice(0, i + 1).filter((entry) => entry === item).length;
+          return (
+            <li key={`${item}-${occurrence}`} className={styles.guidanceItem}>
+              <span>{item}</span>
+              <button
+                type="button"
+                className={styles.tagRemove}
+                onPointerUp={() => onRemove(i)}
+                aria-label="Remove"
+              >
+                ×
+              </button>
+            </li>
+          );
+        })}
       </ol>
     </div>
   );
@@ -61,15 +73,14 @@ function GuidanceSection({ label, items, onAdd, onRemove }) {
  * @param {Object} guidance             - { motor_cues, compensation_warnings, safety_flags, external_cues }
  * @param {Function} onGuidanceChange   - (updatedGuidance) => void
  */
-export default function ExerciseFormCues({
-  guidance, onGuidanceChange,
-}) {
+export default function ExerciseFormCues({ guidance, onGuidanceChange }) {
   function guidanceSetter(section) {
     const items = guidance[section] ?? [];
     return {
       items,
-      onAdd: item => onGuidanceChange({ ...guidance, [section]: [...items, item] }),
-      onRemove: i => onGuidanceChange({ ...guidance, [section]: items.filter((_, idx) => idx !== i) }),
+      onAdd: (item) => onGuidanceChange({ ...guidance, [section]: [...items, item] }),
+      onRemove: (i) =>
+        onGuidanceChange({ ...guidance, [section]: items.filter((_, idx) => idx !== i) }),
     };
   }
 
@@ -80,12 +91,14 @@ export default function ExerciseFormCues({
         <summary className={styles.sectionHeader}>Guidance &amp; Cues</summary>
         <div className={styles.sectionContent}>
           <GuidanceSection label="Motor Cues" {...guidanceSetter('motor_cues')} />
-          <GuidanceSection label="Compensation Warnings" {...guidanceSetter('compensation_warnings')} />
+          <GuidanceSection
+            label="Compensation Warnings"
+            {...guidanceSetter('compensation_warnings')}
+          />
           <GuidanceSection label="Safety Flags" {...guidanceSetter('safety_flags')} />
           <GuidanceSection label="External Cues" {...guidanceSetter('external_cues')} />
         </div>
       </details>
-
     </>
   );
 }

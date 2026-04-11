@@ -1,8 +1,6 @@
 // components/ProgramDosageWorkspace.js — /program dosage workspace shell with patient context and selector controls
 
 import NativeSelect from './NativeSelect';
-import { formatDosageSummary } from '../lib/dosage-summary';
-import { buildGroupedLifecycleOptions } from '../lib/exercise-lifecycle';
 import styles from './ProgramDosageWorkspace.module.css';
 
 export default function ProgramDosageWorkspace({
@@ -11,13 +9,11 @@ export default function ProgramDosageWorkspace({
   onDosageSearchChange,
   dosageExerciseId,
   onDosageExerciseChange,
-  dosageExerciseOptions,
+  dosageExerciseSelectOptions,
   dosageExercise,
-  selectedProgram,
+  dosageSummary,
   onEditDosage,
 }) {
-  const dosageSummary = formatDosageSummary(selectedProgram, { exercise: dosageExercise });
-
   return (
     <section className={styles.section}>
       <h2 className={styles.title}>Manage Patient Dosages</h2>
@@ -42,7 +38,7 @@ export default function ProgramDosageWorkspace({
           value={dosageExerciseId}
           onChange={onDosageExerciseChange}
           placeholder="-- Choose an exercise --"
-          options={buildGroupedLifecycleOptions(dosageExerciseOptions)}
+          options={dosageExerciseSelectOptions}
         />
       </div>
       {dosageExercise ? (
@@ -51,10 +47,7 @@ export default function ProgramDosageWorkspace({
           <p className={styles.dosageSummary}>
             {dosageSummary ? `Current dosage: ${dosageSummary}` : 'No dosage assigned yet.'}
           </p>
-          <button
-            className={styles.btnDosage}
-            onPointerUp={onEditDosage}
-          >
+          <button type="button" className={styles.btnDosage} onPointerUp={onEditDosage}>
             {dosageSummary ? 'Edit dosage' : 'Set dosage'}
           </button>
         </div>

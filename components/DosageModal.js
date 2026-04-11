@@ -1,6 +1,6 @@
 // DosageModal.js — shared modal for viewing/editing a patient's dosage for an exercise
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import styles from './DosageModal.module.css';
 
 /**
@@ -31,17 +31,28 @@ export default function DosageModal({ exercise, program, onSave, onClose }) {
   const [distance, setDistance] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const fieldIds = {
+    sets: 'dosage-sets',
+    reps: 'dosage-reps',
+    seconds: 'dosage-seconds',
+    distance: 'dosage-distance',
+  };
 
   // Pre-fill from existing program when modal opens
   useEffect(() => {
     if (program) {
-      const usesDuration = program.dosage_type === 'duration' || (!program.dosage_type && hasDuration);
+      const usesDuration =
+        program.dosage_type === 'duration' || (!program.dosage_type && hasDuration);
       setSets(program.sets != null ? String(program.sets) : '');
       setReps(program.reps_per_set != null ? String(program.reps_per_set) : '');
       setSeconds(
         usesDuration
-          ? (program.seconds_per_set != null ? String(program.seconds_per_set) : '')
-          : (program.seconds_per_rep != null ? String(program.seconds_per_rep) : '')
+          ? program.seconds_per_set != null
+            ? String(program.seconds_per_set)
+            : ''
+          : program.seconds_per_rep != null
+            ? String(program.seconds_per_rep)
+            : '',
       );
       setDistance(program.distance_feet != null ? String(program.distance_feet) : '');
     } else {
@@ -51,7 +62,7 @@ export default function DosageModal({ exercise, program, onSave, onClose }) {
       setDistance('');
     }
     setError(null);
-  }, [program]);
+  }, [hasDuration, program]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -86,7 +97,7 @@ export default function DosageModal({ exercise, program, onSave, onClose }) {
 
     const formData = {
       sets: parsedSets,
-      dosage_type: hasDistance ? 'distance' : (hasDuration ? 'duration' : (hasHold ? 'hold' : 'reps')),
+      dosage_type: hasDistance ? 'distance' : hasDuration ? 'duration' : hasHold ? 'hold' : 'reps',
     };
 
     if (showReps) {
@@ -112,12 +123,10 @@ export default function DosageModal({ exercise, program, onSave, onClose }) {
   }
 
   return (
-    <div className={styles.overlay} onPointerUp={e => e.target === e.currentTarget && onClose()}>
+    <div className={styles.overlay} onPointerUp={(e) => e.target === e.currentTarget && onClose()}>
       <div className={styles.modal} role="dialog" aria-modal="true" aria-label="Edit Dosage">
         <div className={styles.header}>
-          <h2 className={styles.title}>
-            {program ? 'Edit Dosage' : 'Set Dosage'}
-          </h2>
+          <h2 className={styles.title}>{program ? 'Edit Dosage' : 'Set Dosage'}</h2>
           <p className={styles.exerciseName}>{exercise?.canonical_name}</p>
         </div>
 
@@ -126,13 +135,16 @@ export default function DosageModal({ exercise, program, onSave, onClose }) {
 
           {/* Sets — always shown */}
           <div className={styles.field}>
-            <label className={styles.label}>Sets</label>
+            <label className={styles.label} htmlFor={fieldIds.sets}>
+              Sets
+            </label>
             <input
+              id={fieldIds.sets}
               type="number"
               className={styles.input}
               value={sets}
               min="1"
-              onChange={e => setSets(e.target.value)}
+              onChange={(e) => setSets(e.target.value)}
               placeholder="e.g. 3"
             />
           </div>
@@ -140,13 +152,16 @@ export default function DosageModal({ exercise, program, onSave, onClose }) {
           {/* Reps — hidden for duration / distance exercises */}
           {showReps && (
             <div className={styles.field}>
-              <label className={styles.label}>Reps (per set)</label>
+              <label className={styles.label} htmlFor={fieldIds.reps}>
+                Reps (per set)
+              </label>
               <input
+                id={fieldIds.reps}
                 type="number"
                 className={styles.input}
                 value={reps}
                 min="1"
-                onChange={e => setReps(e.target.value)}
+                onChange={(e) => setReps(e.target.value)}
                 placeholder="e.g. 10"
               />
             </div>
@@ -155,13 +170,16 @@ export default function DosageModal({ exercise, program, onSave, onClose }) {
           {/* Seconds — shown for hold or duration exercises */}
           {showSeconds && (
             <div className={styles.field}>
-              <label className={styles.label}>{secondsLabel}</label>
+              <label className={styles.label} htmlFor={fieldIds.seconds}>
+                {secondsLabel}
+              </label>
               <input
+                id={fieldIds.seconds}
                 type="number"
                 className={styles.input}
                 value={seconds}
                 min="1"
-                onChange={e => setSeconds(e.target.value)}
+                onChange={(e) => setSeconds(e.target.value)}
                 placeholder="e.g. 30"
               />
             </div>
@@ -170,13 +188,16 @@ export default function DosageModal({ exercise, program, onSave, onClose }) {
           {/* Distance — shown for distance exercises */}
           {hasDistance && (
             <div className={styles.field}>
-              <label className={styles.label}>Distance (feet)</label>
+              <label className={styles.label} htmlFor={fieldIds.distance}>
+                Distance (feet)
+              </label>
               <input
+                id={fieldIds.distance}
                 type="number"
                 className={styles.input}
                 value={distance}
                 min="1"
-                onChange={e => setDistance(e.target.value)}
+                onChange={(e) => setDistance(e.target.value)}
                 placeholder="e.g. 100"
               />
             </div>

@@ -1,9 +1,8 @@
+// components/ProgramVocabEditor.js — controlled-vocabulary editor for the program workspace
 import { useEffect, useMemo, useState } from 'react';
-import NativeSelect from './NativeSelect';
 import styles from './ExerciseForm.module.css';
+import NativeSelect from './NativeSelect';
 
-// Intentionally hardcoded supported vocab tables; approved by user on 2026-03-19.
-// Do not extend without explicit sign-off. These map to the controlled vocab surfaces the static editor manages.
 const CATEGORY_METADATA = [
   { key: 'region', label: 'Regions' },
   { key: 'capacity', label: 'Capacities' },
@@ -27,11 +26,17 @@ export default function ProgramVocabEditor({
   onDeleteTerm,
   saving = false,
 }) {
+  const fieldIds = {
+    category: 'program-vocab-category',
+    code: 'program-vocab-code',
+    definition: 'program-vocab-definition',
+  };
   const categoryOptions = useMemo(
-    () => CATEGORY_METADATA
-      .filter(({ key }) => Array.isArray(vocabularies?.[key]))
-      .map(({ key, label }) => ({ value: key, label })),
-    [vocabularies]
+    () =>
+      CATEGORY_METADATA.filter(({ key }) => Array.isArray(vocabularies?.[key])).map(
+        ({ key, label }) => ({ value: key, label }),
+      ),
+    [vocabularies],
   );
   const [selectedCategory, setSelectedCategory] = useState(categoryOptions[0]?.value ?? 'region');
   const [newCode, setNewCode] = useState('');
@@ -118,7 +123,7 @@ export default function ProgramVocabEditor({
 
   async function handleConfirmArchive(term) {
     const confirmed = window.confirm(
-      `Archive "${term.code}" from active ${selectedCategory.replace(/_/g, ' ')} vocabulary? This is a soft delete only and can be restored later if needed.`
+      `Archive "${term.code}" from active ${selectedCategory.replace(/_/g, ' ')} vocabulary? This is a soft delete only and can be restored later if needed.`,
     );
     if (!confirmed) return;
     await handleDeleteTerm(term.code);
@@ -127,8 +132,11 @@ export default function ProgramVocabEditor({
   return (
     <div className={styles.sectionContent}>
       <div className={styles.formGroup}>
-        <label className={styles.fieldLabel}>Vocabulary Category</label>
+        <label className={styles.fieldLabel} htmlFor={fieldIds.category}>
+          Vocabulary Category
+        </label>
         <NativeSelect
+          id={fieldIds.category}
           className={styles.select}
           value={selectedCategory}
           onChange={setSelectedCategory}
@@ -141,8 +149,11 @@ export default function ProgramVocabEditor({
       <div className={styles.vocabManager}>
         <div className={styles.formRow}>
           <div className={styles.formGroup}>
-            <label className={styles.fieldLabel}>Code</label>
+            <label className={styles.fieldLabel} htmlFor={fieldIds.code}>
+              Code
+            </label>
             <input
+              id={fieldIds.code}
               className={styles.input}
               value={newCode}
               onChange={(event) => setNewCode(event.target.value)}
@@ -151,8 +162,11 @@ export default function ProgramVocabEditor({
             />
           </div>
           <div className={styles.formGroup}>
-            <label className={styles.fieldLabel}>Definition</label>
+            <label className={styles.fieldLabel} htmlFor={fieldIds.definition}>
+              Definition
+            </label>
             <input
+              id={fieldIds.definition}
               className={styles.input}
               value={newDefinition}
               onChange={(event) => setNewDefinition(event.target.value)}
@@ -161,7 +175,9 @@ export default function ProgramVocabEditor({
           </div>
         </div>
         <div className={styles.inlineActions}>
-          <span className={styles.hint}>Codes are stored as lowercase values. Definitions provide the readable label.</span>
+          <span className={styles.hint}>
+            Codes are stored as lowercase values. Definitions provide the readable label.
+          </span>
           <button
             type="button"
             className={styles.btnSecondary}
@@ -196,7 +212,8 @@ export default function ProgramVocabEditor({
                     <div className={styles.archiveWarningBox}>
                       <p className={styles.archiveWarningTitle}>Archive this vocabulary term?</p>
                       <p className={styles.archiveWarningText}>
-                        This removes the term from active editor lists only. It does not permanently erase the term.
+                        This removes the term from active editor lists only. It does not permanently
+                        erase the term.
                       </p>
                       <div className={styles.inlineActions}>
                         <button
