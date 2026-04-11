@@ -219,4 +219,7 @@ console.error('');
 console.error(
   'These rules come from docs/NEXTJS_CODE_STRUCTURE.md and docs/SYSTEM_ARCHITECTURE.md.',
 );
+console.error(
+  'Do not bypass file-size caps or related structure rules without consulting the user and receiving explicit approval.',
+);
 process.exit(1);
