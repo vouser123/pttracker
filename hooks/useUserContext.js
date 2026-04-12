@@ -1,86 +1,28 @@
-/**
- * hooks/useUserContext.js — Shared user identity and messaging context hook.
- *
- * Single source of truth for all user identity fields needed by MessagesModal
- * and any future page that adds messaging. Eliminates per-page duplication of
- * the fetchUsers → resolvePatientScopedUserContext → derive-names pattern.
- *
- * Returns:
- *   profileId        {string|null}  — users table PK (for sender_id comparison in messages)
- *   patientId        {string|null}  — patient's profile id (for fetching logs/programs)
- *   recipientId      {string|null}  — messaging recipient's profile id
- *   userRole         {string}       — 'patient' | 'therapist'
- *   emailEnabled     {boolean}      — email notification preference (initial server value)
- *   viewerName       {string}       — current user's first name (for message sender labels)
- *   otherName        {string}       — other participant's first name
- *   otherIsTherapist {boolean}      — whether the other participant is the therapist
- *   loading          {boolean}      — true until first fetch resolves
- *   error            {string|null}  — error message if fetch failed
- */
-import { useState, useEffect, useRef } from 'react';
-import { fetchUsers, resolvePatientScopedUserContext } from '../lib/users';
+// hooks/useUserContext.js — owns user-context lifecycle, cache restore, and live refresh
+import { useEffect, useRef, useState } from 'react';
+import {
+  isEffectivelyOffline,
+  isNetworkUnavailableError,
+  markNetworkFailure,
+  markNetworkSuccess,
+} from '../lib/network-status';
 import { offlineCache } from '../lib/offline-cache';
+import { deriveUserContextState, fetchUsers } from '../lib/users';
 
 /** @returns {ReturnType<typeof getDefaultState>} */
 function getDefaultState() {
-    return {
-        profileId: null,
-        patientId: null,
-        recipientId: null,
-        userRole: 'patient',
-        emailEnabled: true,
-        viewerName: '',
-        otherName: '',
-        otherIsTherapist: false,
-        loading: true,
-        error: null,
-    };
-}
-
-/**
- * Derive all user context fields from the fetched users array and session.
- * @param {Array} users
- * @param {string} authUserId — session.user.id (Supabase auth UUID)
- * @returns {object}
- */
-function deriveContext(users, authUserId) {
-    const { currentUser, patientUser, fallbackRecipientId } = resolvePatientScopedUserContext(
-        users,
-        authUserId
-    );
-
-    // Resolve the other messaging participant
-    let otherUser = null;
-    if (currentUser.role === 'therapist') {
-        // Therapist's other participant is their patient
-        otherUser = users.find((u) => u.therapist_id === currentUser.id) ?? null;
-    } else {
-        // Patient's other participant is their therapist
-        otherUser = users.find((u) => u.id === currentUser.therapist_id) ?? null;
-    }
-
-    return {
-        profileId: currentUser.id,
-        patientId: patientUser.id,
-        recipientId: fallbackRecipientId,
-        userRole: currentUser.role ?? 'patient',
-        emailEnabled: currentUser.email_notifications_enabled ?? true,
-        viewerName: currentUser.first_name || '',
-        otherName: otherUser?.first_name || '',
-        otherIsTherapist: otherUser?.role === 'therapist',
-        loading: false,
-        error: null,
-    };
-}
-
-function isOfflineError(error) {
-    const message = String(error?.message ?? '').toLowerCase();
-    return (
-        typeof navigator !== 'undefined' && navigator.onLine === false
-    ) || message.includes('failed to fetch')
-        || message.includes('network request failed')
-        || message.includes('networkerror')
-        || message.includes('fetch failed');
+  return {
+    profileId: null,
+    patientId: null,
+    recipientId: null,
+    userRole: 'patient',
+    emailEnabled: true,
+    viewerName: '',
+    otherName: '',
+    otherIsTherapist: false,
+    loading: true,
+    error: null,
+  };
 }
 
 /**
@@ -88,83 +30,88 @@ function isOfflineError(error) {
  * @returns {ReturnType<typeof getDefaultState>}
  */
 export function useUserContext(session) {
-    const [state, setState] = useState(getDefaultState);
-    const hadSessionRef = useRef(false);
+  const [state, setState] = useState(getDefaultState);
+  const hadSessionRef = useRef(false);
 
-    useEffect(() => {
-        if (!session) {
-            // Only clear user cache on actual sign-out (session was previously set),
-            // not on the initial null-session render before auth resolves. Clearing
-            // on initial mount destroys the offline fallback: the IDB readwrite
-            // transaction serializes ahead of the subsequent readonly getCachedUsers(),
-            // so the users store is empty by the time the auth-resolved effect reads it.
-            if (hadSessionRef.current) {
-                void offlineCache.init()
-                    .then(() => offlineCache.clearStore('users'))
-                    .catch((err) => console.error('useUserContext cache clear failed:', err));
+  useEffect(() => {
+    if (!session) {
+      // Only clear user cache on actual sign-out (session was previously set),
+      // not on the initial null-session render before auth resolves. Clearing
+      // on initial mount destroys the offline fallback: the IDB readwrite
+      // transaction serializes ahead of the subsequent readonly getCachedUsers(),
+      // so the users store is empty by the time the auth-resolved effect reads it.
+      if (hadSessionRef.current) {
+        void offlineCache
+          .init()
+          .then(() => offlineCache.clearStore('users'))
+          .catch((err) => console.error('useUserContext cache clear failed:', err));
+      }
+      setState({ ...getDefaultState(), loading: false });
+      return;
+    }
+
+    hadSessionRef.current = true;
+    let cancelled = false;
+
+    async function load() {
+      let cachedContext = null;
+
+      try {
+        await offlineCache.init();
+
+        const cachedUsers = await offlineCache.getCachedUsers();
+        if (cachedUsers.length) {
+          try {
+            cachedContext = deriveUserContextState(cachedUsers, session.user.id);
+            if (!cancelled) {
+              setState(cachedContext);
             }
-            setState({ ...getDefaultState(), loading: false });
+          } catch {
+            cachedContext = null;
+          }
+        }
+
+        if (isEffectivelyOffline()) {
+          if (cachedContext) return;
+          throw new Error('Offline - cached user context unavailable.');
+        }
+
+        const users = await fetchUsers(session.access_token);
+        markNetworkSuccess();
+
+        // Cache users for offline fallback (consumed by usePtViewData offline path)
+        await offlineCache.cacheUsers(users);
+
+        if (cancelled) return;
+        setState(deriveUserContextState(users, session.user.id));
+      } catch (err) {
+        if (cancelled) return;
+        markNetworkFailure(err);
+
+        if (cachedContext && isNetworkUnavailableError(err)) {
+          return;
+        }
+
+        // Try offline cache fallback
+        try {
+          const cached = await offlineCache.getCachedUsers();
+          if (cached.length) {
+            setState(deriveUserContextState(cached, session.user.id));
             return;
+          }
+        } catch {
+          // Cache also failed — fall through to error state
         }
 
-        hadSessionRef.current = true;
-        let cancelled = false;
+        setState((prev) => ({ ...prev, loading: false, error: err.message }));
+      }
+    }
 
-        async function load() {
-            let cachedContext = null;
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [session]);
 
-            try {
-                await offlineCache.init();
-
-                const cachedUsers = await offlineCache.getCachedUsers();
-                if (cachedUsers.length) {
-                    try {
-                        cachedContext = deriveContext(cachedUsers, session.user.id);
-                        if (!cancelled) {
-                            setState(cachedContext);
-                        }
-                    } catch {
-                        cachedContext = null;
-                    }
-                }
-
-                if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-                    if (cachedContext) return;
-                    throw new Error('Offline - cached user context unavailable.');
-                }
-
-                const users = await fetchUsers(session.access_token);
-
-                // Cache users for offline fallback (consumed by usePtViewData offline path)
-                await offlineCache.cacheUsers(users);
-
-                if (cancelled) return;
-                setState(deriveContext(users, session.user.id));
-            } catch (err) {
-                if (cancelled) return;
-
-                if (cachedContext && isOfflineError(err)) {
-                    return;
-                }
-
-                // Try offline cache fallback
-                try {
-                    const cached = await offlineCache.getCachedUsers();
-                    if (cached.length) {
-                        setState(deriveContext(cached, session.user.id));
-                        return;
-                    }
-                } catch {
-                    // Cache also failed — fall through to error state
-                }
-
-                setState((prev) => ({ ...prev, loading: false, error: err.message }));
-            }
-        }
-
-        void load();
-        return () => { cancelled = true; };
-    }, [session]);
-
-    return state;
+  return state;
 }

@@ -16,19 +16,14 @@
  * }}
  */
 import { useEffect, useState } from 'react';
+import {
+  isEffectivelyOffline,
+  isNetworkUnavailableError,
+  markNetworkFailure,
+  markNetworkSuccess,
+} from '../lib/network-status';
 import { offlineCache } from '../lib/offline-cache';
 import { supabase } from '../lib/supabase';
-
-function isOfflineSignInError(error) {
-  const message = String(error?.message ?? '').toLowerCase();
-  return (
-    (typeof navigator !== 'undefined' && navigator.onLine === false) ||
-    message.includes('failed to fetch') ||
-    message.includes('network request failed') ||
-    message.includes('networkerror') ||
-    message.includes('fetch failed')
-  );
-}
 
 function persistAuthUserId(userId) {
   if (typeof window === 'undefined') return;
@@ -66,9 +61,12 @@ export function useAuth() {
       setLoading(false);
 
       const { error: userError } = await supabase.auth.getUser();
-      if (!userError) return;
+      if (!userError) {
+        markNetworkSuccess();
+        return;
+      }
 
-      if (isOfflineSignInError(userError)) {
+      if (markNetworkFailure(userError)) {
         // Network is down — keep the locally-restored session active and let
         // page-level data hooks decide whether to use cached or fresh data.
         return;
@@ -81,7 +79,7 @@ export function useAuth() {
       const isRefreshTokenError =
         userError.message?.includes('refresh_token') ||
         userError.message?.includes('Refresh Token');
-      if (isRefreshTokenError && typeof navigator !== 'undefined' && navigator.onLine === false) {
+      if (isRefreshTokenError && isEffectivelyOffline()) {
         return;
       }
 
@@ -102,10 +100,11 @@ export function useAuth() {
         // A SIGNED_OUT event while offline is almost certainly a failed background
         // token refresh, not an explicit sign-out. Clearing the session offline
         // wipes the users IDB store and destroys offline data. Ignore it.
-        if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
+        if (isEffectivelyOffline()) return;
         clearAuthUserId();
         setSession(null);
       } else if (sess) {
+        markNetworkSuccess();
         persistAuthUserId(sess.user.id);
         setSession(sess);
       }
@@ -122,9 +121,13 @@ export function useAuth() {
    */
   async function signIn(email, password) {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (!error) return null;
+    if (!error) {
+      markNetworkSuccess();
+      return null;
+    }
 
-    if (isOfflineSignInError(error)) {
+    if (isNetworkUnavailableError(error)) {
+      markNetworkFailure(error);
       return 'Signing in requires an internet connection. If you already signed in on this device before going offline, reopen the app and it should restore your saved session.';
     }
 

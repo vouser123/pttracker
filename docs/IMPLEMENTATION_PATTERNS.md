@@ -57,17 +57,28 @@ Treat the static legacy surface as frozen for routine cleanup. Only apply these 
 ## Offline Storage And Persistence
 
 - Use [`lib/offline-cache.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib/offline-cache.js) for shared IndexedDB-backed route bootstrap and auth persistence.
+- Use [`lib/network-status.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib/network-status.js) for shared effective-online detection, network-unavailable error classification, and recent request success/failure evidence.
+- Use [`lib/fetch-with-offline.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib/fetch-with-offline.js) for authenticated JSON read requests that need shared offline, HTTP, and parse error classification.
+- Use [`hooks/useEffectiveConnectivity.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useEffectiveConnectivity.js) when React code needs the current browser online state plus request-evidence status in one subscription.
+- Use [`lib/tracker-bootstrap.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib/tracker-bootstrap.js) when tracker bootstrap load, cache read/write rules, fallback shaping, or bootstrap error copy changes.
+- Use [`hooks/useIndexHistoryPagination.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useIndexHistoryPagination.js) for older-history paging and merged-history cache persistence instead of broadening the tracker state shell.
 - Use [`lib/index-offline.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib/index-offline.js) with [`hooks/useIndexOfflineQueue.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useIndexOfflineQueue.js) for tracker offline queue behavior.
 - Use [`hooks/useProgramBootstrapWarmup.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useProgramBootstrapWarmup.js) for authenticated warm-up of `/program` editor bootstrap data when first offline visits to `/program` must work after earlier app use.
+- Use [`lib/program-bootstrap-warmup.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib/program-bootstrap-warmup.js) when `/program` warm-fill cache inspection or missing-bootstrap write rules change so the warmup hook can stay focused on browser-session orchestration.
+- Use [`app/(protected)/ProtectedClientWarmers.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/(protected)/ProtectedClientWarmers.js) for documented tracker-triggered `/program` route prefetch. Keep protected route warming on `router.prefetch('/program')` plus bootstrap cache warming, not hidden credentialed document or RSC fetches.
 - Use [`hooks/useProgramOfflineQueue.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useProgramOfflineQueue.js) for `/program` offline mutation queue lifecycle.
 - Do not introduce new app-data persistence in `localStorage`.
 - Do not put IndexedDB queue rules directly into page components when a shared offline helper or hook already owns them.
+- Do not add new raw `navigator.onLine` checks in auth, queue, or bootstrap code when the shared effective-connectivity helper covers the same decision.
+- Do not hand-roll new authenticated read helpers with bare `fetch()` plus local offline string matching when the shared fetch wrapper covers the same request shape.
+- Do not warm protected pages with hidden credentialed `fetch('/route')` or manual RSC fetches when the route can be warmed through the documented Next.js prefetch path.
 
 ## Auth, Users, And Shared Data Access
 
 - Use [`lib/supabase.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib/supabase.js) for the shared Next.js Supabase client.
 - Use [`hooks/useAuth.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useAuth.js) for page-level auth/session flow.
 - Use [`lib/users.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib/users.js) for shared user lookup, email-notification preference helpers, and patient-context resolution.
+- Use [`lib/program-page-data.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib/program-page-data.js) for pure `/program` cached bootstrap shaping instead of rebuilding editor fallback state inside the route hook.
 - For patient-scoped routes such as `/pt-view` and `/program` dosage, resolve the effective patient with `resolvePatientScopedUserContext(users, session.user.id)` before calling APIs that store `users.id`.
 - Do not create new frontend Supabase clients in pages, components, or hooks.
 - Do not bypass the shared auth flow with page-local token/session logic.
@@ -76,7 +87,7 @@ Treat the static legacy surface as frozen for routine cleanup. Only apply these 
 ## Toasts, Messages, And Shared Feedback
 
 - Use [`components/Toast.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/components/Toast.js) with [`hooks/useToast.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useToast.js) for transient user feedback.
-- Use [`components/MessagesModal.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/components/MessagesModal.js) with [`hooks/useMessages.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useMessages.js) for migrated messaging flows.
+- Use [`components/MessagesModal.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/components/MessagesModal.js) with [`hooks/useMessages.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useMessages.js) and [`lib/messages.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib/messages.js) for migrated messaging flows.
 - Do not create page-local toast systems or duplicate message modal behavior.
 - Do not scatter message polling or read-state logic across multiple pages if `useMessages` already owns it.
 
@@ -89,8 +100,6 @@ Treat the static legacy surface as frozen for routine cleanup. Only apply these 
 - Use [`hooks/useLoggerFeedback.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useLoggerFeedback.js) for tracker-wide completion/save/comparison feedback timing.
 - Do not duplicate timer machine or tracker-wide feedback rules in page files when shared hooks already own them.
 - Panel-local execution feedback that belongs to [`components/TimerPanel.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/components/TimerPanel.js) may remain in the panel when it is part of the execution UI itself.
-
-
 ## Tracker Session And Manual Log Structure
 
 - Keep [`hooks/useTrackerSession.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useTrackerSession.js) at orchestration level. It should wire tracker-session sub-hooks together instead of owning unrelated lifecycle, pending-set, and finalization rules inline.

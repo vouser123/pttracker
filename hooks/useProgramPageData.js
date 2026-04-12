@@ -1,60 +1,19 @@
-// hooks/useProgramPageData.js — loads, caches, and restores /program page data
+// hooks/useProgramPageData.js — owns the /program page bootstrap, cache restore, and live refresh
 import { useCallback, useEffect, useState } from 'react';
+import { isOfflineRequestError } from '../lib/fetch-with-offline';
 import { offlineCache } from '../lib/offline-cache';
-import { emptyReferenceData } from '../lib/program-optimistic';
-import { fetchExercises, fetchVocabularies, fetchReferenceData, fetchPrograms } from '../lib/pt-editor';
+import {
+  emptyProgramDataState,
+  persistProgramDataSnapshot,
+  readCachedProgramBootstrap,
+} from '../lib/program-page-data';
+import {
+  fetchExercises,
+  fetchPrograms,
+  fetchReferenceData,
+  fetchVocabularies,
+} from '../lib/pt-editor';
 import { fetchUsers, resolvePatientScopedUserContext } from '../lib/users';
-
-function emptyProgramDataState() {
-  return {
-    exercises: [],
-    referenceData: emptyReferenceData(),
-    vocabularies: {},
-    programs: {},
-    loadError: null,
-    offlineNotice: null,
-    currentUserRole: null,
-    accessError: null,
-    programPatientId: null,
-    programPatientName: '',
-  };
-}
-
-function buildCachedProgramSnapshot(cachedUsers, authUserId, cachedExercises, cachedVocabularies, cachedReferenceData, cachedPrograms) {
-  const currentUser = (cachedUsers ?? []).find((user) => user.auth_id === authUserId);
-  if (!currentUser) return null;
-
-  if (currentUser.role !== 'therapist' && currentUser.role !== 'admin') {
-    return {
-      ...emptyProgramDataState(),
-      currentUserRole: currentUser.role,
-      accessError: 'Therapist or admin access required.',
-    };
-  }
-
-  const { patientUser, patientDisplayName } = resolvePatientScopedUserContext(cachedUsers, authUserId);
-  const programMap = Object.fromEntries((cachedPrograms ?? []).map((program) => [program.exercise_id, program]));
-  const hasCachedBootstrap =
-    (cachedExercises?.length ?? 0) > 0 ||
-    Object.keys(cachedVocabularies ?? {}).length > 0 ||
-    (cachedReferenceData?.equipment?.length ?? 0) > 0 ||
-    (cachedReferenceData?.muscles?.length ?? 0) > 0 ||
-    (cachedReferenceData?.formParameters?.length ?? 0) > 0 ||
-    Object.keys(programMap).length > 0;
-
-  if (!hasCachedBootstrap) return null;
-
-  return {
-    ...emptyProgramDataState(),
-    exercises: cachedExercises ?? [],
-    vocabularies: cachedVocabularies ?? {},
-    referenceData: cachedReferenceData ?? emptyReferenceData(),
-    programs: programMap,
-    currentUserRole: currentUser.role,
-    programPatientId: patientUser.id,
-    programPatientName: patientDisplayName,
-  };
-}
 
 /**
  * /program bootstrap, cache, and offline fallback lifecycle.
@@ -63,10 +22,6 @@ function buildCachedProgramSnapshot(cachedUsers, authUserId, cachedExercises, ca
  */
 export function useProgramPageData({ session, initialAuthUserId = null }) {
   const [state, setState] = useState(emptyProgramDataState);
-  const persistProgramSnapshot = useCallback(async (snapshot) => {
-    await offlineCache.init();
-    await Promise.all([offlineCache.cacheExercises(snapshot.exercises), offlineCache.cacheProgramVocabularies(snapshot.vocabularies), offlineCache.cacheProgramReferenceData(snapshot.referenceData), offlineCache.cachePrograms(Object.values(snapshot.programs ?? {}))]);
-  }, []);
 
   const setProgramDataSnapshot = useCallback((snapshot) => {
     setState((previous) => ({
@@ -79,31 +34,7 @@ export function useProgramPageData({ session, initialAuthUserId = null }) {
   }, []);
 
   const restoreCachedProgramBootstrap = useCallback(async (authUserId) => {
-    if (!authUserId) return null;
-
-    await offlineCache.init();
-    const [
-      cachedUsers,
-      cachedExercises,
-      cachedVocabularies,
-      cachedReferenceData,
-      cachedPrograms,
-    ] = await Promise.all([
-      offlineCache.getCachedUsers(),
-      offlineCache.getCachedExercises(),
-      offlineCache.getCachedProgramVocabularies(),
-      offlineCache.getCachedProgramReferenceData(),
-      offlineCache.getCachedPrograms(),
-    ]);
-
-    const cachedBootstrap = buildCachedProgramSnapshot(
-      cachedUsers,
-      authUserId,
-      cachedExercises,
-      cachedVocabularies,
-      cachedReferenceData,
-      cachedPrograms
-    );
+    const cachedBootstrap = await readCachedProgramBootstrap(authUserId);
 
     if (cachedBootstrap) {
       setState(cachedBootstrap);
@@ -112,60 +43,72 @@ export function useProgramPageData({ session, initialAuthUserId = null }) {
     return cachedBootstrap;
   }, []);
 
-  const loadData = useCallback(async (accessToken, authUserId) => {
-    let cachedBootstrap = null;
+  const loadData = useCallback(
+    async (accessToken, authUserId) => {
+      let cachedBootstrap = null;
 
-    try {
-      cachedBootstrap = await restoreCachedProgramBootstrap(authUserId);
-
-      const usersData = await fetchUsers(accessToken);
-      await offlineCache.cacheUsers(usersData);
-      const currentUser = usersData.find((user) => user.auth_id === authUserId);
-      if (!currentUser) throw new Error('Current user profile not found');
-
-      if (currentUser.role !== 'therapist' && currentUser.role !== 'admin') {
-        setState({ ...emptyProgramDataState(), currentUserRole: currentUser.role, accessError: 'Therapist or admin access required.' });
-        return null;
-      }
-
-      const { patientUser, patientDisplayName } = resolvePatientScopedUserContext(usersData, authUserId);
-      const [exercises, vocabularies, referenceData, programs] = await Promise.all([
-        fetchExercises(accessToken),
-        fetchVocabularies(accessToken),
-        fetchReferenceData(accessToken),
-        fetchPrograms(accessToken, patientUser.id),
-      ]);
-      const nextData = {
-        exercises,
-        vocabularies,
-        referenceData,
-        programs,
-        currentUserRole: currentUser.role,
-        programPatientId: patientUser.id,
-        programPatientName: patientDisplayName,
-      };
-      await persistProgramSnapshot(nextData);
-      setState({ ...emptyProgramDataState(), ...nextData });
-      return nextData;
-    } catch (err) {
       try {
-        if (!cachedBootstrap) {
-          cachedBootstrap = await restoreCachedProgramBootstrap(authUserId);
+        cachedBootstrap = await restoreCachedProgramBootstrap(authUserId);
+
+        const usersData = await fetchUsers(accessToken);
+        await offlineCache.cacheUsers(usersData);
+        const currentUser = usersData.find((user) => user.auth_id === authUserId);
+        if (!currentUser) throw new Error('Current user profile not found');
+
+        if (currentUser.role !== 'therapist' && currentUser.role !== 'admin') {
+          setState({
+            ...emptyProgramDataState(),
+            currentUserRole: currentUser.role,
+            accessError: 'Therapist or admin access required.',
+          });
+          return null;
         }
 
-        if (!cachedBootstrap) throw err;
+        const { patientUser, patientDisplayName } = resolvePatientScopedUserContext(
+          usersData,
+          authUserId,
+        );
+        const [exercises, vocabularies, referenceData, programs] = await Promise.all([
+          fetchExercises(accessToken),
+          fetchVocabularies(accessToken),
+          fetchReferenceData(accessToken),
+          fetchPrograms(accessToken, patientUser.id),
+        ]);
+        const nextData = {
+          exercises,
+          vocabularies,
+          referenceData,
+          programs,
+          currentUserRole: currentUser.role,
+          programPatientId: patientUser.id,
+          programPatientName: patientDisplayName,
+        };
+        await persistProgramDataSnapshot(nextData);
+        setState({ ...emptyProgramDataState(), ...nextData });
+        return nextData;
+      } catch (err) {
+        try {
+          if (!cachedBootstrap) {
+            cachedBootstrap = await restoreCachedProgramBootstrap(authUserId);
+          }
 
-        setState({
-          ...cachedBootstrap,
-          offlineNotice: 'Offline - showing cached editor data.',
-        });
-        return cachedBootstrap;
-      } catch {
-        setState({ ...emptyProgramDataState(), loadError: err.message });
-        return null;
+          if (!cachedBootstrap) throw err;
+
+          setState({
+            ...cachedBootstrap,
+            offlineNotice: isOfflineRequestError(err)
+              ? 'Offline - showing cached editor data.'
+              : 'Live refresh failed - showing cached editor data.',
+          });
+          return cachedBootstrap;
+        } catch {
+          setState({ ...emptyProgramDataState(), loadError: err.message });
+          return null;
+        }
       }
-    }
-  }, [persistProgramSnapshot, restoreCachedProgramBootstrap]);
+    },
+    [restoreCachedProgramBootstrap],
+  );
 
   useEffect(() => {
     if (session) return;
@@ -173,7 +116,8 @@ export function useProgramPageData({ session, initialAuthUserId = null }) {
     let cancelled = false;
 
     void (async () => {
-      const fallbackAuthUserId = initialAuthUserId ?? await offlineCache.getAuthState('auth_user_id');
+      const fallbackAuthUserId =
+        initialAuthUserId ?? (await offlineCache.getAuthState('auth_user_id'));
       if (!fallbackAuthUserId || cancelled) return;
       await restoreCachedProgramBootstrap(fallbackAuthUserId);
     })();
