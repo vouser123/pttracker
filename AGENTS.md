@@ -10,6 +10,7 @@ This file governs agent behavior for work in this repo.
 - `docs/NEXTJS_CODE_STRUCTURE.md` - open when editing file placement, layering, or split boundaries
 - `docs/STRUCTURE_REVIEW_ESCALATION.md` - open when a structure-related hook fires and the file must be handed to a read-only structure-review subagent
 - `docs/IMPLEMENTATION_PATTERNS.md` - open when you need the approved shared pattern for a change
+- `docs/SCRIPTS_GUIDE.md` - open when you need the current usage for local helper scripts such as analyzer helpers, commit preflight, or the required Supabase backup script
 - `docs/DATA_VOCABULARIES.md` - open when you need canonical field names or controlled values
 - `docs/TESTING_CHECKLISTS.md` - open when validating behavior changes
 - `docs/BEADS_WORKFLOW.md` - open for the required bead lifecycle

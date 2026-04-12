@@ -1,6 +1,8 @@
 # PT Rebuild Docs
 
-Use this file as the docs index for ``.
+Use this file as the AI-agent docs index for this repo.
+
+Like the rest of this repo, these docs are created for AI-agent workflow and repo operations, not as human-facing product documentation.
 
 Use [`../README.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/README.md) for the live codebase map.
 Use this file to decide which doc to open next.
@@ -25,6 +27,9 @@ Use this file to decide which doc to open next.
 - [`IMPLEMENTATION_PATTERNS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/IMPLEMENTATION_PATTERNS.md)
   - Open when: you need the approved shared helper, component, or do-this-not-that implementation pattern.
   - Answers: "Which shared thing should I use here?"
+- [`SCRIPTS_GUIDE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/SCRIPTS_GUIDE.md)
+  - Open when: you need the current usage for analyzer helpers, commit preflight, Supabase backup, or other local helper scripts.
+  - Answers: "How do I use the local scripts right now?"
 - [`OFFLINE_HANDLING_RESEARCH_2026-04-12.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/OFFLINE_HANDLING_RESEARCH_2026-04-12.md)
   - Open when: you need the durable April 2026 research note for protected-route offline behavior, service worker scope, shared connectivity, or tracker-triggered `/program` warmup.
   - Answers: "Why are we using shared connectivity plus offline-aware fetches instead of a service-worker-only fix?" and "How should `/program` warm from tracker opening without manual protected document and RSC fetches?"

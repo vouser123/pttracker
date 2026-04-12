@@ -138,6 +138,15 @@ function checkReadmeGuard() {
   };
 }
 
+function checkDocsReadmeGuard() {
+  const result = runCommand(process.execPath, ['scripts/check-docs-readme-update.mjs']);
+  return {
+    name: 'Docs README guard',
+    ok: result.ok,
+    details: result.ok ? ['Docs README guard would pass.'] : summarizeOutput(result),
+  };
+}
+
 function checkBiome(stagedFiles) {
   if (stagedFiles.length === 0) {
     return {
@@ -313,6 +322,7 @@ const results = [
 
 if (stagedFiles.length > 0) {
   results.push(checkReadmeGuard());
+  results.push(checkDocsReadmeGuard());
   results.push(checkBiome(stagedFiles));
   results.push(checkStructure());
   results.push(checkGitleaks());

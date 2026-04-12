@@ -72,6 +72,14 @@ if [ "${PT_README_OK:-0}" != "1" ]; then
 fi
 # --- END PTTRACKER README CHECK ---
 
+# --- BEGIN PTTRACKER DOCS README CHECK ---
+if [ "${PT_DOCS_README_OK:-0}" != "1" ] && command -v node >/dev/null 2>&1; then
+  node scripts/check-docs-readme-update.mjs
+  _docs_readme_exit=$?
+  if [ $_docs_readme_exit -ne 0 ]; then exit $_docs_readme_exit; fi
+fi
+# --- END PTTRACKER DOCS README CHECK ---
+
 # --- BEGIN PTTRACKER BIOME AUTOFORMAT ---
 if command -v node >/dev/null 2>&1; then
   node scripts/run-biome-staged.mjs

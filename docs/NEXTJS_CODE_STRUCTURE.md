@@ -69,11 +69,7 @@ These are performance signals, not ownership rules. Route size does not decide w
 - Isolate or narrow realtime usage if the message badge/subscription does not need to ride the default shared browser client on every route.
 - Prefer route/API data reads over browser-SDK reads when that keeps heavy client libraries out of the first-load path.
 
-Run `npm run analyze:bundle` → starts the full web analyzer (typically at `http://localhost:4000/`) and writes diagnostics to `.next/diagnostics/route-bundle-stats.json`, `.next/diagnostics/build-diagnostics.json`, `.next/diagnostics/framework.json`, and `.next/diagnostics/analyze/`.
-
-Helpful local analyzers when the treemap needs repeatable evidence instead of manual clicking:
-- `npm run analyze:paths -- --route / --term supabase` → route-source chains plus emitted output files for the current route
-- `npm run analyze:modules -- --term createBrowserClient` → packed module-graph dependents and dependencies behind the treemap right panel
+Keep command usage out of this structure doc. For the current analyzer commands, required flags, Windows `--root` handling, helper-script output, and commit preflight usage, use [`SCRIPTS_GUIDE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/SCRIPTS_GUIDE.md).
 
 **At or above cap:** Must resolve before adding more code. No exceptions.
 
