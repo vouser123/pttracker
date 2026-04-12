@@ -128,6 +128,7 @@ Constraints:
 - Only inspect imports used by the target file and exports the target file consumes or provides when needed to judge ownership.
 - If a boundary is unclear, report the ambiguity instead of inventing a new pattern.
 - Judge the target file by ownership, cohesion, and layer boundaries only; do not infer goals beyond that review.
+- Do not treat a broad umbrella label as proof of cohesion. Judge whether the file contains independently changeable concerns that future agents would benefit from editing separately.
 - Do not propose a migration plan, sequencing plan, or implementation checklist unless a structural recommendation cannot be understood without naming the likely destination file.
 
 Use these rules:
@@ -138,6 +139,7 @@ Use these rules:
 - Hooks own one concern: state/effects only, no JSX.
 - Lib files are pure functions for one domain.
 - Cohesion and ownership matter more than superficial file shape.
+- Ask whether the responsibilities are independently changeable concerns, not just whether they can be described with one broad phrase.
 - If the filename would need to change to describe the contents, the concern does not belong there.
 - Treat the file header comment as a domain contract.
 - Prefer existing shared patterns over inventing new structure.

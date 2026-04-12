@@ -100,6 +100,15 @@ Why this matters here: broad mixed files are easier for agents to break accident
 
 ## Cohesion Check (Apply Before Any Split)
 
+Do not treat a file as cohesive just because you can describe it with one broad umbrella phrase. The real standard is whether the file contains independently changeable concerns that future agents would benefit from editing separately.
+
+Ask:
+- Would a future agent reasonably want to change this part without changing the rest?
+- Does this responsibility have its own lifecycle, side effects, UI surface, or data-shaping rules?
+- Would extracting it reduce collateral reasoning and editing risk for future work?
+
+If yes, that is evidence the file may need extraction even if the contents sound related at a high level.
+
 **Filename domain test:** Before adding a function to an existing file or before splitting a file, ask:
 
 > "Would I need to rename this file to accurately describe what it contains after adding this?"
