@@ -40,6 +40,13 @@ Session-start requirement:
 - Do not use file size as permission to add the wrong kind of code to a file.
 - Open [`docs/AGENT_PLAYBOOK.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/AGENT_PLAYBOOK.md) and [`docs/NEXTJS_CODE_STRUCTURE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/NEXTJS_CODE_STRUCTURE.md) if you need the full layer table or split workflow.
 
+**Before touching any existing file, ask two questions:**
+
+1. Does this file already have one clear responsibility? If not, propose splitting it first — do not add to a mixed-concern file.
+2. Does the change I am about to make belong in this file, or in a different file, or should it be a new file? A new concern being introduced is a signal that a new file may be needed, not that the existing file should grow.
+
+Both questions apply independently. A well-structured file can still be the wrong place for a given edit. The structure hook is a safety net — it only catches files that exceed the line cap. A mixed-concern edit that stays under the limit will pass silently. Apply the standard before writing, not after preflight fails.
+
 ## Structure Hook Escalation (Required)
 
 If a structure-related hook fires for a specific file, pause work on that file and use the escalation workflow in [`docs/STRUCTURE_REVIEW_ESCALATION.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/STRUCTURE_REVIEW_ESCALATION.md).
