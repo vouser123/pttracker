@@ -8,6 +8,7 @@ This file governs agent behavior for work in this repo.
 - `README.md` - live codebase map and file ownership
 - `docs/AGENT_PLAYBOOK.md` - longer agent workflow detail; open only when the rule in AGENTS says it is applicable
 - `docs/NEXTJS_CODE_STRUCTURE.md` - open when editing file placement, layering, or split boundaries
+- `docs/RESPONSIBILITY_FIRST_PLACEMENT.md` - open when deciding whether an edit belongs in the current file or should move to a new/shared file
 - `docs/STRUCTURE_REVIEW_ESCALATION.md` - open when a structure-related hook fires and the file must be handed to a read-only structure-review subagent
 - `docs/IMPLEMENTATION_PATTERNS.md` - open when you need the approved shared pattern for a change
 - `docs/SCRIPTS_GUIDE.md` - open when you need the current usage for local helper scripts such as analyzer helpers, commit preflight, or the required Supabase backup script
@@ -39,7 +40,7 @@ Session-start requirement:
 - `pages/` are orchestrators only.
 - If the code is not pure wiring, it does not belong in the page file.
 - Do not use file size as permission to add the wrong kind of code to a file.
-- Open [`docs/AGENT_PLAYBOOK.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/AGENT_PLAYBOOK.md) and [`docs/NEXTJS_CODE_STRUCTURE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/NEXTJS_CODE_STRUCTURE.md) if you need the full layer table or split workflow.
+- Open [`docs/AGENT_PLAYBOOK.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/AGENT_PLAYBOOK.md), [`docs/NEXTJS_CODE_STRUCTURE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/NEXTJS_CODE_STRUCTURE.md), and [`docs/RESPONSIBILITY_FIRST_PLACEMENT.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/RESPONSIBILITY_FIRST_PLACEMENT.md) if you need the full layer table, the responsibility-first placement test, or the split workflow.
 
 **Before touching any existing file, ask two questions:**
 
@@ -47,6 +48,8 @@ Session-start requirement:
 2. Does the change I am about to make belong in this file, or in a different file, or should it be a new file? A new concern being introduced is a signal that a new file may be needed, not that the existing file should grow.
 
 Both questions apply independently. A well-structured file can still be the wrong place for a given edit. The structure hook is a safety net — it only catches files that exceed the line cap. A mixed-concern edit that stays under the limit will pass silently. Apply the standard before writing, not after preflight fails.
+
+For the canonical wording of this rule, including the responsibility-first placement test and the reminder that file caps/hooks are coarse signals rather than the target, see [`docs/RESPONSIBILITY_FIRST_PLACEMENT.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/RESPONSIBILITY_FIRST_PLACEMENT.md).
 
 ## Structure Hook Escalation (Required)
 

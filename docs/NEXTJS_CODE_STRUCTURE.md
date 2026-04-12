@@ -89,6 +89,12 @@ Why this matters here: broad mixed files are easier for agents to break accident
 
 ---
 
+## Responsibility-First Placement
+
+Use [`RESPONSIBILITY_FIRST_PLACEMENT.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/RESPONSIBILITY_FIRST_PLACEMENT.md) for the short canonical wording of the pre-edit ownership test. Keep this structure doc focused on layer, cap, and split rules; use the companion doc for the fast "does this change belong here?" decision.
+
+---
+
 ## Cohesion Check (Apply Before Any Split)
 
 Do not treat a file as cohesive just because you can describe it with one broad umbrella phrase. The real standard is whether the file contains independently changeable concerns that future agents would benefit from editing separately.

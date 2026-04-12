@@ -44,6 +44,11 @@ Before writing to a route file:
 5. Then wire it into the route host.
 
 For broader structure rules, also open [`docs/NEXTJS_CODE_STRUCTURE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/NEXTJS_CODE_STRUCTURE.md).
+For the short pre-edit ownership test, also open [`docs/RESPONSIBILITY_FIRST_PLACEMENT.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/RESPONSIBILITY_FIRST_PLACEMENT.md).
+
+Use that doc to keep one question in front of you:
+
+`Is this file the right owner for this behavior?`
 
 ## Parity Workflow
 
@@ -64,17 +69,6 @@ Focus on:
 - timer and interaction semantics
 - mobile/iOS interaction differences
 
-## Agent Ops Friction Logging
-
-Use Beads epic `pt-uf1` for execution friction that affects throughput.
-
-Create child issues for concrete incidents:
-
-```bash
-bd create "<title>" -t task -p 2 --deps discovered-from:pt-uf1 --description "<incident + impact + root cause + mitigation>" --json
-```
-
-Keep the epic open as the long-running signal. Close the child issue once the specific friction is addressed.
 
 ## Beads Detail
 

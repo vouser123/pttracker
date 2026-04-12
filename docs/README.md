@@ -18,6 +18,9 @@ Use this file to decide which doc to open next.
 - [`NEXTJS_CODE_STRUCTURE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/NEXTJS_CODE_STRUCTURE.md)
   - Open when: you are adding, splitting, or reorganizing Next.js files.
   - Answers: "How should Next.js code be structured?" and "What does the framework enforce versus what still needs repo rules?"
+- [`RESPONSIBILITY_FIRST_PLACEMENT.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/RESPONSIBILITY_FIRST_PLACEMENT.md)
+  - Open when: you need the fast pre-edit ownership test for deciding whether a change belongs in the current file, a new file, or a shared file.
+  - Answers: "Is this the right owner for this change?" and "Why are file caps and hooks only coarse signals?"
 - [`STRUCTURE_REVIEW_ESCALATION.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/STRUCTURE_REVIEW_ESCALATION.md)
   - Open when: a structure-related hook fires and the file must be handed to a read-only structure-review subagent.
   - Answers: "How do I escalate a structure review cleanly without contaminating the subagent prompt?" and "What is the narrow one-off structure bypass pattern?"

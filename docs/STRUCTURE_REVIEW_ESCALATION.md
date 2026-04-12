@@ -4,6 +4,7 @@ Use this doc when a structure-related hook fires for a specific file and the age
 
 Use [`README.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/README.md) for the live codebase map.
 Use [`NEXTJS_CODE_STRUCTURE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/NEXTJS_CODE_STRUCTURE.md) for the repo's layer and split rules.
+Use [`RESPONSIBILITY_FIRST_PLACEMENT.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/RESPONSIBILITY_FIRST_PLACEMENT.md) for the short ownership test that asks whether the edit belongs in the current file at all.
 
 ## Purpose
 
@@ -14,6 +15,8 @@ This workflow exists to force a clean ownership review before more edits continu
 - The subagent reviews the file neutrally and writes findings back to the bead.
 
 Keep the subagent prompt neutral. Trigger rationale belongs in the parent workflow and bead, not in the subagent prompt.
+
+The goal is not to get past a cap or make the hook pass. The goal is to determine whether the file is the right owner for the behavior being changed.
 
 ## Parent-Agent Rule
 
@@ -28,6 +31,12 @@ Required workflow:
 5. Direct the subagent to write its findings back to that same bead.
 6. Do not make any further changes to the target file, including comment-only edits, until the subagent review is complete.
 7. Before resuming work, summarize the subagent's conclusions and state whether the file will be split, left intact, or escalated for a human decision.
+
+When interpreting the subagent output:
+
+- do not optimize for line count
+- do not treat a passing hook as proof that the placement is correct
+- decide based on ownership, independently changeable concerns, and future-agent maintainability
 
 The subagent prompt must remain neutral:
 
@@ -111,6 +120,7 @@ After reading the bead, read these repo docs:
 - docs/README.md
 - README.md
 - docs/NEXTJS_CODE_STRUCTURE.md
+- docs/RESPONSIBILITY_FIRST_PLACEMENT.md
 - docs/SYSTEM_ARCHITECTURE.md
 - docs/IMPLEMENTATION_PATTERNS.md
 - docs/AGENT_PLAYBOOK.md
