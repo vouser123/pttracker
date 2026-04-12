@@ -43,10 +43,10 @@ export default function TrackerRouteShell({
   onLoadMoreHistory,
   onTabChange,
   pendingCount,
-  queue,
-  syncing,
-  queueLoaded,
-  queueError,
+  offlinePendingCount,
+  offlineSyncing,
+  offlineQueueLoaded,
+  offlineQueueError,
 }) {
   return (
     <div className={styles.page}>
@@ -99,11 +99,11 @@ export default function TrackerRouteShell({
         </div>
       )}
       <OfflineQueueBanner
-        queue={queue}
-        syncing={syncing}
-        queueLoaded={queueLoaded}
-        queueError={queueError}
-        label="session"
+        pendingCount={offlinePendingCount}
+        syncing={offlineSyncing}
+        queueLoaded={offlineQueueLoaded}
+        queueError={offlineQueueError}
+        label="change"
       />
       <Toast message={toastMessage} type={toastType} visible={toastVisible} />
 

@@ -1,43 +1,32 @@
 // components/OfflineQueueBanner.js — persistent offline/syncing state indicator for all pages
 
 /**
- * OfflineQueueBanner — persistent indicator for offline/syncing state
- *
- * Displays pending queue state similar to ProgramPage banner.
- * Unifies how tracker and program show offline changes.
- *
  * Props:
- *   - queue: Array of pending items
- *   - syncing: boolean, currently syncing
- *   - queueError: string|null, error message if any items failed
- *   - queueLoaded: boolean, queue fully hydrated
- *   - label: string, what items are being synced (e.g., "exercise change" or "session")
+ *   pendingCount  number   — total items awaiting sync
+ *   syncing       boolean  — currently uploading
+ *   queueError    string|null — last sync failure message
+ *   queueLoaded   boolean  — queue hydrated from storage (don't flash before load)
+ *   label         string   — singular noun for the item type, e.g. "change" or "session"
  */
-
 export default function OfflineQueueBanner({
-  queue = [],
+  pendingCount = 0,
   syncing = false,
   queueError = null,
   queueLoaded = true,
   label = 'change',
 }) {
-  const pendingCount = queue?.length ?? 0;
+  if (!queueLoaded || (pendingCount === 0 && !queueError)) return null;
 
-  // Don't show banner until queue is loaded or there's actual pending state
-  if (!queueLoaded || (pendingCount === 0 && !queueError)) {
-    return null;
-  }
-
-  const labelPlural = pendingCount === 1 ? label : `${label}s`;
+  const noun = pendingCount === 1 ? label : `${label}s`;
   const isError = Boolean(queueError);
 
   let message;
   if (isError) {
-    message = `${pendingCount} ${labelPlural} failed to sync. ${queueError}`;
+    message = `${pendingCount} ${noun} failed to sync. ${queueError}`;
   } else if (syncing) {
-    message = `Syncing ${pendingCount} pending ${labelPlural}…`;
+    message = `Syncing ${pendingCount} pending ${noun}…`;
   } else {
-    message = `${pendingCount} ${labelPlural} queued for sync.`;
+    message = `${pendingCount} ${noun} saved locally — will sync when online.`;
   }
 
   return (

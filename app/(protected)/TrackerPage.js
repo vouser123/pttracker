@@ -58,7 +58,7 @@ export default function TrackerPage() {
     fromCache,
     reload,
   } = useIndexData(token, trackerPatientId);
-  const { queue, pendingCount, syncing, queueLoaded, queueError, enqueue, sync, clearQueue } =
+  const { pendingCount, syncing, queueLoaded, queueError, enqueue, sync, clearQueue } =
     useIndexOfflineQueue(userId, token, {
       autoSyncOnReconnect: false,
     });
@@ -76,6 +76,9 @@ export default function TrackerPage() {
     canEditDosage,
     dosageTarget,
     programsForTracker,
+    mutationQueue,
+    dosageSyncing,
+    dosageQueueError,
     openDosageEditor,
     closeDosageEditor,
     saveDosage,
@@ -361,10 +364,10 @@ export default function TrackerPage() {
         onLoadMoreHistory={loadMoreHistory}
         onTabChange={handleTabChange}
         pendingCount={pendingCount}
-        queue={queue}
-        syncing={syncing}
-        queueLoaded={queueLoaded}
-        queueError={queueError}
+        offlinePendingCount={pendingCount + mutationQueue.length}
+        offlineSyncing={syncing || dosageSyncing}
+        offlineQueueLoaded={queueLoaded}
+        offlineQueueError={queueError || dosageQueueError}
       />
       <TrackerOverlays
         isSessionLoggerOpen={isSessionLoggerOpen}
