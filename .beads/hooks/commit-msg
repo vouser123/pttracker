@@ -14,6 +14,8 @@ if ! printf '%s\n' "$first_line" | grep -Eiq "$bead_pattern"; then
   printf '%s\n' >&2 "error: commit title must include at least one Beads issue ID in parentheses"
   printf '%s\n' >&2 "error: example: git commit -m \"Restore hook behavior (pt-msyc)\""
   printf '%s\n' >&2 "error: multiple IDs are allowed: git commit -m \"Update tracker docs (pt-msyc, pt-ab12)\""
+  printf '%s\n' >&2 "error: before retrying, run:"
+  printf '%s\n' >&2 "error:   npm run commit:preflight -- --message \"$first_line\" --trailer \"Co-Authored-By: Codex GPT-5.4 <codex@openai.com>\""
   exit 1
 fi
 
@@ -32,6 +34,8 @@ printf '%s\n' >&2 "error: example footers:"
 printf '%s\n' >&2 "error:   Co-Authored-By: Codex <codex@openai.com>"
 printf '%s\n' >&2 "error:   Co-Authored-By: Codex GPT-5.4 <codex@openai.com>"
 printf '%s\n' >&2 "error:   Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+printf '%s\n' >&2 "error: before retrying, run:"
+printf '%s\n' >&2 "error:   npm run commit:preflight -- --message \"$first_line\" --trailer \"Co-Authored-By: Codex GPT-5.4 <codex@openai.com>\""
 printf '%s\n' >&2 "error: override once only if no agent attribution should be recorded:"
 printf '%s\n' >&2 "error:   PowerShell: \$env:PT_AI_TRAILER_OK=\"1\"; git commit ..."
 printf '%s\n' >&2 "error:   sh/bash: PT_AI_TRAILER_OK=1 git commit ..."

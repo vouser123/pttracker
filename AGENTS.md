@@ -8,6 +8,7 @@ This file governs agent behavior for work in this repo.
 - `README.md` - live codebase map and file ownership
 - `docs/AGENT_PLAYBOOK.md` - longer agent workflow detail; open only when the rule in AGENTS says it is applicable
 - `docs/NEXTJS_CODE_STRUCTURE.md` - open when editing file placement, layering, or split boundaries
+- `docs/STRUCTURE_REVIEW_ESCALATION.md` - open when a structure-related hook fires and the file must be handed to a read-only structure-review subagent
 - `docs/IMPLEMENTATION_PATTERNS.md` - open when you need the approved shared pattern for a change
 - `docs/DATA_VOCABULARIES.md` - open when you need canonical field names or controlled values
 - `docs/TESTING_CHECKLISTS.md` - open when validating behavior changes
@@ -38,6 +39,16 @@ Session-start requirement:
 - If the code is not pure wiring, it does not belong in the page file.
 - Do not use file size as permission to add the wrong kind of code to a file.
 - Open [`docs/AGENT_PLAYBOOK.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/AGENT_PLAYBOOK.md) and [`docs/NEXTJS_CODE_STRUCTURE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/NEXTJS_CODE_STRUCTURE.md) if you need the full layer table or split workflow.
+
+## Structure Hook Escalation (Required)
+
+If a structure-related hook fires for a specific file, pause work on that file and use the escalation workflow in [`docs/STRUCTURE_REVIEW_ESCALATION.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/STRUCTURE_REVIEW_ESCALATION.md).
+
+- Create a bead for a structure review of the specific file.
+- Hand the file to a read-only subagent using the neutral prompt in that doc.
+- Direct the subagent to read only the assigned bead for task context, not `bd prime` or other beads.
+- Do not continue editing the file, including comment-only edits, until the subagent review is complete.
+- A one-off structure bypass exists only for explicit user-approved edge cases; use the exact env vars documented in `docs/STRUCTURE_REVIEW_ESCALATION.md`.
 
 ---
 
@@ -119,6 +130,14 @@ See [`docs/TESTING_CHECKLISTS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttr
 - Update `README.md` in the same change whenever a behavior change alters how a file should be used, what layer owns a concern, or which file another agent should touch for future work.
 - Do not bypass the README pre-commit guard unless the staged changes leave `README.md` fully accurate as written.
 - If guidance conflicts within this repo, `AGENTS.md` is the operational source of truth.
+
+## Commit Preflight
+
+Before retrying a failed commit, run:
+
+`npm run commit:preflight -- --message "Your title (pt-xxxx)" --trailer "Co-Authored-By: Agent Name <recognized-agent-email>"`
+
+Use at least one Beads ID in the commit title. Recognized agent emails for the trailer are `codex@openai.com` and `noreply@anthropic.com`. If no agent attribution should be recorded for that commit, use the one-time `PT_AI_TRAILER_OK` override instead.
 
 ## Agent Ops Friction Logging
 

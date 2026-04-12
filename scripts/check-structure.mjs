@@ -7,6 +7,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const repoRoot = process.cwd();
+const SKIP_STRUCTURE_ENV = 'PT_STRUCTURE_BYPASS';
+const SKIP_STRUCTURE_APPROVED_ENV = 'PT_STRUCTURE_BYPASS_APPROVED';
+const SKIP_STRUCTURE_REASON_ENV = 'PT_STRUCTURE_BYPASS_REASON';
+const SKIP_STRUCTURE_FILE_ENV = 'PT_STRUCTURE_BYPASS_FILE';
 
 const fileCaps = [
   { pattern: /^pages\/.+\.js$/, cap: 500, label: 'pages/*.js' },
@@ -19,6 +23,11 @@ const fileCaps = [
   { pattern: /^.+\.module\.css$/, cap: 500, label: '*.module.css' },
   { pattern: /^styles\/globals\.css$/, cap: 100, label: 'styles/globals.css' },
 ];
+
+const ERROR_TYPE_CAP = 'cap';
+const ERROR_TYPE_HEADER = 'header';
+const ERROR_TYPE_IMPORT = 'import';
+const ERROR_TYPE_THIN_PAGE = 'thin-page';
 
 function gitLines(args) {
   const output = execFileSync('git', args, { encoding: 'utf8' });
@@ -34,6 +43,49 @@ function getTargetFiles() {
     return explicitArgs;
   }
   return gitLines(['diff', '--cached', '--name-only', '--diff-filter=ACMR']);
+}
+
+function resolveBypassFile(targetFiles) {
+  if (process.env[SKIP_STRUCTURE_ENV] !== '1') {
+    return null;
+  }
+
+  const approval = process.env[SKIP_STRUCTURE_APPROVED_ENV];
+  const reason = process.env[SKIP_STRUCTURE_REASON_ENV]?.trim();
+  const bypassFile = process.env[SKIP_STRUCTURE_FILE_ENV]?.trim();
+
+  if (approval !== '1') {
+    console.error(
+      `Structure bypass requires ${SKIP_STRUCTURE_APPROVED_ENV}=1 after consulting the user and receiving explicit approval.`,
+    );
+    process.exit(1);
+  }
+
+  if (!reason) {
+    console.error(
+      `Structure bypass requires a non-empty ${SKIP_STRUCTURE_REASON_ENV} so the approved exception is documented.`,
+    );
+    process.exit(1);
+  }
+
+  if (!bypassFile || bypassFile.includes(',')) {
+    console.error(
+      `Structure bypass requires exactly one file via ${SKIP_STRUCTURE_FILE_ENV}=path/to/file.js.`,
+    );
+    process.exit(1);
+  }
+
+  if (!targetFiles.includes(bypassFile)) {
+    console.error(
+      `Structure bypass file ${bypassFile} is not part of the checked file set. Stage that file or clear the bypass env vars.`,
+    );
+    process.exit(1);
+  }
+
+  return {
+    file: bypassFile,
+    reason,
+  };
 }
 
 function getCapInfo(relPath) {
@@ -84,9 +136,10 @@ function checkComponentImports(relPath, imports) {
       target.startsWith('lib/') ||
       target.includes('/lib/')
     ) {
-      errors.push(
-        `${relPath}: components must not import hooks/lib (${specifier}). Pass data via props instead.`,
-      );
+      errors.push({
+        type: ERROR_TYPE_IMPORT,
+        message: `${relPath}: components must not import hooks/lib (${specifier}). Pass data via props instead.`,
+      });
     }
   }
   return errors;
@@ -98,7 +151,10 @@ function checkHookImports(relPath, imports) {
     const resolved = relImportTarget(relPath, specifier);
     const target = resolved ?? specifier;
     if (target.startsWith('components/') || target.includes('/components/')) {
-      errors.push(`${relPath}: hooks must not import components (${specifier}).`);
+      errors.push({
+        type: ERROR_TYPE_IMPORT,
+        message: `${relPath}: hooks must not import components (${specifier}).`,
+      });
     }
   }
   return errors;
@@ -117,7 +173,10 @@ function checkLibImports(relPath, imports) {
       target.startsWith('components/') ||
       target.includes('/components/')
     ) {
-      errors.push(`${relPath}: lib files must not import React/hooks/components (${specifier}).`);
+      errors.push({
+        type: ERROR_TYPE_IMPORT,
+        message: `${relPath}: lib files must not import React/hooks/components (${specifier}).`,
+      });
     }
   }
   return errors;
@@ -140,7 +199,10 @@ function checkThinAppPage(relPath, source, imports) {
 
   for (const pattern of forbiddenPatterns) {
     if (pattern.test(source)) {
-      errors.push(`${relPath}: app/**/page.js must stay a thin server route entry (${pattern}).`);
+      errors.push({
+        type: ERROR_TYPE_THIN_PAGE,
+        message: `${relPath}: app/**/page.js must stay a thin server route entry (${pattern}).`,
+      });
     }
   }
 
@@ -155,9 +217,10 @@ function checkThinAppPage(relPath, source, imports) {
       target.startsWith('lib/') ||
       target.includes('/lib/')
     ) {
-      errors.push(
-        `${relPath}: app/**/page.js may not import components/hooks/lib directly (${specifier}).`,
-      );
+      errors.push({
+        type: ERROR_TYPE_THIN_PAGE,
+        message: `${relPath}: app/**/page.js may not import components/hooks/lib directly (${specifier}).`,
+      });
     }
   }
 
@@ -175,13 +238,17 @@ function checkFile(relPath) {
   const lineCount = source.split(/\r?\n/).length;
   const cap = getCapInfo(relPath);
   if (cap && lineCount > cap.cap) {
-    errors.push(`${relPath}: ${lineCount} lines exceeds ${cap.cap}-line cap for ${cap.label}.`);
+    errors.push({
+      type: ERROR_TYPE_CAP,
+      message: `${relPath}: ${lineCount} lines exceeds ${cap.cap}-line cap for ${cap.label}.`,
+    });
   }
 
   if (!hasRequiredHeader(relPath, source)) {
-    errors.push(
-      `${relPath}: missing required one-line file header comment ("// path — domain ownership").`,
-    );
+    errors.push({
+      type: ERROR_TYPE_HEADER,
+      message: `${relPath}: missing required one-line file header comment ("// path — domain ownership").`,
+    });
   }
 
   if (/\.(js|mjs)$/.test(relPath)) {
@@ -206,20 +273,35 @@ if (files.length === 0) {
   process.exit(0);
 }
 
-const errors = files.flatMap(checkFile);
+const bypass = resolveBypassFile(files);
+const checkedFiles = bypass ? files.filter((file) => file !== bypass.file) : files;
+const errors = checkedFiles.flatMap(checkFile);
 if (errors.length === 0) {
+  if (bypass) {
+    console.log(
+      `Structure check skipped only for ${bypass.file} because ${SKIP_STRUCTURE_ENV}=1, ${SKIP_STRUCTURE_APPROVED_ENV}=1, and ${SKIP_STRUCTURE_REASON_ENV} was provided. Reason: ${bypass.reason}`,
+    );
+  }
   process.exit(0);
 }
 
 console.error('Structure check failed:');
 for (const error of errors) {
-  console.error(`  - ${error}`);
+  console.error(`  - ${error.message}`);
 }
 console.error('');
 console.error(
   'These rules come from docs/NEXTJS_CODE_STRUCTURE.md and docs/SYSTEM_ARCHITECTURE.md.',
 );
-console.error(
-  'Do not bypass file-size caps or related structure rules without consulting the user and receiving explicit approval.',
-);
+if (errors.some((error) => error.type === ERROR_TYPE_CAP)) {
+  console.error(
+    'If this hook fired for a specific file-size cap failure, use docs/STRUCTURE_REVIEW_ESCALATION.md before making further edits to that file.',
+  );
+  console.error(
+    'A narrow approved bypass exists for exactly one named file: set PT_STRUCTURE_BYPASS=1, PT_STRUCTURE_BYPASS_APPROVED=1, PT_STRUCTURE_BYPASS_REASON="...", and PT_STRUCTURE_BYPASS_FILE=path/to/file.js only after consulting the user and receiving explicit approval.',
+  );
+  console.error(
+    'Before retrying commit, run: npm run commit:preflight -- --message "Your title (pt-xxxx)" --trailer "Co-Authored-By: Codex GPT-5.4 <codex@openai.com>"',
+  );
+}
 process.exit(1);

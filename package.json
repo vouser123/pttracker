@@ -12,6 +12,7 @@
     "biome:report": "node scripts/biome-report.mjs",
     "biome:report:summary": "node scripts/biome-report-summary.mjs",
     "biome:staged": "node scripts/run-biome-staged.mjs",
+    "commit:preflight": "node scripts/commit-preflight.mjs",
     "structure:check": "node scripts/check-structure.mjs --staged",
     "analyze:bundle": "next experimental-analyze",
     "analyze:bundle:out": "next experimental-analyze -o",

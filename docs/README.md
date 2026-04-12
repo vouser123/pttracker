@@ -16,12 +16,18 @@ Use this file to decide which doc to open next.
 - [`NEXTJS_CODE_STRUCTURE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/NEXTJS_CODE_STRUCTURE.md)
   - Open when: you are adding, splitting, or reorganizing Next.js files.
   - Answers: "How should Next.js code be structured?" and "What does the framework enforce versus what still needs repo rules?"
+- [`STRUCTURE_REVIEW_ESCALATION.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/STRUCTURE_REVIEW_ESCALATION.md)
+  - Open when: a structure-related hook fires and the file must be handed to a read-only structure-review subagent.
+  - Answers: "How do I escalate a structure review cleanly without contaminating the subagent prompt?" and "What is the narrow one-off structure bypass pattern?"
 - [`SYSTEM_ARCHITECTURE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/SYSTEM_ARCHITECTURE.md)
   - Open when: you need the current hybrid architecture, data flow, offline/storage model, or deployment guardrails.
   - Answers: "How does the live system fit together?"
 - [`IMPLEMENTATION_PATTERNS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/IMPLEMENTATION_PATTERNS.md)
   - Open when: you need the approved shared helper, component, or do-this-not-that implementation pattern.
   - Answers: "Which shared thing should I use here?"
+- [`OFFLINE_HANDLING_RESEARCH_2026-04-12.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/OFFLINE_HANDLING_RESEARCH_2026-04-12.md)
+  - Open when: you need the durable April 2026 research note for protected-route offline behavior, service worker scope, shared connectivity, or tracker-triggered `/program` warmup.
+  - Answers: "Why are we using shared connectivity plus offline-aware fetches instead of a service-worker-only fix?" and "How should `/program` warm from tracker opening without manual protected document and RSC fetches?"
 - [`TESTING_CHECKLISTS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/TESTING_CHECKLISTS.md)
   - Open when: you are validating a behavior change or regression fix.
   - Answers: "How do I verify this safely?"
