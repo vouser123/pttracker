@@ -3,6 +3,7 @@ import BottomNav from '../../components/BottomNav';
 import ExercisePicker from '../../components/ExercisePicker';
 import HistoryPanel from '../../components/HistoryPanel';
 import NavMenu from '../../components/NavMenu';
+import OfflineQueueBanner from '../../components/OfflineQueueBanner';
 import Toast from '../../components/Toast';
 import styles from './TrackerPage.module.css';
 
@@ -42,6 +43,10 @@ export default function TrackerRouteShell({
   onLoadMoreHistory,
   onTabChange,
   pendingCount,
+  queue,
+  syncing,
+  queueLoaded,
+  queueError,
 }) {
   return (
     <div className={styles.page}>
@@ -93,6 +98,13 @@ export default function TrackerRouteShell({
           {historyError}
         </div>
       )}
+      <OfflineQueueBanner
+        queue={queue}
+        syncing={syncing}
+        queueLoaded={queueLoaded}
+        queueError={queueError}
+        label="session"
+      />
       <Toast message={toastMessage} type={toastType} visible={toastVisible} />
 
       <main className={styles.main}>

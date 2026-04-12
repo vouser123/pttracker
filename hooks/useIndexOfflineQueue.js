@@ -1,3 +1,4 @@
+// hooks/useIndexOfflineQueue.js — offline session queue lifecycle for tracker
 /**
  * useIndexOfflineQueue — manages the offline session queue for the index page.
  *
@@ -14,145 +15,126 @@
  * @param {string|null} accessToken - Supabase access token for authenticated API calls
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
 import {
-    loadQueue,
-    saveQueue,
-    clearQueue as clearQueueHelper,
-    removeFromQueue,
-    buildApiPayload,
+  clearQueue as clearQueueHelper,
+  loadQueue,
+  removeFromQueue,
+  saveQueue,
 } from '../lib/index-offline';
+import { syncIndexQueue } from '../lib/index-sync';
 
 export function useIndexOfflineQueue(userId, accessToken, options = {}) {
-    const { autoSyncOnReconnect = true } = options;
-    const [queue, setQueue] = useState([]);
-    const [syncing, setSyncing] = useState(false);
-    const [queueLoaded, setQueueLoaded] = useState(false);
+  const { autoSyncOnReconnect = true } = options;
+  const [queue, setQueue] = useState([]);
+  const [syncing, setSyncing] = useState(false);
+  const [queueLoaded, setQueueLoaded] = useState(false);
+  const [queueError, setQueueError] = useState(null);
 
-    // Ref so sync callback always sees the latest queue without re-registering
-    const queueRef = useRef(queue);
-    useEffect(() => { queueRef.current = queue; }, [queue]);
+  // Ref so sync callback always sees the latest queue without re-registering
+  const queueRef = useRef(queue);
+  useEffect(() => {
+    queueRef.current = queue;
+  }, [queue]);
 
-    // Load queue from IndexedDB when userId becomes available
-    useEffect(() => {
-        let cancelled = false;
+  // Load queue from IndexedDB when userId becomes available
+  useEffect(() => {
+    let cancelled = false;
 
-        async function hydrateQueue() {
-            if (!userId) {
-                setQueue([]);
-                setQueueLoaded(false);
-                return;
-            }
-            const stored = await loadQueue(userId);
-            if (cancelled) return;
-            setQueue(stored);
-            setQueueLoaded(true);
-        }
-
-        hydrateQueue();
-
-        return () => {
-            cancelled = true;
-        };
-    }, [userId]);
-
-    useEffect(() => {
-        if (!userId || !queueLoaded) return;
-        void saveQueue(userId, queue);
-    }, [userId, queue, queueLoaded]);
-
-    /**
-     * Add a session to the offline queue and persist immediately.
-     * Called from useSessionLogging when a POST fails or device is offline.
-     *
-     * @param {object} session - Session object with client_mutation_id, exercise_id,
-     *                           exercise_name, activity_type, performed_at, sets[]
-     */
-    const enqueue = useCallback((session) => {
-        if (!userId) return;
-        setQueue(prev => [...prev, session]);
-    }, [userId]);
-
-    /**
-     * Attempt to sync all queued sessions to /api/logs.
-     * Each session is POSTed individually. On success (200 or 409 duplicate),
-     * it is removed from the queue. Failures stay queued for the next attempt.
-     *
-     * @returns {Promise<{ succeeded: number, failed: number }>}
-     */
-    const sync = useCallback(async (sessionsOverride = null) => {
-        if (!userId || !accessToken || syncing) return { succeeded: 0, failed: 0 };
-
-        const currentQueue = Array.isArray(sessionsOverride) ? sessionsOverride : queueRef.current;
-        if (currentQueue.length === 0) return { succeeded: 0, failed: 0 };
-
-        setSyncing(true);
-        let succeeded = 0;
-        let failed = 0;
-
-        for (const session of [...currentQueue]) {
-            try {
-                const res = await fetch('/api/logs', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${accessToken}`,
-                    },
-                    body: JSON.stringify(buildApiPayload(session)),
-                });
-
-                // 200 success or 409 duplicate — either way, remove from queue
-                if (res.ok || res.status === 409) {
-                    setQueue(prev => removeFromQueue(prev, session.client_mutation_id));
-                    succeeded++;
-                } else {
-                    failed++;
-                }
-            } catch {
-                // Network error — leave in queue for next attempt
-                failed++;
-            }
-        }
-
-        setSyncing(false);
-        return { succeeded, failed };
-    }, [userId, accessToken, syncing]);
-
-    /**
-     * Clear the queue entirely.
-     * Must be called on sign-out to prevent cross-user data leakage.
-     */
-    const clearQueue = useCallback(() => {
-        if (!userId) return;
-        void clearQueueHelper(userId);
+    async function hydrateQueue() {
+      if (!userId) {
         setQueue([]);
-    }, [userId]);
+        setQueueLoaded(false);
+        return;
+      }
+      const stored = await loadQueue(userId);
+      if (cancelled) return;
+      setQueue(stored);
+      setQueueLoaded(true);
+    }
 
-    // Auto-sync on mount if already online with stranded queue items.
-    // Catches the case where the app opens while online but has queued sessions
-    // from a previous offline session (the 'online' event never fires in this case).
-    useEffect(() => {
-        if (!queueLoaded || !navigator.onLine) return;
-        if (queueRef.current.length > 0) sync();
-    }, [queueLoaded, sync]); // eslint-disable-line react-hooks/exhaustive-deps
+    hydrateQueue();
 
-    // Auto-sync when coming back online mid-session
-    useEffect(() => {
-        if (!autoSyncOnReconnect) return undefined;
-
-        function handleOnline() {
-            if (queueRef.current.length > 0) sync();
-        }
-        window.addEventListener('online', handleOnline);
-        return () => window.removeEventListener('online', handleOnline);
-    }, [autoSyncOnReconnect, sync]);
-
-    return {
-        queue,
-        pendingCount: queue.length,
-        syncing,
-        enqueue,
-        sync,
-        clearQueue,
+    return () => {
+      cancelled = true;
     };
+  }, [userId]);
+
+  useEffect(() => {
+    if (!userId || !queueLoaded) return;
+    void saveQueue(userId, queue);
+  }, [userId, queue, queueLoaded]);
+
+  const enqueue = useCallback(
+    (session) => {
+      if (!userId) return;
+      setQueue((prev) => [...prev, session]);
+    },
+    [userId],
+  );
+
+  const sync = useCallback(
+    async (sessionsOverride = null) => {
+      if (!userId || !accessToken || syncing) return { succeeded: 0, failed: 0 };
+
+      const currentQueue = Array.isArray(sessionsOverride) ? sessionsOverride : queueRef.current;
+      if (currentQueue.length === 0) {
+        setQueueError(null);
+        return { succeeded: 0, failed: 0 };
+      }
+
+      setSyncing(true);
+      setQueueError(null);
+      const { succeededIds, failedCount, lastError } = await syncIndexQueue(
+        currentQueue,
+        accessToken,
+      );
+      for (const id of succeededIds) {
+        setQueue((prev) => removeFromQueue(prev, id));
+      }
+      setSyncing(false);
+      if (failedCount > 0 && lastError) {
+        setQueueError(lastError);
+      }
+      return { succeeded: succeededIds.length, failed: failedCount };
+    },
+    [userId, accessToken, syncing],
+  );
+
+  const clearQueue = useCallback(() => {
+    if (!userId) return;
+    void clearQueueHelper(userId);
+    setQueue([]);
+  }, [userId]);
+
+  // Auto-sync on mount if already online with stranded queue items.
+  // Catches the case where the app opens while online but has queued sessions
+  // from a previous offline session (the 'online' event never fires in this case).
+  useEffect(() => {
+    if (!queueLoaded || !navigator.onLine) return;
+    if (queueRef.current.length > 0) sync();
+  }, [queueLoaded, sync]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-sync when coming back online mid-session
+  useEffect(() => {
+    if (!autoSyncOnReconnect) return undefined;
+
+    function handleOnline() {
+      if (queueRef.current.length > 0) sync();
+    }
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
+  }, [autoSyncOnReconnect, sync]);
+
+  return {
+    queue,
+    pendingCount: queue.length,
+    syncing,
+    queueLoaded,
+    queueError,
+    enqueue,
+    sync,
+    clearQueue,
+  };
 }

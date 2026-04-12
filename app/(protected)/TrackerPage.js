@@ -58,9 +58,10 @@ export default function TrackerPage() {
     fromCache,
     reload,
   } = useIndexData(token, trackerPatientId);
-  const { pendingCount, enqueue, sync, clearQueue } = useIndexOfflineQueue(userId, token, {
-    autoSyncOnReconnect: false,
-  });
+  const { queue, pendingCount, syncing, queueLoaded, queueError, enqueue, sync, clearQueue } =
+    useIndexOfflineQueue(userId, token, {
+      autoSyncOnReconnect: false,
+    });
 
   const [activeTab, setActiveTab] = useState('exercises');
   const [isMessagesOpen, setIsMessagesOpen] = useState(false);
@@ -360,6 +361,10 @@ export default function TrackerPage() {
         onLoadMoreHistory={loadMoreHistory}
         onTabChange={handleTabChange}
         pendingCount={pendingCount}
+        queue={queue}
+        syncing={syncing}
+        queueLoaded={queueLoaded}
+        queueError={queueError}
       />
       <TrackerOverlays
         isSessionLoggerOpen={isSessionLoggerOpen}
