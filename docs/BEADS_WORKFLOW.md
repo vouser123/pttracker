@@ -150,9 +150,9 @@ bd update <id> --status browser_verify   # mark as needing browser test
 bd close <id> --reason "Verified on preview: [what was checked]"  # after it passes
 ```
 
-## AMC Bead (Agent Memory Carry-over)
+## Coordination Queue Epic
 
-The AMC bead is a running session log — not a task list, not a status mirror. It carries context that would otherwise be lost to compaction, crashes, or session breaks.
+The coordination queue epic is a running session-log container — not a task list, not a status mirror. It carries context that would otherwise be lost to compaction, crashes, or session breaks.
 
 **Content rule: context and decisions only. No bead IDs in the text.** IDs go stale. Decisions don't.
 - ✅ "Decided not to touch index.js until Codex finishes its pass"
@@ -163,8 +163,8 @@ The AMC bead is a running session log — not a task list, not a status mirror. 
 **Use `related` links** to point to priority beads. Their live status shows automatically in `bd show`.
 
 **Lifecycle:**
-1. **Session start**: read the open AMC bead → close it (it got you here) → create a new one
-2. **Throughout the session**: `bd note pt-amc.N "..."` at every meaningful moment:
+1. **Session start**: read the open coordination child bead under `pt-u5mn` → close it (it got you here) → create a new one under `pt-u5mn`
+2. **Throughout the session**: `bd note pt-u5mn.N "..."` at every meaningful moment:
    - A decision is made
    - Work shifts direction
    - Something significant is discovered
@@ -176,18 +176,18 @@ The user will remind you to create the closing note at session end. But **do not
 
 ```bash
 # Session start
-bd show pt-amc.N          # read it
-bd close pt-amc.N --reason "Read and carried forward. New session bead: pt-amc.M"
-bd create --title="Claude queue: YYYY-MM-DD session" --type=task --priority=2 --parent pt-amc
-bd update pt-amc.M --claim --status in_progress
-bd dep add pt-amc.M <priority-bead> --type related
+bd show pt-u5mn.N          # read it
+bd close pt-u5mn.N --reason "Read and carried forward. New session bead: pt-u5mn.M"
+bd create --title="Claude queue: YYYY-MM-DD session" --type=task --priority=2 --parent pt-u5mn
+bd update pt-u5mn.M --claim --status in_progress
+bd dep add pt-u5mn.M <priority-bead> --type related
 
 # Throughout
-bd note pt-amc.M "Decided X because Y"
-bd note pt-amc.M "Shifted to pt-abc — pt-def blocked on Codex"
+bd note pt-u5mn.M "Decided X because Y"
+bd note pt-u5mn.M "Shifted to pt-abc — pt-def blocked on Codex"
 
 # Session end
-bd note pt-amc.M "Session end: pick up pt-86z next. Codex owns index.js + program.js. pt-lug.4/.5 open for Codex."
+bd note pt-u5mn.M "Session end: pick up pt-86z next. Codex owns index.js + program.js. pt-lug.4/.5 open for Codex."
 ```
 
 ## Session-End Rule
@@ -199,6 +199,6 @@ bd note pt-amc.M "Session end: pick up pt-86z next. Codex owns index.js + progra
 3. Verify bead state is accurate, then commit
 4. Push code
 5. Sync beads: `bd dolt push`
-6. Final `bd note` on the AMC bead with session end context
+6. Final `bd note` on the current `pt-u5mn` coordination child with session end context
 
 **If work was done but the bead still looks open or untouched, the session is not complete.**
