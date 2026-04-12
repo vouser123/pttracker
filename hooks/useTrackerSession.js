@@ -1,180 +1,135 @@
-// hooks/useTrackerSession.js — active tracker session state and lifecycle handlers for pages/index.js
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { createDraftSession } from '../lib/index-tracker-session';
-import { buildDefaultFormDataForExercise, collectParameterValuesForExercise } from '../lib/session-form-params';
-import { getProgressComparison } from '../lib/logger-progress-comparison';
-import { inferActivityType, normalizeSet } from '../lib/session-logging';
-import { useTrackerSessionFinalization } from './useTrackerSessionFinalization';
+// hooks/useTrackerSession.js — active tracker session orchestration across selection, pending sets, and finalization
+import { useCallback, useState } from 'react';
+import { useTrackerExerciseSessionState } from './useTrackerExerciseSessionState';
+import { useTrackerPendingSetFlow } from './useTrackerPendingSetFlow';
+import { useTrackerSessionLifecycle } from './useTrackerSessionLifecycle';
 
 /**
- * Active in-progress tracker session state for the index page.
+ * Active in-progress tracker session state for the tracker route.
  * @param {object} options
  * @returns {object}
  */
 export function useTrackerSession({
+  pickerExercises,
+  logs,
+  openManualLog,
+  showSaveSuccess,
+  showToast,
+  announceSessionProgress,
+  enqueue,
+  sync,
+  reload,
+}) {
+  const [panelResetToken, setPanelResetToken] = useState(0);
+  const [pendingSetPatch, setPendingSetPatch] = useState(null);
+
+  const handleTimerOpenManual = useCallback(
+    (options = {}) => openManualLog(options),
+    [openManualLog],
+  );
+
+  const {
+    buildExerciseFormContext,
+    selectedExerciseId,
+    selectedExercise,
+    draftSession,
+    isTimerOpen,
+    currentSide,
+    activeExercise,
+    sessionStartedAt,
+    setDraftSession,
+    setIsTimerOpen,
+    setCurrentSide,
+    setActiveExercise,
+    handleExerciseSelect,
+    handleTimerBack,
+    abandonDraftSession,
+  } = useTrackerExerciseSessionState({
     pickerExercises,
     logs,
-    openManualLog,
+    clearPendingSetPatch: () => setPendingSetPatch(null),
+  });
+
+  const {
+    notesModalOpen,
+    backdateEnabled,
+    backdateValue,
+    optimisticLogs,
+    allLogs,
+    setBackdateValue,
+    handleFinishSession,
+    handleNotesModalClose,
+    handleCancelSession,
+    handleToggleBackdate,
+    handleSaveFinishedSession,
+  } = useTrackerSessionLifecycle({
+    draftSession,
+    selectedExercise,
+    logs,
     showSaveSuccess,
     showToast,
-    speakText,
-    maybeAnnounceAllSetsComplete,
     enqueue,
     sync,
     reload,
-}) {
-    const [selectedExerciseId, setSelectedExerciseId] = useState(null), [selectedExercise, setSelectedExercise] = useState(null);
-    const [draftSession, setDraftSession] = useState(null), [isTimerOpen, setIsTimerOpen] = useState(false);
-    const [currentSide, setCurrentSide] = useState(null);
-    const [panelResetToken, setPanelResetToken] = useState(0), [pendingSetPatch, setPendingSetPatch] = useState(null);
-    const [activeExercise, setActiveExercise] = useState(null);
-    const sessionStartedAt = useMemo(() => draftSession?.date ?? new Date().toISOString(), [draftSession?.date]);
+    abandonDraftSession,
+    setActiveExercise,
+  });
 
-    const abandonDraftSession = useCallback(() => {
-        setDraftSession(null);
-        setSelectedExerciseId(null);
-        setSelectedExercise(null);
-        setCurrentSide(null);
-        setIsTimerOpen(false);
-        setPendingSetPatch(null);
-    }, []);
+  const {
+    handleTimerApplySet,
+    handleConfirmNextSet,
+    handleEditNextSet,
+    handlePreviousSet,
+    handleBlockedNextSet,
+  } = useTrackerPendingSetFlow({
+    selectedExercise,
+    draftSession,
+    allLogs,
+    buildExerciseFormContext,
+    openManualLog: handleTimerOpenManual,
+    showToast,
+    announceSessionProgress,
+    pendingSetPatch,
+    setPendingSetPatch,
+    setPanelResetToken,
+    setDraftSession,
+  });
 
-    const {
-        notesModalOpen,
-        backdateEnabled,
-        backdateValue,
-        optimisticLogs,
-        setBackdateValue,
-        handleFinishSession,
-        handleNotesModalClose,
-        handleCancelSession,
-        handleToggleBackdate,
-        handleSaveFinishedSession,
-    } = useTrackerSessionFinalization({
-        draftSession,
-        selectedExercise,
-        enqueue,
-        sync,
-        reload,
-        showSaveSuccess,
-        showToast,
-        abandonDraftSession,
-        setActiveExercise,
-    });
-    const allLogs = useMemo(() => [...optimisticLogs, ...logs], [logs, optimisticLogs]);
-
-    const buildExerciseFormContext = useCallback((exercise, side = null) => {
-        if (!exercise) return null;
-        const sessionSets = draftSession?.exerciseId === exercise.id ? (draftSession.sets ?? []) : [];
-        const scopedSide = exercise.pattern === 'side' ? (side ?? 'right') : null;
-        return {
-            ...exercise,
-            default_form_data: buildDefaultFormDataForExercise(exercise, allLogs, { side: scopedSide, sessionSets }),
-            historical_form_params: exercise.pattern === 'side'
-                ? {
-                    left: collectParameterValuesForExercise(allLogs, exercise.id, exercise.form_parameters_required ?? [], { side: 'left', sessionSets }),
-                    right: collectParameterValuesForExercise(allLogs, exercise.id, exercise.form_parameters_required ?? [], { side: 'right', sessionSets }),
-                }
-                : collectParameterValuesForExercise(allLogs, exercise.id, exercise.form_parameters_required ?? [], { sessionSets }),
-        };
-    }, [allLogs, draftSession]);
-
-    const handleExerciseSelect = useCallback((exerciseId) => {
-        setSelectedExerciseId(exerciseId);
-        const selected = pickerExercises.find((exercise) => exercise.id === exerciseId) || null;
-        const nextSide = selected?.pattern === 'side' ? 'right' : null;
-        const enrichedSelected = selected ? buildExerciseFormContext(selected, nextSide) : null;
-        setSelectedExercise(enrichedSelected);
-        setCurrentSide(nextSide);
-        if (!enrichedSelected) return;
-        setDraftSession(createDraftSession(enrichedSelected, inferActivityType(enrichedSelected)));
-        setPendingSetPatch(null);
-        setActiveExercise({ id: enrichedSelected.id, name: enrichedSelected.canonical_name || '' });
-        setIsTimerOpen(true);
-    }, [buildExerciseFormContext, pickerExercises]);
-
-    const handleTimerBack = useCallback(() => {
-        abandonDraftSession();
-        setActiveExercise(null);
-    }, [abandonDraftSession]);
-
-    const handleTimerApplySet = useCallback((setPatch) => {
-        if (!selectedExercise) return;
-        const exerciseWithContext = buildExerciseFormContext(
-            selectedExercise,
-            selectedExercise.pattern === 'side' ? (setPatch.side ?? 'right') : null
-        );
-        const resolvedFormData = setPatch.form_data ?? exerciseWithContext?.default_form_data ?? null;
-        const hasRequiredParams = (selectedExercise.form_parameters_required ?? []).length > 0;
-        if (hasRequiredParams && !resolvedFormData) {
-            // No history yet — open manual logger so user can enter required params
-            // (weight, resistance band, strap position, etc.). seedSet pre-populates
-            // the timer values (reps/seconds/distance) so the user only enters params. // pt-80py
-            openManualLog({ side: setPatch.side, seedSet: { ...setPatch, form_data: [] } });
-            return;
-        }
-        setPendingSetPatch({ ...setPatch, form_data: resolvedFormData });
-    }, [buildExerciseFormContext, openManualLog, selectedExercise]);
-
-    const handleTimerOpenManual = useCallback((options = {}) => openManualLog(options), [openManualLog]);
-
-    const handlePreviousSet = useCallback(() => {
-        if (!draftSession || draftSession.sets.length === 0) {
-            showToast('No sets to undo', 'error');
-            return false;
-        }
-
-        const removedSet = draftSession.sets[draftSession.sets.length - 1];
-        const removedSetNumber = removedSet?.set_number ?? draftSession.sets.length;
-        setDraftSession((previous) => (
-            previous
-                ? { ...previous, sets: previous.sets.slice(0, -1) }
-                : previous
-        ));
-        showToast(`Removed set ${removedSetNumber}`, 'success');
-        return true;
-    }, [draftSession, showToast]);
-
-    const handleBlockedNextSet = useCallback(() => {
-        showToast('Please enter a value greater than 0', 'error');
-    }, [showToast]);
-
-    const handleConfirmNextSet = useCallback(() => {
-        if (!selectedExercise || !pendingSetPatch || !draftSession) return;
-        // No toast here — set is added to draftSession only, not saved to server yet.
-        // Toast fires in handleSaveFinishedSession after Done + confirmed sync.
-        const normalizedSet = normalizeSet({ ...pendingSetPatch, set_number: draftSession.sets.length + 1, performed_at: draftSession.date }, draftSession.sets.length, draftSession.activityType);
-        const nextLoggedSets = [...draftSession.sets, normalizedSet];
-        const comparison = getProgressComparison(allLogs, selectedExercise, nextLoggedSets, selectedExercise.pattern === 'side' ? normalizedSet.side : null, sessionStartedAt);
-        setDraftSession((previous) => (previous ? { ...previous, sets: nextLoggedSets } : previous));
-        maybeAnnounceAllSetsComplete(selectedExercise, nextLoggedSets);
-        setPendingSetPatch(null);
-        setPanelResetToken((value) => value + 1);
-        if (comparison?.text) speakText(comparison.text, 1500);
-    }, [allLogs, draftSession, maybeAnnounceAllSetsComplete, pendingSetPatch, selectedExercise, sessionStartedAt, speakText]);
-
-    const handleEditNextSet = useCallback(() => {
-        if (!selectedExercise || !pendingSetPatch) return;
-        handleTimerOpenManual({ side: pendingSetPatch.side, seedSet: pendingSetPatch });
-        setPendingSetPatch(null);
-    }, [handleTimerOpenManual, pendingSetPatch, selectedExercise]);
-
-    useEffect(() => {
-        if (!selectedExerciseId) return;
-
-        const refreshedExercise = pickerExercises.find((exercise) => exercise.id === selectedExerciseId) || null;
-        if (!refreshedExercise) return;
-
-        const nextSelectedSide = refreshedExercise.pattern === 'side' ? (currentSide ?? 'right') : null;
-        setSelectedExercise(buildExerciseFormContext(refreshedExercise, nextSelectedSide));
-    }, [buildExerciseFormContext, currentSide, pickerExercises, selectedExerciseId]);
-
-    return {
-        selectedExerciseId, selectedExercise, draftSession, isTimerOpen, panelResetToken, pendingSetPatch, notesModalOpen,
-        backdateEnabled, backdateValue, optimisticLogs, allLogs, activeExercise, sessionStartedAt, currentSide,
-        setDraftSession, setPendingSetPatch, setBackdateValue, setActiveExercise, setIsTimerOpen, setPanelResetToken, setCurrentSide,
-        handleExerciseSelect, handleTimerBack, handleFinishSession, handleNotesModalClose, handleCancelSession,
-        handleToggleBackdate, handleTimerApplySet, handleTimerOpenManual, handleConfirmNextSet, handleEditNextSet,
-        handleSaveFinishedSession, handlePreviousSet, handleBlockedNextSet, buildExerciseFormContext,
-    };
+  return {
+    selectedExerciseId,
+    selectedExercise,
+    draftSession,
+    isTimerOpen,
+    panelResetToken,
+    pendingSetPatch,
+    notesModalOpen,
+    backdateEnabled,
+    backdateValue,
+    optimisticLogs,
+    allLogs,
+    activeExercise,
+    sessionStartedAt,
+    currentSide,
+    setDraftSession,
+    setPendingSetPatch,
+    setBackdateValue,
+    setActiveExercise,
+    setIsTimerOpen,
+    setPanelResetToken,
+    setCurrentSide,
+    handleExerciseSelect,
+    handleTimerBack,
+    handleFinishSession,
+    handleNotesModalClose,
+    handleCancelSession,
+    handleToggleBackdate,
+    handleTimerApplySet,
+    handleTimerOpenManual,
+    handleConfirmNextSet,
+    handleEditNextSet,
+    handleSaveFinishedSession,
+    handlePreviousSet,
+    handleBlockedNextSet,
+    buildExerciseFormContext,
+  };
 }

@@ -90,6 +90,17 @@ Treat the static legacy surface as frozen for routine cleanup. Only apply these 
 - Do not duplicate timer machine or tracker-wide feedback rules in page files when shared hooks already own them.
 - Panel-local execution feedback that belongs to [`components/TimerPanel.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/components/TimerPanel.js) may remain in the panel when it is part of the execution UI itself.
 
+
+## Tracker Session And Manual Log Structure
+
+- Keep [`hooks/useTrackerSession.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useTrackerSession.js) at orchestration level. It should wire tracker-session sub-hooks together instead of owning unrelated lifecycle, pending-set, and finalization rules inline.
+- Use [`hooks/useTrackerExerciseSessionState.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useTrackerExerciseSessionState.js) for selected-exercise, draft-session, timer-open, and side-continuity lifecycle.
+- Use [`hooks/useTrackerPendingSetFlow.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useTrackerPendingSetFlow.js) for pending-set confirmation, edit, manual fallback, and undo workflow.
+- Use [`hooks/useTrackerSessionLifecycle.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useTrackerSessionLifecycle.js) for finalization-hook wiring and optimistic-log merge.
+- Keep [`hooks/useManualLog.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useManualLog.js) focused on modal orchestration, draft-session coordination, and submit handoff back into the active tracker flow.
+- Use [`lib/manual-log-state.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib/manual-log-state.js) for deterministic manual-log set shaping: add/remove/renumber, side-aware patching, form-data updates, validation, and normalization prep.
+- Use [`lib/tracker-exercise-context.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib/tracker-exercise-context.js) for pure tracker form-context enrichment instead of rebuilding side-aware default-form-data lookup inside hooks or page files.
+- Do not mix tracker workflow orchestration with pure set-shaping or form-context rules inside one hook when the pure logic can live in a reusable `lib/` helper.
 ## Touch-Safe Interaction Patterns
 
 - Use `pointerup` rather than `onclick` for custom interactive controls.

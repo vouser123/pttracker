@@ -115,9 +115,8 @@ export default function TrackerPage() {
 
   const manualOpenRef = useRef(() => {});
   const feedbackRef = useRef({
+    announceSessionProgress: () => {},
     showSaveSuccess: () => {},
-    speakText: () => {},
-    maybeAnnounceAllSetsComplete: () => {},
   });
   const trackerSession = useTrackerSession({
     pickerExercises,
@@ -125,9 +124,7 @@ export default function TrackerPage() {
     openManualLog: (options) => manualOpenRef.current(options),
     showSaveSuccess: (...args) => feedbackRef.current.showSaveSuccess(...args),
     showToast,
-    speakText: (...args) => feedbackRef.current.speakText(...args),
-    maybeAnnounceAllSetsComplete: (...args) =>
-      feedbackRef.current.maybeAnnounceAllSetsComplete(...args),
+    announceSessionProgress: (...args) => feedbackRef.current.announceSessionProgress(...args),
     enqueue,
     sync,
     reload,
@@ -169,20 +166,21 @@ export default function TrackerPage() {
     buildExerciseFormContext,
   } = trackerSession;
 
-  const { maybeAnnounceAllSetsComplete, showSaveSuccess, speakText } = useLoggerFeedback(
+  const { announceSessionProgress, showSaveSuccess } = useLoggerFeedback(
     selectedExercise,
     sessionStartedAt,
     showToast,
   );
-  feedbackRef.current = { showSaveSuccess, speakText, maybeAnnounceAllSetsComplete };
+  feedbackRef.current = { announceSessionProgress, showSaveSuccess };
   const manualLog = useManualLog({
     draftSession,
     selectedExercise,
+    allLogs,
     buildExerciseFormContext,
     setDraftSession,
     setIsTimerOpen,
     setPanelResetToken,
-    maybeAnnounceAllSetsComplete,
+    announceSessionProgress,
   });
   manualOpenRef.current = manualLog.openManualLog;
 

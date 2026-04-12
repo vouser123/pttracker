@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { buildSessionProgress } from '../lib/index-tracker-session';
+import { getProgressComparison } from '../lib/logger-progress-comparison';
 import { useBrowserSpeech } from './useBrowserSpeech';
 // Note: useState kept for allSetsAnnounced only; successMessage removed in favour of useToast
 
@@ -45,6 +46,30 @@ export function useLoggerFeedback(selectedExercise, sessionStartedAt, showToast)
     [allSetsAnnounced, speakText],
   );
 
+  const announceProgressComparison = useCallback(
+    ({ logs, exercise, nextSets, selectedSide = null }) => {
+      const comparison = getProgressComparison(
+        logs,
+        exercise,
+        nextSets,
+        selectedSide,
+        sessionStartedAt,
+      );
+      if (comparison?.text) {
+        speakText(comparison.text, 1500);
+      }
+    },
+    [sessionStartedAt, speakText],
+  );
+
+  const announceSessionProgress = useCallback(
+    ({ logs, exercise, nextSets, selectedSide = null }) => {
+      maybeAnnounceAllSetsComplete(exercise, nextSets);
+      announceProgressComparison({ logs, exercise, nextSets, selectedSide });
+    },
+    [announceProgressComparison, maybeAnnounceAllSetsComplete],
+  );
+
   const showSaveSuccess = useCallback(
     (notesText = '') => {
       const notesStatus = String(notesText).trim() ? 'with notes' : 'no notes';
@@ -71,6 +96,8 @@ export function useLoggerFeedback(selectedExercise, sessionStartedAt, showToast)
   }, [ensureSpeechReady]);
 
   return {
+    announceProgressComparison,
+    announceSessionProgress,
     maybeAnnounceAllSetsComplete,
     showSaveSuccess,
     speakText,
