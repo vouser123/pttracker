@@ -21,7 +21,8 @@ import CoverageSummary from '../../../components/CoverageSummary';
 import NavMenu from '../../../components/NavMenu';
 import { useAuth } from '../../../hooks/useAuth';
 import { useRehabCoverageData } from '../../../hooks/useRehabCoverageData';
-import { COVERAGE_CONSTANTS, colorScoreToRGB } from '../../../lib/rehab-coverage';
+import { colorScoreToRGB } from '../../../lib/rehab-coverage-color';
+import { COVERAGE_CONSTANTS } from '../../../lib/rehab-coverage-constants';
 import { supabase } from '../../../lib/supabase';
 import styles from './RehabPage.module.css';
 

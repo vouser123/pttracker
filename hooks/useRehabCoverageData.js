@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchJsonWithOffline, isOfflineRequestError } from '../lib/fetch-with-offline';
 import { offlineCache } from '../lib/offline-cache';
-import { buildCoverageData } from '../lib/rehab-coverage';
+import { buildCoverageData } from '../lib/rehab-coverage-builder';
 
 function getLoadErrorMessage(error) {
   return error instanceof Error ? error.message : 'Failed to load coverage data.';
