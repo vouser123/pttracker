@@ -27,20 +27,21 @@ Before writing code to an existing file, ask: `What layer does this belong in?`
 
 | Layer | Only contains | Must not contain |
 |-------|--------------|-----------------|
-| `pages/` | Auth guard, route-level state, wiring hooks + components together | Feature UI, mutation logic, data transformation, form state, business logic |
+| `app/**/page.js` | Server entry wiring, metadata/viewport, and the handoff to a route client host | Hooks, client state, feature UI, mutation logic, browser APIs |
+| `app/**/*Page.js` | Route-level client orchestration, shared hook wiring, modal/panel composition | Business logic, large self-contained feature workspaces, duplicate data shaping |
 | `components/` | JSX and presentation logic; all data arrives via props | API calls, business logic, calculations, hooks |
 | `hooks/` | State + effects for one concern | JSX, API calls that do not belong to the hook's concern |
 | `lib/` | Pure functions for one domain | React imports, hooks, side effects |
 
-`Page = orchestrator` is a hard rule. File size does not create exceptions.
+`Route host = orchestrator` is a hard rule. File size does not create exceptions.
 
-Before writing to a page file:
+Before writing to a route file:
 
 1. Identify what the code does.
 2. If it is not pure wiring, stop.
 3. Decide whether it belongs in a component, hook, or lib helper.
 4. Create or extend that file first.
-5. Then wire it into the page.
+5. Then wire it into the route host.
 
 For broader structure rules, also open [`docs/NEXTJS_CODE_STRUCTURE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/NEXTJS_CODE_STRUCTURE.md).
 
@@ -87,4 +88,3 @@ Short version:
 - create discovered work immediately with `discovered-from`
 - close completed beads promptly
 - stage and commit only files you changed
-

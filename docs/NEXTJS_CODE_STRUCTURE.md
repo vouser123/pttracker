@@ -1,6 +1,6 @@
 # Next.js Code Structure Guidelines
 
-Authoritative rules for code organization during the Next.js migration. Apply to all Next.js route hosts and shared layers. Do not re-evaluate these decisions per session.
+Authoritative rules for code organization in the live Next.js App Router codebase. Apply to all route hosts and shared layers. Do not re-evaluate these decisions per session.
 
 **Loaded by:** `AGENTS.md`, `NEXTJS_MIGRATION_STATUS.md`
 
@@ -10,19 +10,14 @@ Authoritative rules for code organization during the Next.js migration. Apply to
 
 ## Size Limits
 
-### Pages Router (`pages/`)
-
-| File type | Aim | Hard cap | At cap: required action |
-|-----------|-----|----------|------------------------|
-| Page (`pages/*.js`) | 350L | 500L | Extract an inline component before adding more code |
-
 ### App Router (`app/`)
 
 | File type | Aim | Hard cap | At cap: required action |
 |-----------|-----|----------|------------------------|
 | Route entry (`app/**/page.js`) | 30L | 80L | Logic is leaking into the Server Component — move it to `[Name]Page.js` |
-| Route client host (`app/**/*Page.js`) | 350L | 500L | Same rules as `pages/*.js` — extract component or hook |
+| Route client host (`app/**/*Page.js`) | 350L | 500L | Extract component or hook before adding more code |
 | Root layout (`app/layout.js`) | 60L | 120L | Extract providers or shell wiring to a dedicated wrapper component |
+| App-local helper (`app/**/[^.]*.js`, excluding `page.js`, `layout.js`, `route.js`, `*Page.js`) | 200L | 300L | Extract the child concern or move reusable logic to `components/`, `hooks/`, or `lib/` |
 
 **`page.js` ownership rule:** A route entry file may only contain: `metadata` export, `viewport` export, and a single `return <[Name]Page />` render. No hooks, no state, no logic. If it needs to pass props to the client host, those props must be derivable server-side without any browser APIs or React state.
 
@@ -140,20 +135,14 @@ Do not split to reach the aim number. A 350L lib covering one domain is correct.
 
 ## Import Layer Rules
 
-### Pages Router
-
-| Layer | May import from |
-|-------|----------------|
-| `pages/` | `components/`, `hooks/`, `lib/`, own CSS module |
-
 ### App Router
 
 | Layer | May import from |
 |-------|----------------|
 | `app/**/page.js` (Server Component) | `app/**/*Page.js` only — no hooks, no lib, no components directly |
-| `app/**/*Page.js` (`'use client'`) | `components/`, `hooks/`, `lib/`, CSS module (own or from `pages/` during CSS relocation) |
+| `app/**/*Page.js` (`'use client'`) | `components/`, `hooks/`, `lib/`, own CSS module |
 | `app/layout.js` (Server Component) | `styles/globals.css`, `app/components/` — no hooks, no `lib/` data functions |
-| `app/components/` | same rules as `components/` |
+| `app/components/` and route-local helpers such as `TrackerRouteShell.js` | same rules as `components/` when UI-only; otherwise extract reusable state to `hooks/` or pure shaping to `lib/` |
 
 ### Shared layers
 
@@ -170,29 +159,37 @@ An import outside these rules signals misplaced responsibility. Fix the placemen
 
 ## Folder Structure
 
-App Router routes live in `app/`; remaining Pages Router routes live in `pages/`. Both coexist during migration. An `app/` route always takes precedence over a `pages/` route for the same path — remove the `pages/` file once the `app/` version is live.
+App Router routes live in `app/`. The `pages/` directory is no longer a routing surface in this repo; it is an empty compatibility directory kept only because current Next dev tooling still probes for `pages/` during startup.
 
 ```
-├── app/                # App Router routes (being built out during migration)
-│   ├── layout.js       # Root layout — shell, globals.css, analytics, SW registrar
-│   ├── components/     # App-Router-only client components (e.g. ServiceWorkerRegistrar)
-│   ├── rehab/
-│   │   ├── page.js     # Server Component — metadata + renders RehabPage
-│   │   └── RehabPage.js  # 'use client' — full rehab logic
-│   ├── pt-view/
-│   │   ├── page.js     # Server Component — metadata + renders PtViewPage
-│   │   └── PtViewPage.js # 'use client' — full pt-view logic
-│   └── [route]/        # Pattern for each migrated route
-│       ├── page.js
-│       └── [Name]Page.js
+├── app/                # App Router routes and framework-owned route entries
+│   ├── layout.js       # Root layout — shell, globals.css, analytics, registrar
+│   ├── components/     # App-shell-only helpers such as the registrar
+│   ├── sign-in/
+│   │   ├── page.js     # Server entry — metadata + renders SignInPage
+│   │   └── SignInPage.js
+│   ├── reset-password/
+│   │   ├── page.js
+│   │   └── ResetPasswordPage.js
+│   ├── (protected)/
+│   │   ├── layout.js   # Protected route gate + warmers
+│   │   ├── page.js     # Tracker route entry
+│   │   ├── TrackerPage.js
+│   │   ├── TrackerRouteShell.js
+│   │   ├── TrackerOverlays.js
+│   │   ├── pt-view/
+│   │   │   ├── page.js
+│   │   │   └── PtViewPage.js
+│   │   ├── rehab/
+│   │   │   ├── page.js
+│   │   │   └── RehabPage.js
+│   │   └── program/
+│   │       ├── page.js
+│   │       └── ProgramPage.js
+│   └── api/            # App Router route handlers
 │
-├── pages/              # Pages Router — remaining unmigrated routes
-│   ├── _app.js         # Global wrapper — applies to pages/ routes only
-│   ├── _document.js    # HTML shell — applies to pages/ routes only
-│   ├── index.js        # / — Tracker index (migrating: pt-sjli.6)
-│   ├── program.js      # /program — Program editor (migrating: pt-sjli.5)
-│   ├── reset-password.js
-│   └── *.module.css    # CSS Module for its page — stays here until route is migrated
+├── pages/              # Empty compatibility directory only; do not add route code
+│   └── .gitkeep
 │
 ├── components/         # UI components — shared or self-contained (modals, nav)
 │   ├── NavMenu.js      # Used on every page
@@ -214,15 +211,15 @@ App Router routes live in `app/`; remaining Pages Router routes live in `pages/`
 ├── styles/
 │   └── globals.css     # CSS variables + reset ONLY — no component styles
 │
-├── api/                # Vercel serverless functions — DO NOT MODIFY during migration
+├── api/                # Legacy API surface being retired in favor of `app/api/*`
 ├── public/             # Static assets, manifest, and remaining legacy public files
 └── docs/               # Documentation — not loaded at runtime
 ```
 
 **Placement decisions:**
-- New UI piece with state or reuse → `components/`; otherwise inline in page (if < 40L, no state, page-only)
+- New UI piece with state or reuse → `components/` or a route-local helper under `app/` when it only belongs to one App Router surface; otherwise inline in a route client host only if it stays below the inline limits below
 - New data function → `lib/[domain].js`
-- New state + effects logic reused ≥2 pages → `hooks/use[Name].js`; otherwise inline in page if ≤20L
+- New state + effects logic reused ≥2 routes/components → `hooks/use[Name].js`; otherwise inline in a route client host if ≤20L and still clearly route-local
 - New styles → CSS Module next to the JS file it belongs to; CSS variables → `styles/globals.css` only
 
 ---
@@ -301,7 +298,7 @@ Some repo rules are good candidates for mechanical enforcement:
 
 - fail if `app/**/page.js` imports hooks, `lib/`, or shared components directly instead of delegating to a route host
 - fail if `app/**/page.js` contains hooks, local state, or non-trivial logic
-- fail if `pages/` route files reappear after cut-over
+- fail if active route files reappear under `pages/` instead of staying in `app/`
 - warn or fail when route hosts, hooks, or shared files exceed agreed caps
 - warn when banned layer imports appear, such as React hooks inside `lib/`
 
@@ -336,7 +333,7 @@ In short: Next.js catches more than the old structure did, but it does not repla
 
 Update `README.md` in the same change when any of the following happen:
 
-- A shared Next.js file is added, removed, renamed, or repurposed in `pages/`, `components/`, `hooks/`, or the Next.js-layer files in `lib/`
+- A shared Next.js file is added, removed, renamed, or repurposed in `app/`, `components/`, `hooks/`, or the Next.js-layer files in `lib/`
 - A page-to-legacy mapping changes, including cutover, retirement of an old HTML page, or a new redirect path
 - Cleanup or refactor work changes which file owns a concern that other agents need to locate quickly
 - Timer/audio/logger wiring changes enough that the ownership map in the README would become misleading
@@ -350,60 +347,60 @@ Minimum maintenance expectations:
 
 ---
 
-## Pages (`pages/`)
+## Route Client Hosts (`app/**/*Page.js`)
 
 **Aim: 350L. Hard cap: 500L.**
 
-**Default role: page as orchestrator.** For AI agents, assume a page file should coordinate route flow rather than own large feature sections. A good page file wires auth, top-level route state, shared hooks, and major components together. It should not become the main home for feature-specific UI or mutation logic once those concerns are large enough to stand on their own.
+**Default role: route client host as orchestrator.** For AI agents, assume a `*Page.js` file should coordinate route flow rather than own large feature sections. A good route client host wires auth-derived route state, shared hooks, and major components together. It should not become the main home for feature-specific UI or mutation logic once those concerns are large enough to stand on their own.
 
-**Agent-maintainability rule:** Prefer the structure that makes future agent edits safest and most local. If filters, notes handling, modal glue, or a page-only panel could reasonably be changed, debugged, or extended on their own, they should not stay mixed in the page just because the file is still under the cap. Treat ownership clarity as the limit; treat the cap as a backstop.
+**Agent-maintainability rule:** Prefer the structure that makes future agent edits safest and most local. If filters, notes handling, modal glue, or a route-only panel could reasonably be changed, debugged, or extended on their own, they should not stay mixed in the route client host just because the file is still under the cap. Treat ownership clarity as the limit; treat the cap as a backstop.
 
-Practical test: compare the amount of behavior a page coordinates with the amount of code it contains. If a modest route file is approaching the size or complexity of a much broader route, that is usually evidence that too many independently maintainable concerns are still mixed together.
+Practical test: compare the amount of behavior a route client host coordinates with the amount of code it contains. If a modest route file is approaching the size or complexity of a much broader route, that is usually evidence that too many independently maintainable concerns are still mixed together.
 
-**AI decision shortcut:** If a JSX block feels like its own workspace, panel, modal launcher, task area, or independently maintainable page section, extract it to `components/`. If a stateful behavior feels like its own mutation flow, queue lifecycle, form workflow, persisted UI-state concern, or note/filter processing concern, extract it to `hooks/`. Keep the page focused on composing those pieces.
+**AI decision shortcut:** If a JSX block feels like its own workspace, panel, modal launcher, task area, or independently maintainable route section, extract it to `components/` or a route-local helper. If a stateful behavior feels like its own mutation flow, queue lifecycle, form workflow, persisted UI-state concern, or note/filter processing concern, extract it to `hooks/`. Keep the route client host focused on composing those pieces.
 
 Examples for agents:
 
-- Keep in the page:
-  - auth guard for the route
+- Keep in the route client host:
+  - route-level auth-driven branching handed down from the server entry/layout
   - route-level tab state
   - deciding which modal is open
   - passing the selected exercise into child components
   - composing shared child components such as `<ExercisePicker />`, `<HistoryPanel />`, and `<Toast />`
-- Extract from the page:
+- Extract from the route client host:
   - a full "Manage Patient Dosages" workspace with its own selector, banner, summary card, and action button
   - a full "Assign Roles to Exercises" workspace with its own selector and management UI
   - a mutation hook that handles exercise saves, dosage writes, role writes, and vocabulary writes all in one file once it nears the hook cap
 
 Concrete repo example:
 
-- [`pages/index.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/index.js) is the model to follow. It stays as the route orchestrator while substantial UI and workflow concerns live in focused hooks and components.
-- [`pages/program.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/pages/program.js) should follow the same pattern: route orchestration in the page, substantial editor workspaces in `components/`, and focused mutation/state concerns in `hooks/`.
+- [`app/(protected)/TrackerPage.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/(protected)/TrackerPage.js) is the model to follow for the main tracker surface. It stays as the route orchestrator while substantial UI and workflow concerns live in focused hooks, components, and route-local helpers.
+- [`app/(protected)/program/ProgramPage.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/app/(protected)/program/ProgramPage.js) follows the same pattern for the program editor: route orchestration in the client host, substantial editor workspaces in `components/`, and focused mutation/state concerns in `hooks/`.
 
-**Reusable subsystem rule:** If a feature can be hosted from more than one route, keep the feature subsystem extracted even when one route is its primary home. For example, the exercise editor should stay in shared components/hooks because it historically appears from both the tracker flow and the dedicated editor flow. Do not move that subsystem back into a page file just because one route currently hosts it most often.
+**Reusable subsystem rule:** If a feature can be hosted from more than one route, keep the feature subsystem extracted even when one route is its primary home. For example, the exercise editor should stay in shared components/hooks because it historically appears from both the tracker flow and the dedicated editor flow. Do not move that subsystem back into a route client host just because one route currently hosts it most often.
 
 **Contains:**
-- `useAuth()` call + auth guard
+- `useAuth()` call and route bootstrap wiring
 - `useEffect` for initial data load
-- Page-level `useState` (filters, loading, error, data)
+- Route-level `useState` (filters, loading, error, data)
 - JSX layout: header, main sections, modal invocations
 - Small inline sub-components meeting the inline rule below
 
-Good page question: "If a future agent only needed to change this one panel, one persisted UI-state behavior, or one note/filter rule, could they do it without loading the whole page file?" If the honest answer is no, the page still owns too much.
+Good route-host question: "If a future agent only needed to change this one panel, one persisted UI-state behavior, or one note/filter rule, could they do it without loading the whole route client host?" If the honest answer is no, the file still owns too much.
 
 **Must not contain:** business logic, API calls, or hooks with complex state — those go in `lib/` and `hooks/`.
 
-**Inline sub-component rule.** A function like `function PatientNotes({ ... })` may stay in the page file only if ALL four conditions are met:
-1. Used only on this one page
+**Inline sub-component rule.** A function like `function SummaryStats({ ... })` may stay in a route client host only if ALL four conditions are met:
+1. Used only on this one route
 2. Has no state of its own (reads parent state via props only)
 3. < 40 lines of JSX
-4. Its CSS is < 30 lines in the page CSS module
+4. Its CSS is < 30 lines in the route CSS module
 
 If any condition is false → extract to `components/`.
 
 | Example | Decision |
 |---------|----------|
-| `function SummaryStats({ totalSets })` — 15L JSX, no state, page-only | ✓ stay inline |
+| `function SummaryStats({ totalSets })` — 15L JSX, no state, route-only | ✓ stay inline |
 | `function PatientNotes({ notes })` — has own `isCollapsed` state | ✗ extract to `components/PatientNotes.js` |
 | `function HistoryList({ logs })` — 80L JSX | ✗ extract (over 40L limit) |
 
@@ -484,7 +481,7 @@ If any condition is false → extract to `components/`.
 
 | Used in | Extract to |
 |---------|-----------|
-| ≥2 pages | `components/` (UI), `lib/` (logic), or `hooks/` (state) |
+| ≥2 routes | `components/` (UI), `lib/` (logic), or `hooks/` (state) |
 | ≥2 components | `components/` (UI) or `lib/` (logic) |
 | 1 place only | Stay inline until second use |
 
@@ -494,7 +491,7 @@ Extract on the second use, not the third.
 
 ## File Header Comments (Required)
 
-Every file in `pages/`, `components/`, `hooks/`, and `lib/` must start with a 1-line comment:
+Every route client host, route-local helper, component, hook, and lib file in `app/`, `components/`, `hooks/`, and `lib/` must start with a 1-line comment:
 
 ```js
 // lib/pt-view.js — pure data functions for the pt-view history dashboard
@@ -588,5 +585,5 @@ These files were written before this document existed. Files over cap must be br
 | `lib/rehab-coverage.js` | 588→588 | 450L | ✓ Fixed (DN-035): cohesive domain confirmed; `// NOTE: cohesive domain` added; import layer rules prohibit split |
 | `pages/pt-view.module.css` | 670→369 | 500L | ✓ Fixed (DN-035): PatientNotes + HistoryList extracted to components/ |
 | `pages/rehab.module.css` | 478 | 500L | Within cap — shrinks naturally when components below are extracted |
-| `app/program/ProgramPage.js` | current route client host | 500L | Keep under the page-host cap; route is migrated but still client-heavy by design |
-| `app/TrackerPage.js` | current route client host | 500L | Keep under the page-host cap; route is migrated but still the heaviest interactive surface |
+| `app/(protected)/program/ProgramPage.js` | current route client host | 500L | Keep under the route-host cap; interactive editor surface |
+| `app/(protected)/TrackerPage.js` | current route client host | 500L | Keep under the route-host cap; heaviest interactive surface |
