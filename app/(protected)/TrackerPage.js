@@ -17,6 +17,7 @@ import {
 } from 'react';
 import AuthForm from '../../components/AuthForm';
 import { useAuth } from '../../hooks/useAuth';
+import { useEffectiveConnectivity } from '../../hooks/useEffectiveConnectivity';
 import { useExerciseSortState } from '../../hooks/useExerciseSortState';
 import { useIndexData } from '../../hooks/useIndexData';
 import { useIndexOfflineQueue } from '../../hooks/useIndexOfflineQueue';
@@ -42,9 +43,7 @@ export default function TrackerPage() {
   const token = session?.access_token ?? null;
   const userCtx = useUserContext(session);
   const trackerPatientId = userCtx.patientId ?? null;
-  const [isOnline, setIsOnline] = useState(() =>
-    typeof navigator === 'undefined' ? true : navigator.onLine !== false,
-  );
+  const { effectiveOnline } = useEffectiveConnectivity();
   const {
     exercises,
     programs,
@@ -260,20 +259,6 @@ export default function TrackerPage() {
     if (!logger.isOpen) setActiveExercise(null);
   }, [logger.isOpen, setActiveExercise]);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
-
-    const syncOnlineState = () => setIsOnline(window.navigator.onLine !== false);
-    syncOnlineState();
-    window.addEventListener('online', syncOnlineState);
-    window.addEventListener('offline', syncOnlineState);
-
-    return () => {
-      window.removeEventListener('online', syncOnlineState);
-      window.removeEventListener('offline', syncOnlineState);
-    };
-  }, []);
-
   const canRefreshOnReconnect =
     activeTab === 'exercises' &&
     !isTimerOpen &&
@@ -340,7 +325,7 @@ export default function TrackerPage() {
   return (
     <>
       <TrackerRouteShell
-        isOnline={isOnline}
+        isOnline={effectiveOnline}
         unreadCount={msgs.unreadCount}
         onOpenMessages={handleOpenMessages}
         sessionUser={session.user}
