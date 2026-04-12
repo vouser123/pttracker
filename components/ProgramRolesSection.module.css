@@ -1,0 +1,88 @@
+/* ProgramRolesSection.module.css — roles-specific layout and action styles for /program */
+
+.rolesList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.currentRolesHeading {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.roleCard {
+  display: block;
+  padding: 0.85rem 0.9rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+}
+
+.roleCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.roleCardSummary {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.roleContributionBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 76px;
+  min-height: 24px;
+  padding: 0.15rem 0.55rem;
+  border-radius: 6px;
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.roleContributionHigh {
+  background: var(--danger-color);
+}
+
+.roleContributionMedium {
+  background: var(--warning-color);
+}
+
+.roleContributionLow {
+  background: var(--accent-color);
+}
+
+.roleCardText {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.addRoleForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color);
+}
+
+@media (max-width: 600px) {
+  .roleCardHeader,
+  .roleCardSummary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

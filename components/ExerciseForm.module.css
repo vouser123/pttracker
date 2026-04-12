@@ -31,10 +31,17 @@
 }
 
 /* Hide default triangle in Chrome/Safari */
-.sectionHeader::-webkit-details-marker { display: none; }
+.sectionHeader::-webkit-details-marker {
+  display: none;
+}
 
-.sectionHeader::before { content: '▶ '; font-size: 0.75em; }
-.section[open] > .sectionHeader::before { content: '▼ '; }
+.sectionHeader::before {
+  content: "▶ ";
+  font-size: 0.75em;
+}
+.section[open] > .sectionHeader::before {
+  content: "▼ ";
+}
 
 .sectionContent {
   padding: 1rem;
@@ -141,7 +148,7 @@
   align-items: center;
   gap: 0.3rem;
   padding: 0.25rem 0.5rem;
-  background: var(--ios-blue, #007AFF);
+  background: var(--ios-blue, #007aff);
   color: white;
   border-radius: 12px;
   font-size: 0.8rem;
@@ -185,26 +192,6 @@
 
 .guidanceItem span {
   flex: 1;
-}
-
-/* ── Roles table ── */
-
-.rolesTable {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.85rem;
-}
-
-.rolesTable th,
-.rolesTable td {
-  padding: 0.4rem 0.6rem;
-  border: 1px solid var(--border-color);
-  text-align: left;
-}
-
-.rolesTable th {
-  background: var(--bg-secondary);
-  font-weight: 600;
 }
 
 .emptyNote {
@@ -275,9 +262,9 @@
   flex-direction: column;
   gap: 0.6rem;
   padding: 0.85rem 0.9rem;
-  border: 1px solid color-mix(in srgb, var(--ios-red, #FF3B30) 35%, var(--border-color));
+  border: 1px solid color-mix(in srgb, var(--ios-red, #ff3b30) 35%, var(--border-color));
   border-radius: 8px;
-  background: color-mix(in srgb, var(--ios-red, #FF3B30) 8%, var(--bg-secondary));
+  background: color-mix(in srgb, var(--ios-red, #ff3b30) 8%, var(--bg-secondary));
 }
 
 .archiveWarningTitle,
@@ -307,7 +294,7 @@
 
 .btnPrimary {
   padding: 0.6rem 1.25rem;
-  background: var(--ios-blue, #007AFF);
+  background: var(--ios-blue, #007aff);
   color: white;
   border: none;
   border-radius: 8px;
@@ -345,7 +332,7 @@
 }
 
 .errorBanner {
-  background: var(--ios-red, #FF3B30);
+  background: var(--ios-red, #ff3b30);
   color: white;
   padding: 0.75rem 1rem;
   border-radius: 6px;
@@ -353,37 +340,9 @@
   margin-bottom: 1rem;
 }
 
-/* ── Roles editing (Phase 3b) ── */
-
-.roleRemoveBtn {
-  padding: 0.2rem 0.5rem;
-  background: none;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  font-size: 0.75rem;
-  color: var(--ios-red, #FF3B30);
-  cursor: pointer;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  white-space: nowrap;
-}
-
-.roleRemoveBtn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.addRoleForm {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--border-color);
-}
-
 .roleError {
   font-size: 0.8rem;
-  color: var(--ios-red, #FF3B30);
+  color: var(--ios-red, #ff3b30);
   margin: 0;
 }
 

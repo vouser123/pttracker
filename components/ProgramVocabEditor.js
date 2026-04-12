@@ -2,6 +2,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import styles from './ExerciseForm.module.css';
 import NativeSelect from './NativeSelect';
+import ProgramVocabAddTermForm from './ProgramVocabAddTermForm';
+import ProgramVocabTermList from './ProgramVocabTermList';
 
 const CATEGORY_METADATA = [
   { key: 'region', label: 'Regions' },
@@ -129,6 +131,24 @@ export default function ProgramVocabEditor({
     await handleDeleteTerm(term.code);
   }
 
+  function handleStartEdit(term) {
+    setEditCode(term.code);
+    setEditDefinition(term.definition || '');
+  }
+
+  function handleCancelEdit() {
+    setEditCode(null);
+    setEditDefinition('');
+  }
+
+  function handleStartArchiveReview(term) {
+    setArchiveReviewCode(term.code);
+    if (editCode === term.code) {
+      setEditCode(null);
+      setEditDefinition('');
+    }
+  }
+
   return (
     <div className={styles.sectionContent}>
       <div className={styles.formGroup}>
@@ -146,154 +166,31 @@ export default function ProgramVocabEditor({
 
       {error && <p className={styles.roleError}>{error}</p>}
 
-      <div className={styles.vocabManager}>
-        <div className={styles.formRow}>
-          <div className={styles.formGroup}>
-            <label className={styles.fieldLabel} htmlFor={fieldIds.code}>
-              Code
-            </label>
-            <input
-              id={fieldIds.code}
-              className={styles.input}
-              value={newCode}
-              onChange={(event) => setNewCode(event.target.value)}
-              onBlur={(event) => setNewCode(formatCodeInput(event.target.value))}
-              placeholder="lowercase_code"
-            />
-          </div>
-          <div className={styles.formGroup}>
-            <label className={styles.fieldLabel} htmlFor={fieldIds.definition}>
-              Definition
-            </label>
-            <input
-              id={fieldIds.definition}
-              className={styles.input}
-              value={newDefinition}
-              onChange={(event) => setNewDefinition(event.target.value)}
-              placeholder="Human-readable meaning"
-            />
-          </div>
-        </div>
-        <div className={styles.inlineActions}>
-          <span className={styles.hint}>
-            Codes are stored as lowercase values. Definitions provide the readable label.
-          </span>
-          <button
-            type="button"
-            className={styles.btnSecondary}
-            onPointerUp={handleAddTerm}
-            disabled={saving}
-          >
-            {saving ? 'Saving…' : 'Add Vocabulary Term'}
-          </button>
-        </div>
-      </div>
+      <ProgramVocabAddTermForm
+        fieldIds={fieldIds}
+        newCode={newCode}
+        newDefinition={newDefinition}
+        onCodeChange={setNewCode}
+        onCodeBlur={(value) => setNewCode(formatCodeInput(value))}
+        onDefinitionChange={setNewDefinition}
+        onAddTerm={handleAddTerm}
+        saving={saving}
+      />
 
-      {selectedTerms.length > 0 ? (
-        <div className={styles.vocabList}>
-          {selectedTerms.map((term) => {
-            const isEditing = editCode === term.code;
-            const isReviewingArchive = archiveReviewCode === term.code;
-
-            return (
-              <div key={term.code} className={styles.vocabTermRow}>
-                <div className={styles.vocabTermMeta}>
-                  <p className={styles.vocabCode}>{term.code}</p>
-                  {isEditing ? (
-                    <input
-                      className={styles.input}
-                      value={editDefinition}
-                      onChange={(event) => setEditDefinition(event.target.value)}
-                    />
-                  ) : (
-                    <p className={styles.vocabDefinition}>{term.definition || '—'}</p>
-                  )}
-                  {isReviewingArchive ? (
-                    <div className={styles.archiveWarningBox}>
-                      <p className={styles.archiveWarningTitle}>Archive this vocabulary term?</p>
-                      <p className={styles.archiveWarningText}>
-                        This removes the term from active editor lists only. It does not permanently
-                        erase the term.
-                      </p>
-                      <div className={styles.inlineActions}>
-                        <button
-                          type="button"
-                          className={styles.btnSecondary}
-                          onPointerUp={() => setArchiveReviewCode(null)}
-                          disabled={saving}
-                        >
-                          Keep term
-                        </button>
-                        <button
-                          type="button"
-                          className={styles.roleRemoveBtn}
-                          onPointerUp={() => handleConfirmArchive(term)}
-                          disabled={saving}
-                        >
-                          Confirm archive
-                        </button>
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-                <div className={styles.inlineActions}>
-                  {isEditing ? (
-                    <>
-                      <button
-                        type="button"
-                        className={styles.btnSecondary}
-                        onPointerUp={handleSaveEdit}
-                        disabled={saving}
-                      >
-                        Save
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.btnSecondary}
-                        onPointerUp={() => {
-                          setEditCode(null);
-                          setEditDefinition('');
-                        }}
-                        disabled={saving}
-                      >
-                        Cancel
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      type="button"
-                      className={styles.btnSecondary}
-                      onPointerUp={() => {
-                        setEditCode(term.code);
-                        setEditDefinition(term.definition || '');
-                      }}
-                      disabled={saving}
-                    >
-                      Edit
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    className={styles.roleRemoveBtn}
-                    onPointerUp={() => {
-                      setArchiveReviewCode(term.code);
-                      if (editCode === term.code) {
-                        setEditCode(null);
-                        setEditDefinition('');
-                      }
-                    }}
-                    disabled={saving}
-                  >
-                    Archive…
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <p className={styles.emptyNote}>No active terms in this category yet.</p>
-      )}
+      <ProgramVocabTermList
+        selectedTerms={selectedTerms}
+        editCode={editCode}
+        editDefinition={editDefinition}
+        archiveReviewCode={archiveReviewCode}
+        onEditDefinitionChange={setEditDefinition}
+        onStartEdit={handleStartEdit}
+        onCancelEdit={handleCancelEdit}
+        onSaveEdit={handleSaveEdit}
+        onStartArchiveReview={handleStartArchiveReview}
+        onCancelArchiveReview={() => setArchiveReviewCode(null)}
+        onConfirmArchive={handleConfirmArchive}
+        saving={saving}
+      />
     </div>
   );
 }

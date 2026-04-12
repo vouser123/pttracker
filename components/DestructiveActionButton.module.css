@@ -1,0 +1,19 @@
+/* DestructiveActionButton.module.css — shared destructive-action button styles for editor workspaces */
+
+.destructiveActionButton {
+  padding: 0.45rem 0.95rem;
+  background: var(--danger-color);
+  border: none;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.destructiveActionButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

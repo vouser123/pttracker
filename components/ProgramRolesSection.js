@@ -1,7 +1,9 @@
 // components/ProgramRolesSection.js — roles management section for the program workspace
 import { useState } from 'react';
-import styles from './ExerciseForm.module.css';
+import destructiveButtonStyles from './DestructiveActionButton.module.css';
+import formStyles from './ExerciseForm.module.css';
 import NativeSelect from './NativeSelect';
+import styles from './ProgramRolesSection.module.css';
 
 export default function ProgramRolesSection({
   exercise,
@@ -53,67 +55,70 @@ export default function ProgramRolesSection({
   }
 
   if (!exercise?.id) {
-    return <p className={styles.emptyNote}>Select an exercise to manage roles.</p>;
+    return <p className={formStyles.emptyNote}>Select an exercise to manage roles.</p>;
   }
 
+  const roleCards = roles?.map((role, index) => {
+    const roleKey =
+      role.id ?? `${role.region}-${role.capacity}-${role.focus ?? 'general'}-${index}`;
+    const contribution = (role.contribution ?? 'low').toLowerCase();
+    const contributionToneClass =
+      contribution === 'high'
+        ? styles.roleContributionHigh
+        : contribution === 'medium'
+          ? styles.roleContributionMedium
+          : styles.roleContributionLow;
+    const roleSummary = [role.region, role.capacity, role.focus].filter(Boolean).join(' / ');
+
+    return (
+      <article key={roleKey} className={styles.roleCard}>
+        <div className={styles.roleCardHeader}>
+          <div className={styles.roleCardSummary}>
+            <span className={`${styles.roleContributionBadge} ${contributionToneClass}`}>
+              {contribution.toUpperCase()}
+            </span>
+            <p className={styles.roleCardText}>{roleSummary}</p>
+          </div>
+          <button
+            type="button"
+            className={destructiveButtonStyles.destructiveActionButton}
+            onPointerUp={() => onDeleteRole(role.id)}
+            disabled={rolesLoading || !role.id}
+            aria-label="Remove role"
+          >
+            Remove
+          </button>
+        </div>
+      </article>
+    );
+  });
+
   return (
-    <div className={styles.sectionContent}>
-      <p className={styles.hint}>
+    <div className={formStyles.sectionContent}>
+      <p className={formStyles.hint}>
         Managing roles for <strong>{exercise.canonical_name}</strong>.
       </p>
 
       {roles && roles.length > 0 ? (
-        <table className={styles.rolesTable}>
-          <thead>
-            <tr>
-              <th>Region</th>
-              <th>Capacity</th>
-              <th>Focus</th>
-              <th>Contribution</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {roles.map((role, index) => (
-              <tr
-                key={
-                  role.id ?? `${role.region}-${role.capacity}-${role.focus ?? 'general'}-${index}`
-                }
-              >
-                <td>{role.region}</td>
-                <td>{role.capacity}</td>
-                <td>{role.focus ?? '—'}</td>
-                <td>{role.contribution}</td>
-                <td>
-                  <button
-                    type="button"
-                    className={styles.roleRemoveBtn}
-                    onPointerUp={() => onDeleteRole(role.id)}
-                    disabled={rolesLoading || !role.id}
-                    aria-label="Remove role"
-                  >
-                    Remove
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className={styles.rolesList}>
+          <p className={styles.currentRolesHeading}>Current Roles:</p>
+          {roleCards}
+        </div>
       ) : (
-        <p className={styles.emptyNote}>No roles assigned yet.</p>
+        <p className={formStyles.emptyNote}>No roles assigned yet.</p>
       )}
 
       <div className={styles.addRoleForm}>
-        <p className={styles.fieldLabel}>Add Role</p>
-        {addRoleError && <p className={styles.roleError}>{addRoleError}</p>}
-        <div className={styles.formRow}>
-          <div className={styles.formGroup}>
-            <label className={styles.fieldLabel} htmlFor={fieldIds.region}>
+        <p className={formStyles.fieldLabel}>Add Role</p>
+        {addRoleError && <p className={formStyles.roleError}>{addRoleError}</p>}
+        <div className={formStyles.formRow}>
+          <div className={formStyles.formGroup}>
+            <label className={formStyles.fieldLabel} htmlFor={fieldIds.region}>
               Region *
             </label>
             <NativeSelect
               id={fieldIds.region}
-              className={styles.select}
+              className={formStyles.select}
               value={newRegion}
               onChange={setNewRegion}
               disabled={rolesLoading}
@@ -121,13 +126,13 @@ export default function ProgramRolesSection({
               options={regionOptions}
             />
           </div>
-          <div className={styles.formGroup}>
-            <label className={styles.fieldLabel} htmlFor={fieldIds.capacity}>
+          <div className={formStyles.formGroup}>
+            <label className={formStyles.fieldLabel} htmlFor={fieldIds.capacity}>
               Capacity *
             </label>
             <NativeSelect
               id={fieldIds.capacity}
-              className={styles.select}
+              className={formStyles.select}
               value={newCapacity}
               onChange={setNewCapacity}
               disabled={rolesLoading}
@@ -136,14 +141,14 @@ export default function ProgramRolesSection({
             />
           </div>
         </div>
-        <div className={styles.formRow}>
-          <div className={styles.formGroup}>
-            <label className={styles.fieldLabel} htmlFor={fieldIds.focus}>
+        <div className={formStyles.formRow}>
+          <div className={formStyles.formGroup}>
+            <label className={formStyles.fieldLabel} htmlFor={fieldIds.focus}>
               Focus
             </label>
             <NativeSelect
               id={fieldIds.focus}
-              className={styles.select}
+              className={formStyles.select}
               value={newFocus}
               onChange={setNewFocus}
               disabled={rolesLoading}
@@ -151,13 +156,13 @@ export default function ProgramRolesSection({
               options={focusOptions}
             />
           </div>
-          <div className={styles.formGroup}>
-            <label className={styles.fieldLabel} htmlFor={fieldIds.contribution}>
+          <div className={formStyles.formGroup}>
+            <label className={formStyles.fieldLabel} htmlFor={fieldIds.contribution}>
               Contribution *
             </label>
             <NativeSelect
               id={fieldIds.contribution}
-              className={styles.select}
+              className={formStyles.select}
               value={newContribution}
               onChange={setNewContribution}
               disabled={rolesLoading}
@@ -168,7 +173,7 @@ export default function ProgramRolesSection({
         </div>
         <button
           type="button"
-          className={styles.btnSecondary}
+          className={formStyles.btnSecondary}
           onPointerUp={handleAddRole}
           disabled={rolesLoading}
         >
