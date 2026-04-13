@@ -21,8 +21,7 @@ export default function TrackerRouteShell({
   toastType,
   toastVisible,
   activeTab,
-  pickerExercises,
-  pickerPrograms,
+  pickerModel,
   selectedExerciseId,
   onSelectExercise,
   onEditDosage,
@@ -31,8 +30,6 @@ export default function TrackerRouteShell({
   onSortChange,
   lifecycleFilter,
   onLifecycleFilterChange,
-  manualOrderIds,
-  onManualOrderChange,
   historyLogs,
   activeExerciseId,
   activeExerciseName,
@@ -110,8 +107,7 @@ export default function TrackerRouteShell({
       <main className={styles.main}>
         {activeTab === 'exercises' && (
           <ExercisePicker
-            exercises={pickerExercises}
-            programs={pickerPrograms}
+            pickerModel={pickerModel}
             selectedId={selectedExerciseId}
             onSelect={onSelectExercise}
             onEditDosage={onEditDosage}
@@ -120,8 +116,6 @@ export default function TrackerRouteShell({
             onSortChange={onSortChange}
             lifecycleFilter={lifecycleFilter}
             onLifecycleFilterChange={onLifecycleFilterChange}
-            manualOrderIds={manualOrderIds}
-            onManualOrderChange={onManualOrderChange}
           />
         )}
         {activeTab === 'history' && (

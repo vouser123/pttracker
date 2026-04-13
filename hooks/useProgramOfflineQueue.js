@@ -1,16 +1,9 @@
-// hooks/useProgramOfflineQueue.js — offline mutation queue lifecycle for the /program editor
+// hooks/useProgramOfflineQueue.js — offline queue state owner for the /program editor
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  isNetworkError,
-  loadProgramQueue,
-  markProgramMutationFailed,
-  mergeProgramMutationQueue,
-  performProgramMutation,
-  replayProgramQueue,
-  saveProgramQueue,
-  summarizeProgramQueue,
-} from '../lib/program-offline';
+import { loadProgramQueue, saveProgramQueue, summarizeProgramQueue } from '../lib/program-offline';
+import { useProgramMutationQueueActions } from './useProgramMutationQueueActions';
+import { useProgramQueueSync } from './useProgramQueueSync';
 
 export function useProgramOfflineQueue({
   session,
@@ -21,54 +14,50 @@ export function useProgramOfflineQueue({
 }) {
   const [mutationQueue, setMutationQueue] = useState([]);
   const [queueLoaded, setQueueLoaded] = useState(false);
-  const [queueSyncing, setQueueSyncing] = useState(false);
   const [queueError, setQueueError] = useState(null);
   const queueRef = useRef([]);
-  const syncInFlightRef = useRef(false);
   const queueSummary = summarizeProgramQueue(mutationQueue);
-  const persistQueue = useCallback(async (nextQueue) => {
-    queueRef.current = nextQueue;
-    setMutationQueue(nextQueue);
-    if (session?.user?.id) {
-      await saveProgramQueue(session.user.id, nextQueue);
-    }
-  }, [session?.user?.id]);
-  const syncProgramMutations = useCallback(async () => {
-    if (!session?.access_token || !session?.user?.id || !programPatientId || syncInFlightRef.current) return;
-    const currentQueue = queueRef.current;
-    if (!currentQueue.length) {
-      setQueueError(null);
-      return;
-    }
-    syncInFlightRef.current = true;
-    setQueueSyncing(true);
-    setQueueError(null);
-    try {
-      const { failedMessage, syncedCount } = await replayProgramQueue(
-        session.access_token,
-        currentQueue,
-        persistQueue
-      );
 
-      if (failedMessage) {
-        setQueueError(failedMessage);
-        return;
+  const persistQueue = useCallback(
+    async (nextQueue) => {
+      queueRef.current = nextQueue;
+      setMutationQueue(nextQueue);
+      if (session?.user?.id) {
+        await saveProgramQueue(session.user.id, nextQueue);
       }
+    },
+    [session?.user?.id],
+  );
 
-      if (syncedCount > 0) {
-        await loadData(session.access_token, session.user.id);
-        showToast(
-          syncedCount === 1 ? '1 pending program change synced.' : `${syncedCount} pending program changes synced.`
-        );
-      }
-    } finally {
-      syncInFlightRef.current = false;
-      setQueueSyncing(false);
-    }
-  }, [loadData, persistQueue, programPatientId, session?.access_token, session?.user?.id, showToast]);
+  const { queueSyncing, syncProgramMutations, claimSyncLock, releaseSyncLock } =
+    useProgramQueueSync({
+      session,
+      programPatientId,
+      mutationQueue,
+      queueLoaded,
+      queueRef,
+      persistQueue,
+      loadData,
+      showToast,
+      setQueueError,
+    });
+
+  const enqueueMutation = useProgramMutationQueueActions({
+    session,
+    queueRef,
+    persistQueue,
+    commitSnapshot,
+    loadData,
+    showToast,
+    setQueueError,
+    syncProgramMutations,
+    claimSyncLock,
+    releaseSyncLock,
+  });
 
   useEffect(() => {
     let cancelled = false;
+
     if (!session?.user?.id) {
       queueRef.current = [];
       setMutationQueue([]);
@@ -78,9 +67,11 @@ export function useProgramOfflineQueue({
         cancelled = true;
       };
     }
+
     loadProgramQueue(session.user.id)
       .then((queue) => {
         if (cancelled) return;
+
         queueRef.current = queue;
         setMutationQueue(queue);
         setQueueLoaded(true);
@@ -88,77 +79,18 @@ export function useProgramOfflineQueue({
       })
       .catch(() => {
         if (cancelled) return;
+
         queueRef.current = [];
         setMutationQueue([]);
         setQueueLoaded(true);
         setQueueError(null);
       });
+
     return () => {
       cancelled = true;
     };
   }, [session?.user?.id]);
-  useEffect(() => {
-    if (!queueLoaded || !session?.user?.id || !programPatientId || mutationQueue.length === 0 || !navigator.onLine) return;
-    syncProgramMutations();
-  }, [mutationQueue.length, programPatientId, queueLoaded, session?.user?.id, syncProgramMutations]);
-  useEffect(() => {
-    if (!session?.user?.id) return undefined;
-    function handleOnline() {
-      syncProgramMutations();
-    }
-    window.addEventListener('online', handleOnline);
-    return () => window.removeEventListener('online', handleOnline);
-  }, [session?.user?.id, syncProgramMutations]);
-  const enqueueMutation = useCallback(async (mutation, nextSnapshot, successMessage, previousSnapshot) => {
-    const nextQueue = mergeProgramMutationQueue(queueRef.current, mutation);
-    const shouldAttemptImmediateSave = Boolean(
-      session?.access_token
-      && session?.user?.id
-      && navigator.onLine
-      && nextQueue.length === 1
-    );
-    commitSnapshot(nextSnapshot);
-    if (shouldAttemptImmediateSave) {
-      // Set the lock before queue state updates so the mutationQueue.length
-      // effect cannot replay this same mutation concurrently.
-      syncInFlightRef.current = true;
-    }
-    await persistQueue(nextQueue);
-    if (!session?.access_token || !session?.user?.id || !navigator.onLine) {
-      syncInFlightRef.current = false;
-      setQueueError('Offline - changes will sync later');
-      showToast('Offline - changes will sync later', 'error');
-      return;
-    }
-    if (nextQueue.length > 1) {
-      // Queue backlog — let syncProgramMutations handle the toast when done
-      syncInFlightRef.current = false;
-      syncProgramMutations();
-      return;
-    }
 
-    try {
-      await performProgramMutation(session.access_token, mutation);
-      await persistQueue([]);
-      setQueueError(null);
-      await loadData(session.access_token, session.user.id);
-      showToast(successMessage);
-    } catch (error) {
-      if (isNetworkError(error)) {
-        const failedQueue = markProgramMutationFailed(nextQueue, mutation.id, 'Offline - changes will sync later');
-        await persistQueue(failedQueue);
-        setQueueError('Offline - changes will sync later');
-        showToast('Offline - changes will sync later', 'error');
-        return;
-      }
-      await persistQueue(nextQueue.filter((item) => item.id !== mutation.id));
-      commitSnapshot(previousSnapshot);
-      throw error;
-    } finally {
-      // Always release the in-flight lock so future syncs are not blocked
-      syncInFlightRef.current = false;
-    }
-  }, [commitSnapshot, loadData, persistQueue, programPatientId, session?.access_token, session?.user?.id, showToast, syncProgramMutations]);
   return {
     mutationQueue,
     queueSummary,

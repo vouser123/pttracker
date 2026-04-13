@@ -18,6 +18,7 @@ import {
 import AuthForm from '../../components/AuthForm';
 import { useAuth } from '../../hooks/useAuth';
 import { useEffectiveConnectivity } from '../../hooks/useEffectiveConnectivity';
+import { useExercisePickerModel } from '../../hooks/useExercisePickerModel';
 import { useExerciseSortState } from '../../hooks/useExerciseSortState';
 import { useIndexData } from '../../hooks/useIndexData';
 import { useIndexOfflineQueue } from '../../hooks/useIndexOfflineQueue';
@@ -209,6 +210,14 @@ export default function TrackerPage() {
       ...buildHistoryState(exercise.id, exercise.canonical_name ?? null),
     }));
   }, [deferredLogs, exercises, historyLoading, logs.length, programsForTracker]);
+  const pickerModel = useExercisePickerModel({
+    exercises: pickerExercises,
+    programs: pickerPrograms,
+    sortMode,
+    lifecycleFilter,
+    manualOrderIds,
+    onManualOrderChange: setManualOrderIds,
+  });
   const sessionProgress = useMemo(
     () => buildSessionProgress(selectedExercise, draftSession?.sets ?? []),
     [draftSession?.sets, selectedExercise],
@@ -342,8 +351,7 @@ export default function TrackerPage() {
         toastType={toastType}
         toastVisible={toastVisible}
         activeTab={activeTab}
-        pickerExercises={pickerExercises}
-        pickerPrograms={pickerPrograms}
+        pickerModel={pickerModel}
         selectedExerciseId={selectedExerciseId}
         onSelectExercise={handleExerciseSelect}
         onEditDosage={openDosageEditor}
@@ -352,8 +360,6 @@ export default function TrackerPage() {
         onSortChange={setSortMode}
         lifecycleFilter={lifecycleFilter}
         onLifecycleFilterChange={setLifecycleFilter}
-        manualOrderIds={manualOrderIds}
-        onManualOrderChange={setManualOrderIds}
         historyLogs={allLogs}
         activeExerciseId={activeExercise?.id ?? null}
         activeExerciseName={activeExercise?.name ?? null}
