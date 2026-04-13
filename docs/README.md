@@ -29,7 +29,7 @@ Use this file to decide which doc to open next.
   - Answers: "How does the live system fit together?"
 - [`IMPLEMENTATION_PATTERNS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/IMPLEMENTATION_PATTERNS.md)
   - Open when: you need the approved shared helper, component, or do-this-not-that implementation pattern.
-  - Answers: "Which shared thing should I use here?"
+  - Answers: "Which shared thing should I use here?" including current tracker picker, session logging, and `/program` queue ownership patterns.
 - [`SCRIPTS_GUIDE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/SCRIPTS_GUIDE.md)
   - Open when: you need the current usage for analyzer helpers, commit preflight, Supabase backup, or other local helper scripts.
   - Answers: "How do I use the local scripts right now?"
