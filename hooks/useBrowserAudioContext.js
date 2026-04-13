@@ -17,7 +17,11 @@ export function useBrowserAudioContext() {
 
       if (context.state === 'suspended') {
         if (!audioResumePromiseRef.current) {
-          audioResumePromiseRef.current = Promise.resolve(context.resume())
+          const resumeWithTimeout = Promise.race([
+            Promise.resolve(context.resume()),
+            new Promise((resolve) => window.setTimeout(resolve, 1000)),
+          ]);
+          audioResumePromiseRef.current = resumeWithTimeout
             .catch(() => null)
             .finally(() => {
               audioResumePromiseRef.current = null;
