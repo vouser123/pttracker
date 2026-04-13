@@ -90,7 +90,6 @@ export function useBrowserSpeech() {
         if (!text) return;
         const synth = await ensureSpeechReady();
         if (!synth) return;
-        synth.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.rate = 1.0;
         utterance.pitch = 1.0;
