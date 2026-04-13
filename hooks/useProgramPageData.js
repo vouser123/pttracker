@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { isOfflineRequestError } from '../lib/fetch-with-offline';
 import { offlineCache } from '../lib/offline-cache';
 import {
+  buildAccessErrorState,
   emptyProgramDataState,
   persistProgramDataSnapshot,
   readCachedProgramBootstrap,
@@ -56,11 +57,7 @@ export function useProgramPageData({ session, initialAuthUserId = null }) {
         if (!currentUser) throw new Error('Current user profile not found');
 
         if (currentUser.role !== 'therapist' && currentUser.role !== 'admin') {
-          setState({
-            ...emptyProgramDataState(),
-            currentUserRole: currentUser.role,
-            accessError: 'Therapist or admin access required.',
-          });
+          setState(buildAccessErrorState(currentUser));
           return null;
         }
 
