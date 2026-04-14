@@ -105,10 +105,8 @@ This project is operated by a non-technical user. Agents must not assume technic
 ## Active Tracker Policy (Required)
 
 - Use Beads for active work tracking in this repo, including intake, execution, handoff, and closure.
-- Do not create new `DN-*` items in `dev_notes.json`.
-- Treat `docs/archive/dev-notes/dev_notes.json` and `docs/archive/dev-notes/DEV_NOTES.md` as legacy history only.
-- If a legacy `DN-*` reference matters to current work, link it in Beads with `--external-ref DN-###` instead of reviving dev_notes as an active queue.
-- If you need to review historical deferred items, consult the legacy archive and then create or update a Beads issue rather than reopening `dev_notes`.
+- Open a bead before beginning work. Update to in-progress while working. Close your bead(s) before you commit.
+- If working with > 50 lines of code or > 2 files, use a parent and child beads.
 
 ## Validation Preference
 
@@ -121,12 +119,6 @@ This project is operated by a non-technical user. Agents must not assume technic
   - a particularly risky refactor where an immediate pre-push build materially reduces rollback risk
 - If you choose a local build, state the specific reason in a short progress update or bead note.
 
-Legacy dev-notes files are archive-only. Do not use them for active intake, assignment, or status management.
-
-## Parity Checking
-
-- Use behavioral parity checking routinely on migrated Next.js surfaces, not only after a bug is already suspected.
-- Open [`docs/AGENT_PLAYBOOK.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/AGENT_PLAYBOOK.md) if you need the fuller parity workflow.
 
 ## Testing Checklists
 
@@ -149,11 +141,6 @@ Before retrying a failed commit, run:
 `npm run commit:preflight -- --message "Your title (pt-xxxx)" --trailer "Co-Authored-By: Agent Name <recognized-agent-email>"`
 
 Use at least one Beads ID in the commit title. Recognized agent emails for the trailer are `codex@openai.com` and `noreply@anthropic.com`. If no agent attribution should be recorded for that commit, use the one-time `PT_AI_TRAILER_OK` override instead.
-
-## Agent Ops Friction Logging
-
-- Use Beads epic `pt-uf1` for execution friction that affects throughput.
-- Open [`docs/AGENT_PLAYBOOK.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/AGENT_PLAYBOOK.md) if you need the child-issue pattern.
 
 ## Beads Agent Discipline (Required)
 
@@ -306,3 +293,38 @@ For more details, see README.md and docs/QUICKSTART.md.
 - If push fails, resolve and retry until it succeeds
 
 <!-- END BEADS INTEGRATION -->
+
+
+## vexp <!-- vexp v1.3.11 -->
+
+**MANDATORY: use `run_pipeline` — do NOT grep or glob the codebase.**
+vexp returns pre-indexed, graph-ranked context in a single call.
+
+### Workflow
+1. `run_pipeline` with your task description — ALWAYS FIRST (replaces all other tools)
+2. Make targeted changes based on the context returned
+3. `run_pipeline` again only if you need more context
+
+### Available MCP tools
+- `run_pipeline` — **PRIMARY TOOL**. Runs capsule + impact + memory in 1 call.
+  Auto-detects intent. Includes file content. Example: `run_pipeline({ "task": "fix auth bug" })`
+- `get_context_capsule` — lightweight, for simple questions only
+- `get_impact_graph` — impact analysis of a specific symbol
+- `search_logic_flow` — execution paths between functions
+- `get_skeleton` — compact file structure
+- `index_status` — indexing status
+- `get_session_context` — recall observations from sessions
+- `search_memory` — cross-session search
+- `save_observation` — persist insights (prefer run_pipeline's observation param)
+
+### Agentic search
+- Do NOT use built-in file search, grep, or codebase indexing — always call `run_pipeline` first
+- If you spawn sub-agents or background tasks, pass them the context from `run_pipeline`
+  rather than letting them search the codebase independently
+
+### Smart Features
+Intent auto-detection, hybrid ranking, session memory, auto-expanding budget.
+
+### Multi-Repo
+`run_pipeline` auto-queries all indexed repos. Use `repos: ["alias"]` to scope. Run `index_status` to see aliases.
+<!-- /vexp -->
