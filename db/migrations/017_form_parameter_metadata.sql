@@ -32,14 +32,14 @@ CREATE POLICY form_parameter_metadata_modify
   USING (
     EXISTS (
       SELECT 1 FROM users
-      WHERE users.auth_user_id = auth.uid()
+      WHERE users.auth_id = auth.uid()
         AND users.role IN ('therapist', 'admin')
     )
   )
   WITH CHECK (
     EXISTS (
       SELECT 1 FROM users
-      WHERE users.auth_user_id = auth.uid()
+      WHERE users.auth_id = auth.uid()
         AND users.role IN ('therapist', 'admin')
     )
   );
