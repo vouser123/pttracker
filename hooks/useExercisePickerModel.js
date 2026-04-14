@@ -1,34 +1,9 @@
 // hooks/useExercisePickerModel.js — tracker exercise picker query, display shaping, and reorder orchestration
 import { useMemo, useState } from 'react';
-import { formatDosageSummary } from '../lib/dosage-summary';
-import { isExercisePrn } from '../lib/exercise-lifecycle';
+import { buildVisibleExerciseCard } from '../lib/exercise-picker-display';
 import { normalizeManualOrderIds, sortExercises } from '../lib/exercise-sort';
+import { resolveEffectiveStatus } from '../lib/program-status';
 import { useExercisePickerManualReorder } from './useExercisePickerManualReorder';
-
-function getAdherence(program) {
-  if (program?.history_pending) return null;
-  if (program?.adherence_text) {
-    const suffix =
-      program?.total_sessions > 0
-        ? ` · ${program.total_sessions} session${program.total_sessions > 1 ? 's' : ''} total`
-        : '';
-    return {
-      label: `${program.adherence_icon ?? ''}${program.adherence_text}${suffix}`,
-      tone: program?.adherence_tone ?? 'gray',
-    };
-  }
-  if (program?.adherence_status === 'done_today') {
-    return { label: 'Done today', tone: 'green' };
-  }
-  if (program?.adherence_status === 'due_soon') {
-    return { label: 'Due soon', tone: 'orange' };
-  }
-  if (program?.adherence_status === 'overdue') return { label: 'Overdue', tone: 'red' };
-  if (program?.last_performed_at) {
-    return { label: 'Recent activity', tone: 'green' };
-  }
-  return { label: 'No history', tone: 'gray' };
-}
 
 export function useExercisePickerModel({
   exercises = [],
@@ -55,6 +30,14 @@ export function useExercisePickerModel({
     [exercises, manualOrderIds],
   );
   const isManualMode = sortMode === 'manual';
+  const resolveExerciseStatus = useMemo(
+    () => (exercise, program) =>
+      resolveEffectiveStatus(
+        exercise?.lifecycle?.status ?? exercise?.lifecycle_status ?? 'active',
+        program?.assignment_status,
+      ),
+    [],
+  );
 
   const visibleExercises = useMemo(
     () =>
@@ -65,8 +48,17 @@ export function useExercisePickerModel({
         lifecycleFilter,
         query,
         manualOrderIds,
+        resolveStatus: resolveExerciseStatus,
       }),
-    [exercises, lifecycleFilter, manualOrderIds, programsByExercise, query, sortMode],
+    [
+      exercises,
+      lifecycleFilter,
+      manualOrderIds,
+      programsByExercise,
+      query,
+      resolveExerciseStatus,
+      sortMode,
+    ],
   );
   const visibleExerciseIds = useMemo(
     () => visibleExercises.map((exercise) => exercise.id),
@@ -104,22 +96,10 @@ export function useExercisePickerModel({
 
     return orderedExercises.map((exercise) => {
       const program = programsByExercise.get(exercise.id) ?? null;
-      const adherence = getAdherence(program);
-      return {
-        id: exercise.id,
-        canonical_name: exercise.canonical_name,
-        pt_category: exercise.pt_category ?? '',
-        isPrn: isExercisePrn(exercise),
-        dosageText: formatDosageSummary(program ?? exercise, {
-          exercise,
-          emptyLabel: 'No dosage set',
-        }),
-        dosageActionLabel: program ? 'Edit dosage' : 'Set dosage',
-        adherenceLabel: adherence?.label ?? null,
-        adherenceTone: adherence?.tone ?? 'gray',
-      };
+      const resolvedStatus = resolveExerciseStatus(exercise, program);
+      return buildVisibleExerciseCard(exercise, program, resolvedStatus);
     });
-  }, [previewOrderIds, programsByExercise, visibleExercises]);
+  }, [previewOrderIds, programsByExercise, resolveExerciseStatus, visibleExercises]);
 
   return {
     query,
