@@ -64,6 +64,7 @@ export default function SessionLoggerModal({
   onFormParamChange,
   onSubmit,
   historicalFormParams = {},
+  formParameterMetadata = {},
 }) {
   const [customModes, setCustomModes] = useState({});
 
@@ -146,6 +147,7 @@ export default function SessionLoggerModal({
               secondsLabel={secondsLabel}
               formParams={formParams}
               historicalFormParams={historicalFormParams}
+              formParameterMetadata={formParameterMetadata}
               customModes={customModes}
               onSetCustomMode={setCustomMode}
               onRemoveSet={onRemoveSet}

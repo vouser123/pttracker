@@ -30,7 +30,7 @@ export default function TrackerRouteShell({
   onSortChange,
   lifecycleFilter,
   onLifecycleFilterChange,
-  historyLogs,
+  historyGroups,
   activeExerciseId,
   activeExerciseName,
   onClearHistoryFilter,
@@ -44,6 +44,7 @@ export default function TrackerRouteShell({
   offlineSyncing,
   offlineQueueLoaded,
   offlineQueueError,
+  formParameterMetadata = {},
 }) {
   return (
     <div className={styles.page}>
@@ -120,7 +121,7 @@ export default function TrackerRouteShell({
         )}
         {activeTab === 'history' && (
           <HistoryPanel
-            logs={historyLogs}
+            groups={historyGroups}
             activeExerciseId={activeExerciseId}
             activeExerciseName={activeExerciseName}
             onClearFilter={onClearHistoryFilter}
@@ -128,6 +129,7 @@ export default function TrackerRouteShell({
             historyHasMore={historyHasMore}
             historyLoadingMore={historyLoadingMore}
             onLoadMoreHistory={onLoadMoreHistory}
+            formParameterMetadata={formParameterMetadata}
           />
         )}
       </main>

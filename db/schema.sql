@@ -126,6 +126,21 @@ COMMENT ON COLUMN exercise_form_parameters.parameter_name IS 'Parameter name - f
 
 -- ============================================================================
 
+CREATE TABLE form_parameter_metadata (
+  parameter_name TEXT PRIMARY KEY,
+  display_suffix TEXT,
+  unit_options TEXT[],
+  active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+COMMENT ON TABLE form_parameter_metadata IS 'Display metadata per form parameter name. display_suffix appended after text values. unit_options drives numeric input + unit picker in the session logger.';
+COMMENT ON COLUMN form_parameter_metadata.display_suffix IS 'Appended after the parameter value in display (e.g. "band" → "heavy band"). NULL for numeric parameters.';
+COMMENT ON COLUMN form_parameter_metadata.unit_options IS 'Ordered list of unit choices for numeric parameters (e.g. {ft,in,cm,deg}). NULL for text parameters.';
+
+-- ============================================================================
+
 CREATE TABLE exercise_guidance (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   exercise_id TEXT NOT NULL REFERENCES exercises(id) ON DELETE CASCADE,

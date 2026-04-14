@@ -33,6 +33,7 @@ import { useEmailNotifications } from '../../../hooks/useEmailNotifications';
 import { useMessages } from '../../../hooks/useMessages';
 import { usePtViewData } from '../../../hooks/usePtViewData';
 import { usePtViewUiState } from '../../../hooks/usePtViewUiState';
+import { useReferenceData } from '../../../hooks/useReferenceData';
 import { useUserContext } from '../../../hooks/useUserContext';
 import {
   applyFilters,
@@ -61,6 +62,10 @@ export default function PtViewPage() {
     token: session?.access_token ?? null,
     patientId: userCtx.patientId,
   });
+
+  // Reference data for form parameter display metadata (suffix, unit options).
+  const { referenceData } = useReferenceData(session?.access_token ?? null);
+  const formParameterMetadata = referenceData?.formParameterMetadata ?? {};
 
   // Email notification toggle — optimistic update with API revert on failure.
   const { emailEnabled, handleEmailToggle } = useEmailNotifications({
@@ -190,6 +195,7 @@ export default function PtViewPage() {
         expandedSessions={expandedSessions}
         onToggleSession={toggleSession}
         onExerciseClick={openExerciseHistory}
+        formParameterMetadata={formParameterMetadata}
       />
 
       {messagesOpen && (
@@ -219,6 +225,7 @@ export default function PtViewPage() {
           onClose={() => setHistoryTarget(null)}
           exerciseName={historyTarget.name}
           logs={historyTarget.logs}
+          formParameterMetadata={formParameterMetadata}
         />
       )}
     </>

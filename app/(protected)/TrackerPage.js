@@ -25,6 +25,7 @@ import { useIndexOfflineQueue } from '../../hooks/useIndexOfflineQueue';
 import { useLoggerFeedback } from '../../hooks/useLoggerFeedback';
 import { useManualLog } from '../../hooks/useManualLog';
 import { useMessages } from '../../hooks/useMessages';
+import { useReferenceData } from '../../hooks/useReferenceData';
 import { useSessionLogging } from '../../hooks/useSessionLogging';
 import { useToast } from '../../hooks/useToast';
 import { useTrackerDosageEditor } from '../../hooks/useTrackerDosageEditor';
@@ -32,8 +33,9 @@ import { useTrackerPrnVisibility } from '../../hooks/useTrackerPrnVisibility';
 import { useTrackerReconnectRecovery } from '../../hooks/useTrackerReconnectRecovery';
 import { useTrackerSession } from '../../hooks/useTrackerSession';
 import { useUserContext } from '../../hooks/useUserContext';
-import { getAdherenceBadgeState } from '../../lib/index-history';
+import { filterHistoryByExercise, getAdherenceBadgeState } from '../../lib/index-history';
 import { buildSessionProgress } from '../../lib/index-tracker-session';
+import { groupLogsByDate } from '../../lib/pt-view';
 import { markTrackerPickerReady } from '../../lib/tracker-performance';
 import TrackerOverlays from './TrackerOverlays';
 import TrackerRouteShell from './TrackerRouteShell';
@@ -42,6 +44,8 @@ export default function TrackerPage() {
   const { session, loading: authLoading, signIn } = useAuth();
   const userId = session?.user?.id ?? null;
   const token = session?.access_token ?? null;
+  const { referenceData } = useReferenceData(token);
+  const formParameterMetadata = referenceData?.formParameterMetadata ?? {};
   const userCtx = useUserContext(session);
   const trackerPatientId = userCtx.patientId ?? null;
   const { effectiveOnline } = useEffectiveConnectivity();
@@ -222,6 +226,10 @@ export default function TrackerPage() {
     () => buildSessionProgress(selectedExercise, draftSession?.sets ?? []),
     [draftSession?.sets, selectedExercise],
   );
+  const historyGroups = useMemo(
+    () => groupLogsByDate(filterHistoryByExercise(allLogs, activeExercise?.id ?? null)),
+    [allLogs, activeExercise?.id],
+  );
 
   useEffect(() => {
     if (loading) return;
@@ -363,7 +371,7 @@ export default function TrackerPage() {
         onSortChange={setSortMode}
         lifecycleFilter={lifecycleFilter}
         onLifecycleFilterChange={setLifecycleFilter}
-        historyLogs={allLogs}
+        historyGroups={historyGroups}
         activeExerciseId={activeExercise?.id ?? null}
         activeExerciseName={activeExercise?.name ?? null}
         onClearHistoryFilter={() => setActiveExercise(null)}
@@ -377,6 +385,7 @@ export default function TrackerPage() {
         offlineSyncing={syncing || dosageSyncing}
         offlineQueueLoaded={queueLoaded}
         offlineQueueError={queueError || dosageQueueError}
+        formParameterMetadata={formParameterMetadata}
       />
       <TrackerOverlays
         isSessionLoggerOpen={isSessionLoggerOpen}
@@ -421,6 +430,7 @@ export default function TrackerPage() {
         dosageTarget={dosageTarget}
         saveDosage={saveDosage}
         closeDosageEditor={closeDosageEditor}
+        formParameterMetadata={formParameterMetadata}
       />
     </>
   );

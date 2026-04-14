@@ -2,7 +2,13 @@
 import { useState } from 'react';
 import styles from './ExerciseHistoryModal.module.css';
 
-export default function ExerciseHistoryModal({ isOpen, onClose, exerciseName, logs }) {
+export default function ExerciseHistoryModal({
+  isOpen,
+  onClose,
+  exerciseName,
+  logs,
+  formParameterMetadata = {},
+}) {
   const [search, setSearch] = useState('');
 
   if (!isOpen) return null;
@@ -29,6 +35,14 @@ export default function ExerciseHistoryModal({ isOpen, onClose, exerciseName, lo
     });
   }
 
+  function formatParamValue(f) {
+    const value = f?.parameter_value;
+    if (!value) return null;
+    if (f.parameter_unit) return `${value} ${f.parameter_unit}`;
+    const suffix = formParameterMetadata?.[f.parameter_name]?.display_suffix;
+    return suffix ? `${value} ${suffix}` : value;
+  }
+
   function summarizeSets(sets) {
     if (!sets?.length) return 'No set data';
     return sets
@@ -38,6 +52,10 @@ export default function ExerciseHistoryModal({ isOpen, onClose, exerciseName, lo
         if (s.seconds) parts.push(`${s.seconds}s`);
         if (s.distance_feet) parts.push(`${s.distance_feet} ft`);
         if (s.side) parts.push(s.side);
+        for (const f of s.form_data ?? []) {
+          const v = formatParamValue(f);
+          if (v) parts.push(v);
+        }
         return parts.join(' · ');
       })
       .join(' | ');

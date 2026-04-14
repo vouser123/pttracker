@@ -60,6 +60,7 @@ export default function TrackerOverlays({
   dosageTarget,
   saveDosage,
   closeDosageEditor,
+  formParameterMetadata = {},
 }) {
   return (
     <>
@@ -97,6 +98,7 @@ export default function TrackerOverlays({
             (manualLogState.isOpen ? manualLogState.exercise : logger.exercise)
               ?.historical_form_params ?? {}
           }
+          formParameterMetadata={formParameterMetadata}
         />
       )}
 

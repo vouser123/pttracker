@@ -14,10 +14,10 @@ function toTitleCase(value) {
     .replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
 }
 
-function parameterOptions(paramName) {
-  if (paramName === 'weight') return ['lb', 'kg'];
-  if (paramName === 'distance') return ['ft', 'in', 'cm', 'deg'];
-  return [];
+// Unit options come from form_parameter_metadata via the formParameterMetadata prop.
+// Removed hardcoded weight/distance special-cases (pt-2mwzy).
+function getUnitOptions(paramName, formParameterMetadata) {
+  return formParameterMetadata?.[paramName]?.unit_options ?? [];
 }
 
 function formatFieldLabel(value) {
@@ -35,6 +35,7 @@ export default function SessionLoggerSetCard({
   secondsLabel,
   formParams,
   historicalFormParams,
+  formParameterMetadata = {},
   customModes,
   onSetCustomMode,
   onRemoveSet,
@@ -125,7 +126,7 @@ export default function SessionLoggerSetCard({
             const existing = (set.form_data ?? []).find(
               (item) => item.parameter_name === paramName,
             );
-            const options = parameterOptions(paramName);
+            const options = getUnitOptions(paramName, formParameterMetadata);
             const hasUnit = options.length > 0;
             const currentUnit = existing?.parameter_unit || options[0] || null;
             const historicalValues = [

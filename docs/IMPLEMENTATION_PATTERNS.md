@@ -17,6 +17,7 @@ Treat the static legacy surface as frozen for routine cleanup. Only apply these 
 - Use [`lib/text-format.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib/text-format.js) when a select or companion text field needs consistent typed-value labels.
 - Do not hand-roll a plain select plus custom "Other" logic when the current surface can already use `NativeSelect`.
 - Do not hardcode extendable dropdown option lists without explicit sign-off. Domain data belongs in vocab/reference data, not inline arrays.
+- For session-logger set-card unit selectors, do **not** hardcode which parameters have unit options. The approved pattern is `formParameterMetadata?.[paramName]?.unit_options ?? []` — the unit list comes from the `form_parameter_metadata` table via `useReferenceData` and is threaded through `SessionLoggerModal` → `SessionLoggerSetCard` as the `formParameterMetadata` prop.
 
 ## Exercise Lifecycle And Visibility
 
@@ -33,10 +34,27 @@ Treat the static legacy surface as frozen for routine cleanup. Only apply these 
 
 - Use [`lib/text-format.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib/text-format.js) for typed values, labels, and value-display formatting.
 - Use [`lib/dosage-summary.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib/dosage-summary.js) for prescribed-dosage wording on tracker and program surfaces.
-- Use [`lib/session-form-params.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib/session-form-params.js) for form-parameter defaults and history-derived parameter shaping.
+- Use [`lib/session-form-params.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/lib/session-form-params.js) for form-parameter defaults and history-derived parameter shaping. Its exported `toDisplayValue` function formats a form parameter value with unit for server-side or hook-layer callers.
 - Do not duplicate unit-label or typed-value formatting inline across components.
 - Do not duplicate `sets x reps` or `per side` dosage-summary wording inside components when the shared dosage helper already covers the surface.
 - Do not create one-off parser/formatter helpers in page files when the logic is reusable.
+
+## Form Parameter Metadata And History Display
+
+- Form parameter display metadata (suffix for text parameters, unit options for numeric parameters) lives in the `form_parameter_metadata` table. Fetch it via [`hooks/useReferenceData.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/hooks/useReferenceData.js) as `referenceData.formParameterMetadata`.
+- Pass `formParameterMetadata` as a prop to history components (`HistoryList`, `ExerciseHistoryModal`) and the session logger (`SessionLoggerModal` → `SessionLoggerSetCard`). Default to `{}` at each prop boundary.
+- History display components must format form parameter values inline (components may not import from `lib/`). The approved helper shape is:
+  ```js
+  function formatParamValue(f, metadata) {
+    const value = f?.parameter_value;
+    if (!value) return null;
+    if (f.parameter_unit) return `${value} ${f.parameter_unit}`;
+    const suffix = metadata?.[f.parameter_name]?.display_suffix;
+    return suffix ? `${value} ${suffix}` : value;
+  }
+  ```
+- `parameter_unit` takes precedence over `display_suffix`: if a logged value already carries a unit (e.g. `lb` for weight), use it directly. The `display_suffix` is a fallback for text-valued parameters that have no per-value unit (e.g. resistance band type).
+- Manage `form_parameter_metadata` rows through [`components/FormParameterEditor.js`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/components/FormParameterEditor.js) in the `/program` workspace. Do not add these fields to `ProgramVocabEditor` — the domain, field shape, and save path are distinct.
 
 ## Typography And Readability
 

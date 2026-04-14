@@ -4,7 +4,6 @@
 
 import { useState } from 'react';
 import HistoryList from './HistoryList';
-import { filterHistoryByExercise, groupLogsByDate } from '../lib/index-history';
 import styles from './HistoryPanel.module.css';
 
 /**
@@ -20,66 +19,66 @@ import styles from './HistoryPanel.module.css';
  * @param {Function}    onLoadMoreHistory   - Load the next page of older history
  */
 export default function HistoryPanel({
-    logs,
-    activeExerciseId,
-    activeExerciseName,
-    onClearFilter,
-    onEditLog,
-    historyHasMore = false,
-    historyLoadingMore = false,
-    onLoadMoreHistory,
+  groups,
+  activeExerciseId,
+  activeExerciseName,
+  onClearFilter,
+  onEditLog,
+  historyHasMore = false,
+  historyLoadingMore = false,
+  onLoadMoreHistory,
+  formParameterMetadata = {},
 }) {
-    const [expandedSessions, setExpandedSessions] = useState(new Set());
+  const [expandedSessions, setExpandedSessions] = useState(new Set());
 
-    /** Toggle expanded state for a session card. */
-    function handleToggleSession(logId) {
-        setExpandedSessions(prev => {
-            const next = new Set(prev);
-            next.has(logId) ? next.delete(logId) : next.add(logId);
-            return next;
-        });
-    }
+  /** Toggle expanded state for a session card. */
+  function handleToggleSession(logId) {
+    setExpandedSessions((prev) => {
+      const next = new Set(prev);
+      next.has(logId) ? next.delete(logId) : next.add(logId);
+      return next;
+    });
+  }
 
-    const filteredLogs = filterHistoryByExercise(logs, activeExerciseId);
-    const groups = groupLogsByDate(filteredLogs);
-    const isFiltered = Boolean(activeExerciseId);
+  const isFiltered = Boolean(activeExerciseId);
 
-    return (
-        <div className={styles.panel}>
-            {isFiltered && (
-                <div className={styles.filterBadge}>
-                    <span>Filtering: {activeExerciseName}</span>
-                    <button
-                        type="button"
-                        className={styles.clearFilter}
-                        onPointerUp={onClearFilter}
-                        aria-label="Show all history"
-                    >
-                        Show all
-                    </button>
-                </div>
-            )}
-
-            <HistoryList
-                groups={groups}
-                expandedSessions={expandedSessions}
-                onToggleSession={handleToggleSession}
-                onExerciseClick={() => {}} // no-op on index: exercise context set by ExercisePicker
-                onEditLog={onEditLog}
-            />
-
-            {historyHasMore && (
-                <div className={styles.loadMoreWrap}>
-                    <button
-                        type="button"
-                        className={styles.loadMoreButton}
-                        onPointerUp={onLoadMoreHistory}
-                        disabled={historyLoadingMore}
-                    >
-                        {historyLoadingMore ? 'Loading older history...' : 'Load older history'}
-                    </button>
-                </div>
-            )}
+  return (
+    <div className={styles.panel}>
+      {isFiltered && (
+        <div className={styles.filterBadge}>
+          <span>Filtering: {activeExerciseName}</span>
+          <button
+            type="button"
+            className={styles.clearFilter}
+            onPointerUp={onClearFilter}
+            aria-label="Show all history"
+          >
+            Show all
+          </button>
         </div>
-    );
+      )}
+
+      <HistoryList
+        groups={groups}
+        expandedSessions={expandedSessions}
+        onToggleSession={handleToggleSession}
+        onExerciseClick={() => {}} // no-op on index: exercise context set by ExercisePicker
+        onEditLog={onEditLog}
+        formParameterMetadata={formParameterMetadata}
+      />
+
+      {historyHasMore && (
+        <div className={styles.loadMoreWrap}>
+          <button
+            type="button"
+            className={styles.loadMoreButton}
+            onPointerUp={onLoadMoreHistory}
+            disabled={historyLoadingMore}
+          >
+            {historyLoadingMore ? 'Loading older history...' : 'Load older history'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }

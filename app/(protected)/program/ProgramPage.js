@@ -15,6 +15,7 @@ import ProgramDosageWorkspace from '../../../components/ProgramDosageWorkspace';
 import ProgramExerciseSelector from '../../../components/ProgramExerciseSelector';
 import Toast from '../../../components/Toast';
 import { useAuth } from '../../../hooks/useAuth';
+import { useFormParameterActions } from '../../../hooks/useFormParameterActions';
 import { useProgramDataSnapshot } from '../../../hooks/useProgramDataSnapshot';
 import { useProgramMutationActions } from '../../../hooks/useProgramMutationActions';
 import { useProgramMutationUi } from '../../../hooks/useProgramMutationUi';
@@ -39,10 +40,14 @@ const DosageModal = dynamic(() => import('../../../components/DosageModal'), {
 const ProgramVocabEditor = dynamic(() => import('../../../components/ProgramVocabEditor'), {
   loading: () => null,
 });
+const FormParameterEditor = dynamic(() => import('../../../components/FormParameterEditor'), {
+  loading: () => null,
+});
 
 export default function ProgramPage({ initialAuthUserId = null }) {
   const { session, loading: authLoading, signIn, signOut } = useAuth();
   const [isVocabOpen, setIsVocabOpen] = useState(false);
+  const [isFormParamOpen, setIsFormParamOpen] = useState(false);
   const {
     exercises,
     referenceData,
@@ -153,6 +158,15 @@ export default function ProgramPage({ initialAuthUserId = null }) {
     getSnapshot: getCurrentSnapshot,
     setDosageTarget,
   });
+  const {
+    items: formParamItems,
+    saving: formParamSaving,
+    error: formParamError,
+    handleAdd: handleAddFormParam,
+    handleUpdate: handleUpdateFormParam,
+    handleDelete: handleDeleteFormParam,
+  } = useFormParameterActions(session?.access_token ?? null);
+
   const {
     handleAddVocabTerm: handleAddVocabTermMutation,
     handleUpdateVocabTerm: handleUpdateVocabTermMutation,
@@ -313,6 +327,29 @@ export default function ProgramPage({ initialAuthUserId = null }) {
                   onUpdateTerm={handleUpdateVocabTerm}
                   onDeleteTerm={handleDeleteVocabTerm}
                   saving={vocabSaving}
+                />
+              )}
+            </details>
+          </section>
+
+          <section className={styles.workspaceSection}>
+            <details
+              className={styles.vocabDetails}
+              onToggle={(event) => setIsFormParamOpen(event.currentTarget.open)}
+            >
+              <summary className={styles.vocabSummary}>Manage Form Parameters</summary>
+              <p className={styles.sectionDescription}>
+                Set a display suffix (e.g. <em>band</em>) or unit options (e.g. <em>ft, in, cm</em>)
+                per form parameter name. These control how logged values appear in session history.
+              </p>
+              {formParamError && <p className={styles.errorBanner}>{formParamError}</p>}
+              {isFormParamOpen && (
+                <FormParameterEditor
+                  items={formParamItems}
+                  onAdd={handleAddFormParam}
+                  onUpdate={handleUpdateFormParam}
+                  onDelete={handleDeleteFormParam}
+                  saving={formParamSaving}
                 />
               )}
             </details>
