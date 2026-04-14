@@ -1,0 +1,222 @@
+/* components/ProgramAssignmentWorkspace.module.css */
+
+.section {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+.title {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+.patientLabel {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: #eef6ff;
+  border: 1px solid #c9defc;
+  color: #144a86;
+  font-size: 0.9rem;
+}
+
+.selectAllRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 0.5rem;
+}
+
+.selectionCount {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.exerciseList {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.exerciseRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  flex: 1;
+  min-width: 0;
+}
+
+.checkboxLabel.disabled {
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+.exerciseName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Status badges */
+.statusBadge {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-left: 0.5rem;
+}
+
+.status_active {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status_inactive {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.status_on_hold {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status_as_needed {
+  background: #ede9fe;
+  color: #4c1d95;
+}
+
+.status_archived,
+.status_deprecated {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Unassigned (no program row yet) */
+.status_unassigned {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.emptyState {
+  padding: 1rem 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* Bulk action panel */
+.bulkPanel {
+  padding: 1rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.panelNote {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.editControls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.fieldLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.statusSelect,
+.dateInput {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  width: 100%;
+  box-sizing: border-box;
+  touch-action: manipulation;
+}
+
+.applyBtn {
+  padding: 0.6rem 1.25rem;
+  background: var(--ios-blue, #007aff);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 44px;
+  align-self: flex-start;
+}
+
+.applyBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@media (prefers-color-scheme: dark) {
+  .patientLabel {
+    background: #17345c;
+    color: #d9e8ff;
+    border-color: #2d568f;
+  }
+
+  .status_active {
+    background: #064e3b;
+    color: #a7f3d0;
+  }
+
+  .status_inactive {
+    background: #374151;
+    color: #d1d5db;
+  }
+
+  .status_on_hold {
+    background: #78350f;
+    color: #fde68a;
+  }
+
+  .status_as_needed {
+    background: #2e1065;
+    color: #ddd6fe;
+  }
+
+  .status_archived,
+  .status_deprecated {
+    background: #7f1d1d;
+    color: #fecaca;
+  }
+}

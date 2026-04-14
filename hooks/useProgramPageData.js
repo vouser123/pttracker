@@ -14,15 +14,14 @@ import {
   fetchReferenceData,
   fetchVocabularies,
 } from '../lib/pt-editor';
-import { fetchUsers, resolvePatientScopedUserContext } from '../lib/users';
+import { fetchUsers, formatDisplayName } from '../lib/users';
 
-/**
- * /program bootstrap, cache, and offline fallback lifecycle.
- * @param {{ session: object|null }} params
- * @returns {object}
- */
-export function useProgramPageData({ session, initialAuthUserId = null }) {
-  const [state, setState] = useState(emptyProgramDataState);
+/** /program bootstrap, cache, and offline fallback lifecycle. */
+export function useProgramPageData({ session, patientId = null, initialAuthUserId = null }) {
+  const [state, setState] = useState(() => ({
+    ...emptyProgramDataState(),
+    allUsers: [],
+  }));
 
   const setProgramDataSnapshot = useCallback((snapshot) => {
     setState((previous) => ({
@@ -34,22 +33,18 @@ export function useProgramPageData({ session, initialAuthUserId = null }) {
     }));
   }, []);
 
-  const restoreCachedProgramBootstrap = useCallback(async (authUserId) => {
-    const cachedBootstrap = await readCachedProgramBootstrap(authUserId);
-
-    if (cachedBootstrap) {
-      setState(cachedBootstrap);
-    }
-
+  const restoreCachedProgramBootstrap = useCallback(async (authUserId, scopedPatientId) => {
+    const cachedBootstrap = await readCachedProgramBootstrap(authUserId, scopedPatientId);
+    if (cachedBootstrap) setState((prev) => ({ ...cachedBootstrap, allUsers: prev.allUsers }));
     return cachedBootstrap;
   }, []);
 
   const loadData = useCallback(
-    async (accessToken, authUserId) => {
+    async (accessToken, authUserId, scopedPatientId) => {
       let cachedBootstrap = null;
 
       try {
-        cachedBootstrap = await restoreCachedProgramBootstrap(authUserId);
+        cachedBootstrap = await restoreCachedProgramBootstrap(authUserId, scopedPatientId);
 
         const usersData = await fetchUsers(accessToken);
         await offlineCache.cacheUsers(usersData);
@@ -61,15 +56,16 @@ export function useProgramPageData({ session, initialAuthUserId = null }) {
           return null;
         }
 
-        const { patientUser, patientDisplayName } = resolvePatientScopedUserContext(
-          usersData,
-          authUserId,
-        );
+        const patientUser = usersData.find((user) => user.id === scopedPatientId);
+        if (!patientUser) throw new Error('Patient user not found');
+
+        const patientDisplayName = formatDisplayName(patientUser);
+
         const [exercises, vocabularies, referenceData, programs] = await Promise.all([
           fetchExercises(accessToken),
           fetchVocabularies(accessToken),
           fetchReferenceData(accessToken),
-          fetchPrograms(accessToken, patientUser.id),
+          fetchPrograms(accessToken, scopedPatientId),
         ]);
         const nextData = {
           exercises,
@@ -77,18 +73,16 @@ export function useProgramPageData({ session, initialAuthUserId = null }) {
           referenceData,
           programs,
           currentUserRole: currentUser.role,
-          programPatientId: patientUser.id,
+          programPatientId: scopedPatientId,
           programPatientName: patientDisplayName,
+          allUsers: usersData,
         };
-        await persistProgramDataSnapshot(nextData);
+        await persistProgramDataSnapshot(nextData, authUserId, scopedPatientId);
         setState({ ...emptyProgramDataState(), ...nextData });
         return nextData;
       } catch (err) {
         try {
-          if (!cachedBootstrap) {
-            cachedBootstrap = await restoreCachedProgramBootstrap(authUserId);
-          }
-
+          cachedBootstrap ??= await restoreCachedProgramBootstrap(authUserId, scopedPatientId);
           if (!cachedBootstrap) throw err;
 
           setState({
@@ -108,7 +102,7 @@ export function useProgramPageData({ session, initialAuthUserId = null }) {
   );
 
   useEffect(() => {
-    if (session) return;
+    if (session || !patientId) return;
 
     let cancelled = false;
 
@@ -116,25 +110,23 @@ export function useProgramPageData({ session, initialAuthUserId = null }) {
       const fallbackAuthUserId =
         initialAuthUserId ?? (await offlineCache.getAuthState('auth_user_id'));
       if (!fallbackAuthUserId || cancelled) return;
-      await restoreCachedProgramBootstrap(fallbackAuthUserId);
+      await restoreCachedProgramBootstrap(fallbackAuthUserId, patientId);
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [initialAuthUserId, restoreCachedProgramBootstrap, session]);
+  }, [initialAuthUserId, patientId, restoreCachedProgramBootstrap, session]);
 
   useEffect(() => {
-    if (session) void loadData(session.access_token, session.user.id);
-  }, [loadData, session]);
+    if (session && patientId) {
+      void loadData(session.access_token, session.user.id, patientId);
+    }
+  }, [loadData, patientId, session]);
 
   useEffect(() => {
     if (!session) {
-      setState((previous) => ({
-        ...previous,
-        currentUserRole: null,
-        accessError: null,
-      }));
+      setState((previous) => ({ ...previous, currentUserRole: null, accessError: null }));
     }
   }, [session]);
 
