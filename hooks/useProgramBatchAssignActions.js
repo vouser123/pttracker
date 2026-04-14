@@ -1,8 +1,8 @@
 // hooks/useProgramBatchAssignActions.js — optimistic batch assignment enqueue helpers for /program
 
 import { useCallback } from 'react';
+import { applyOptimisticProgramAssignments } from '../lib/program-assignment-optimistic';
 import { createProgramMutation, LOCAL_PROGRAM_ID_PREFIX } from '../lib/program-offline';
-import { applyOptimisticProgramAssignments } from '../lib/program-optimistic';
 
 export function useProgramBatchAssignActions({
   session,

@@ -1,44 +1,15 @@
-// hooks/useProgramBatchEditActions.js — optimistic batch assignment edit enqueue helpers for /program
+// hooks/useProgramBatchDateActions.js — optimistic batch assignment date enqueue helpers for /program
 
 import { useCallback } from 'react';
+import { applyOptimisticProgramUpdates } from '../lib/program-assignment-optimistic';
 import { createProgramMutation } from '../lib/program-offline';
-import { applyOptimisticProgramUpdates } from '../lib/program-optimistic';
 
-export function useProgramBatchEditActions({
+export function useProgramBatchDateActions({
   session,
   programPatientId,
   enqueueMutation,
   getSnapshot,
 }) {
-  const handleBatchStatusUpdate = useCallback(
-    async (programIds = [], assignmentStatus) => {
-      if (!session?.user?.id || !programPatientId || programIds.length === 0 || !assignmentStatus) {
-        return;
-      }
-
-      const previousSnapshot = getSnapshot();
-
-      await enqueueMutation(
-        createProgramMutation('program.batch.status', {
-          patient_id: programPatientId,
-          program_ids: programIds,
-          assignment_status: assignmentStatus,
-        }),
-        {
-          ...previousSnapshot,
-          programs: applyOptimisticProgramUpdates(previousSnapshot.programs, programIds, {
-            assignment_status: assignmentStatus,
-          }),
-        },
-        programIds.length === 1
-          ? 'Assignment status updated.'
-          : `Assignment status updated for ${programIds.length} programs.`,
-        previousSnapshot,
-      );
-    },
-    [enqueueMutation, getSnapshot, programPatientId, session?.user?.id],
-  );
-
   const handleBatchDateUpdate = useCallback(
     async (programIds = [], updates = {}) => {
       if (!session?.user?.id || !programPatientId || programIds.length === 0) return;
@@ -79,8 +50,5 @@ export function useProgramBatchEditActions({
     [enqueueMutation, getSnapshot, programPatientId, session?.user?.id],
   );
 
-  return {
-    handleBatchStatusUpdate,
-    handleBatchDateUpdate,
-  };
+  return { handleBatchDateUpdate };
 }
