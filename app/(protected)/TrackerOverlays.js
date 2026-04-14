@@ -1,5 +1,6 @@
 // app/(protected)/TrackerOverlays.js — render-only tracker overlay stack for logger, timer, notes, messages, and dosage
 import dynamic from 'next/dynamic';
+import { useTimerSpeech } from '../../hooks/useTimerSpeech';
 
 const SessionLoggerModal = dynamic(() => import('../../components/SessionLoggerModal'), {
   loading: () => null,
@@ -192,14 +193,21 @@ function TimerPanelSection({
   handleTimerApplySet,
   handleTimerOpenManual,
 }) {
+  const timer = useTimerSpeech(
+    selectedExercise,
+    isOpen,
+    panelResetToken,
+    sessionProgress,
+    currentSide,
+    setCurrentSide,
+  );
+
   return (
     <TimerPanel
       isOpen={isOpen}
       exercise={selectedExercise}
-      resetToken={panelResetToken}
       sessionProgress={sessionProgress}
-      selectedSide={currentSide}
-      onSideChange={setCurrentSide}
+      timer={timer}
       onPrevious={handlePreviousSet}
       onBlockedNextSet={handleBlockedNextSet}
       onClose={handleTimerBack}

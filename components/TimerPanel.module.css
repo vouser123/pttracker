@@ -1,41 +1,41 @@
 .overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 1200;
-    background: rgba(0, 0, 0, 0.55);
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    padding: 16px;
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px;
 }
 
 .panel {
-    width: min(640px, 100%);
-    max-height: 90vh;
-    overflow: auto;
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    border-radius: 16px;
-    border: 1px solid var(--border-color);
-    padding: 16px;
+  width: min(640px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  padding: 16px;
 }
 
 .header {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
 }
 
 .title {
-    margin: 0;
-    font-size: 1.1rem;
+  margin: 0;
+  font-size: 1.1rem;
 }
 
 .subtitle {
-    margin: 4px 0 0;
-    font-size: 0.95rem;
-    color: var(--text-secondary);
+  margin: 4px 0 0;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
 }
 
 .closeBtn,
@@ -47,18 +47,25 @@
 .backBtn,
 .sideBtn,
 .counterDisplay {
-    min-height: 44px;
-    border-radius: 10px;
-    border: 1px solid var(--border-color);
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .closeBtn,
 .secondaryBtn,
 .backBtn {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.closeBtn {
+  min-width: 44px;
+  padding: 0;
+  font-size: 1.5rem;
+  line-height: 1;
 }
 
 .sideRow,
@@ -68,125 +75,125 @@
 .finishBtn,
 .pocketBtn,
 .backBtn {
-    margin-top: 16px;
+  margin-top: 16px;
 }
 
 .sideLabel {
-    display: block;
-    margin-bottom: 8px;
-    color: var(--text-secondary);
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
 }
 
 .sideButtons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
 
 .sideBtn {
-    background: var(--bg-tertiary);
-    color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
 }
 
 .sideActive {
-    background: var(--accent-color);
-    border-color: var(--accent-color);
-    color: #fff;
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #fff;
 }
 
 .modeBlock,
 .setInfo {
-    padding: 14px;
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
-    background: var(--bg-primary);
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
 }
 
 .counterLabel,
 .repInfo,
 .targetText {
-    margin: 0 0 10px;
-    text-align: center;
-    color: var(--text-secondary);
+  margin: 0 0 10px;
+  text-align: center;
+  color: var(--text-secondary);
 }
 
 .statusMessage {
-    margin: 0 0 10px;
-    text-align: center;
-    color: var(--success-color);
-    font-weight: 600;
+  margin: 0 0 10px;
+  text-align: center;
+  color: var(--success-color);
+  font-weight: 600;
 }
 
 .counterDisplay {
-    width: min(220px, 100%);
-    aspect-ratio: 1;
-    margin: 0 auto 10px;
-    display: grid;
-    place-items: center;
-    background: var(--accent-color);
-    border-color: var(--accent-color);
-    color: #fff;
-    font-size: 3rem;
-    font-weight: 700;
+  width: min(220px, 100%);
+  aspect-ratio: 1;
+  margin: 0 auto 10px;
+  display: grid;
+  place-items: center;
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #fff;
+  font-size: 3rem;
+  font-weight: 700;
 }
 
 .counterValue,
 .timerDisplay {
-    font-size: 2.4rem;
-    font-weight: 700;
-    text-align: center;
-    margin-bottom: 8px;
+  font-size: 2.4rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 8px;
 }
 
 .timerDisplay {
-    color: var(--accent-color);
+  color: var(--accent-color);
 }
 
 .controlRow,
 .controlFooter {
-    display: flex;
-    gap: 8px;
+  display: flex;
+  gap: 8px;
 }
 
 .primaryBtn,
 .secondaryBtn,
 .successBtn {
-    flex: 1;
-    padding: 0 12px;
+  flex: 1;
+  padding: 0 12px;
 }
 
 .primaryBtn {
-    background: var(--accent-color);
-    border-color: var(--accent-color);
-    color: #fff;
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #fff;
 }
 
 .successBtn,
 .finishBtn {
-    background: #0f766e;
-    border-color: #0f766e;
-    color: #fff;
+  background: #0f766e;
+  border-color: #0f766e;
+  color: #fff;
 }
 
 .successBtn:disabled {
-    opacity: 0.55;
+  opacity: 0.55;
 }
 
 .setInfoRow {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    color: var(--text-secondary);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text-secondary);
 }
 
 .pocketBtn {
-    width: 100%;
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
+  width: 100%;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 .finishBtn,
 .backBtn {
-    width: 100%;
-    padding: 0 12px;
+  width: 100%;
+  padding: 0 12px;
 }

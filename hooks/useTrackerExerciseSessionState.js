@@ -56,9 +56,17 @@ export function useTrackerExerciseSessionState({ pickerExercises, logs, clearPen
   );
 
   const handleTimerBack = useCallback(() => {
+    const loggedSetCount = draftSession?.sets?.length ?? 0;
+    if (
+      loggedSetCount > 0 &&
+      typeof window !== 'undefined' &&
+      !window.confirm('Discard this in-progress session? Logged sets will be lost.')
+    ) {
+      return;
+    }
     abandonDraftSession();
     setActiveExercise(null);
-  }, [abandonDraftSession]);
+  }, [abandonDraftSession, draftSession?.sets?.length]);
 
   useEffect(() => {
     if (!selectedExerciseId) return;
