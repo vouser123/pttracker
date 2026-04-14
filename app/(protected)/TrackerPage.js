@@ -259,13 +259,16 @@ export default function TrackerPage() {
           pattern: null,
           dosage_type: null,
         };
+      const initialSide =
+        exercise.pattern === 'side' ? (log?.sets?.find((set) => set?.side)?.side ?? 'right') : null;
+      const exerciseWithContext = buildExerciseFormContext(exercise, initialSide) ?? exercise;
       setActiveExercise({
-        id: exercise.id,
-        name: exercise.canonical_name || log.exercise_name || '',
+        id: exerciseWithContext.id,
+        name: exerciseWithContext.canonical_name || log.exercise_name || '',
       });
-      logger.openEdit(exercise, log);
+      logger.openEdit(exerciseWithContext, log);
     },
-    [logger, pickerExercises, setActiveExercise],
+    [buildExerciseFormContext, logger, pickerExercises, setActiveExercise],
   );
 
   useEffect(() => {
