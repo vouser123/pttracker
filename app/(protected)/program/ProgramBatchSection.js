@@ -5,11 +5,12 @@
 import ProgramAssignmentWorkspace from '../../../components/ProgramAssignmentWorkspace';
 import { useProgramAssignmentSelection } from '../../../hooks/useProgramAssignmentSelection';
 import { useProgramBatchAssignActions } from '../../../hooks/useProgramBatchAssignActions';
-import { useProgramBatchEditActions } from '../../../hooks/useProgramBatchEditActions';
+import { useProgramBatchDateActions } from '../../../hooks/useProgramBatchDateActions';
+import { useProgramBatchStatusActions } from '../../../hooks/useProgramBatchStatusActions';
 import {
   buildAssignmentStatusOptions,
   enrichExerciseAssignmentRows,
-} from '../../../lib/program-status';
+} from '../../../lib/program-status-display';
 
 export default function ProgramBatchSection({
   session,
@@ -30,7 +31,13 @@ export default function ProgramBatchSection({
     getSnapshot,
   });
 
-  const { handleBatchStatusUpdate, handleBatchDateUpdate } = useProgramBatchEditActions({
+  const { handleBatchStatusUpdate } = useProgramBatchStatusActions({
+    session,
+    programPatientId,
+    enqueueMutation,
+    getSnapshot,
+  });
+  const { handleBatchDateUpdate } = useProgramBatchDateActions({
     session,
     programPatientId,
     enqueueMutation,
