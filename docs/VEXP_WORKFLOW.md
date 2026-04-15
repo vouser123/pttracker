@@ -80,6 +80,8 @@ Use this decision order:
   - Use for targeted execution-path questions such as "how does A reach B?" or "what path gets this value here?"
   - More useful than it appears. Reach for it any time the question involves a connection between two known symbols — how a result gets consumed, how a mutation travels from hook to API, how a cache write reaches a reader. These are routine questions in PT Tracker, not exotic ones.
   - After `run_pipeline`, if the result leaves a connection unclear between two known symbols, use this rather than running pipeline again. Underused in practice — consciously check whether your follow-up question is a flow question before reaching for another tool.
+  - 0 paths does not always mean disconnected. It can mean the connection is through prop injection, shared state, or IndexedDB rather than a direct call edge. Flow only traces static call graphs.
+  - When flow returns 0 paths, `get_skeleton` with `detail: "detailed"` is the right next move — it quickly reveals whether a function arrives as a prop rather than a direct call.
 - `get_context_capsule`
   - Use for lightweight follow-up context when `run_pipeline` would be excessive.
   - It returns pivot files in full and supporting files as skeletons, and may include relevant memories from previous sessions.
