@@ -237,6 +237,21 @@ Repo docs such as [`AGENTS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttrack
   - Best for path tracing between two known symbols. Underused in current PT Tracker sessions, but still the right tool for flow questions.
 - `get_skeleton`
   - Preferred file-inspection tool before raw reads. Supports `minimal`, `standard`, and `detailed` views.
+  - `detailed` level returns full bodies for short functions and truncated bodies with line counts for long ones. This is usually enough to confirm a gap or place a patch without opening the file.
+- `expand_vexp_ref`
+  - Use to drill into a specific `[V-REF:xxxx]` hash returned by `run_pipeline` or other tools.
+  - This is the surgical alternative to a raw `Read` when you need one specific block from a large file.
+  - Codex used this extensively. Prefer it over `Read` whenever a V-REF is available in the results.
+
+## Token Budget and Compaction
+
+vexp costs roughly what Claude costs per month. It pays for itself only when agents actually use it.
+
+Every grep or raw read instead of a vexp call wastes two budgets simultaneously — Claude tokens and vexp trial usage — without delivering the savings vexp is designed to provide.
+
+Compaction mid-task is expensive beyond the token cost: context is lost, the next conversation has to rebuild it, and the total session cost rises. Using vexp aggressively keeps conversations alive longer. Codex completed entire multi-file tasks in one conversation by not compacting; Claude sessions that snuck in grep calls compacted early and required new conversations for each follow-on task.
+
+Practical rule: treat the context window as a shared resource. Every unnecessary token call shortens the window for everyone in the session.
 
 ## Local CLI Notes
 
