@@ -6,7 +6,7 @@
     "app/(protected)/TrackerRouteShell.js": "e3185e1c667de277757a13dd08b7a78e65b0de04bc19f1b70a9a48551206e3f9",
     "app/(protected)/layout.js": "8a0a24f6f11c6afca6c8c9e61b3bd397e1b45000d0a471ead4c04b018192f67c",
     "app/(protected)/page.js": "d573a59c635b18462c48433fbd0cd8ad61554418081bded4423cb0532e212f12",
-    "app/(protected)/program/ProgramBatchSection.js": "1c7720121a144c067b0c88fdfb95d628e68d20c03f9bd0871e83d61b60d06b1b",
+    "app/(protected)/program/ProgramBatchSection.js": "96c2c8edffd34c75d249bfb107fd8324634c4ba703e7a016633d6fedd2931abd",
     "app/(protected)/program/ProgramPage.js": "0bd94a61bb6f666e08de4adc53f856eed606b61a5e01988f0524af3898c14211",
     "app/(protected)/program/page.js": "c0175ae0591314c7505f5dd9e2ae997fe02c1fe2a2672d81c62154242e81404d",
     "app/(protected)/pt-view/PtViewPage.js": "a0552178191de9c43ee7cd02a27b0dd9c2b7a3177b4082dd9efcc398cdc1e645",
@@ -64,7 +64,7 @@
     "components/OfflineQueueBanner.js": "475b6902e0aa5321f3ec507fad0a7e3b8a695bbcf7c011ae779c1ddcc26f3106",
     "components/PatientNotes.js": "fb5a667540cf4201ae3a82f79d20ffa6de5d1d18f74271df052894ef841d695a",
     "components/PocketModeOverlay.js": "2282ec2772f31f90a1e18fb7327cb4fdbcb35fb7d5c1216a73344b9bcbff3288",
-    "components/ProgramAssignmentWorkspace.js": "ecddcb6ab09f2f5cb7ee0ff1a9e4a8057c5d932c154d7852a8ea2f059f3a9303",
+    "components/ProgramAssignmentWorkspace.js": "ea152497d34aa068b46827d1e7687beff36bb524a5df2821a4b07e136c8d42c8",
     "components/ProgramDosageWorkspace.js": "ded04b30a228dbc6accfc9411e210ea9fe84802ffc103a15d5ee3bb9e89890ef",
     "components/ProgramExerciseSelector.js": "b018f16be9f67a0eb097866610460ff3a0039677066aed8cfdf8895321f0f608",
     "components/ProgramPatientSelector.js": "e7cd2aa8f4c0e0167260c757ad8fecb289463587dafe081cc317c4befda908ea",
@@ -165,7 +165,7 @@
     "lib/program-offline.js": "83292620851811ba1ff01e49a80e5c4251d88e0ce07f46be2247bb3f4a3c0dfc",
     "lib/program-optimistic.js": "42a257d9bf8ad6ec228a57cbbdd80356c5b5852179e130c061429720a1a0bfdc",
     "lib/program-page-data.js": "ef3710f2876149f65ab00257d493c63ad42bac489a1fcfde14ddcc51ef9a9a5f",
-    "lib/program-status-display.js": "c80dc306cbbd2223d941f0b1d62a3e66483724c7bf6e0247d132d23a7f7a061a",
+    "lib/program-status-display.js": "05b88d6d3ac734775c0941ff3bf76ec7102b34662aefc79814e07cda0116953c",
     "lib/program-status.js": "4bb6b8ee0ed38d269af0569a48fc4a46137c9a5dbe8555a6447bb961da097e97",
     "lib/programs-utils.js": "38255fb684710f4d8477f33dd3f73e0b80750514443dfdf6a86f228f745a3413",
     "lib/pt-editor.js": "6f0e07859a1b7cc118002fa5ec1208ca9e4ef6cc280aa9ca536f07cf87344da4",
@@ -214,13 +214,13 @@
     "test/programs-normalize.test.js": "cc52b9d66456be07c237a5cbfbc12f6fcd130c1463c482c66f6caf44216110a4",
     "tests/smoke.spec.js": "d1008df0df2e99acab18e4231b2ddb624823a292fa6be3b47a1c90fdb8f81c0d"
   },
-  "indexed_at_commit": "a00af0cf33084952f14c3e0e0ba1b69e0f126215",
-  "indexed_at_timestamp": "2026-04-15T00:32:38.172600100+00:00",
+  "indexed_at_commit": "5575139006065accac69ce8bfe093f9d8c90282b",
+  "indexed_at_timestamp": "2026-04-15T00:51:37.898573600+00:00",
   "schema_version": 3,
   "stats": {
     "total_edges": 961,
     "total_files": 213,
-    "total_nodes": 611
+    "total_nodes": 612
   },
   "vexp_version": "1.3.11"
 }
