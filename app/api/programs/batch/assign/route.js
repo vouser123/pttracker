@@ -1,10 +1,7 @@
 // app/api/programs/batch/assign/route.js — batch-create patient program assignments.
 
 import { getSupabaseWithAuth } from '../../../../../lib/db.js';
-import {
-  dosageTypeRequiresReps,
-  resolveProgramDosageType,
-} from '../../../../../lib/programs-utils.js';
+import { resolveProgramDosageType } from '../../../../../lib/programs-utils.js';
 import {
   authenticateRoute,
   badRequest,
@@ -31,9 +28,13 @@ function validateAssignmentItem(item, index, patientId) {
     effective_end_date,
   } = item ?? {};
 
-  if (!exercise_id || !sets) {
-    return { error: `assignments[${index}] is missing required fields: exercise_id, sets` };
+  if (!exercise_id) {
+    return { error: `assignments[${index}] is missing required field: exercise_id` };
   }
+
+  // sets is optional for batch assign (dosage is set later via the dosage editor).
+  // Default to 1 as a placeholder so the DB NOT NULL constraint is satisfied.
+  const resolvedSets = sets ?? 1;
 
   const resolvedDosageType = resolveProgramDosageType({
     dosage_type,
@@ -42,11 +43,7 @@ function validateAssignmentItem(item, index, patientId) {
     seconds_per_rep,
   });
 
-  if (!reps_per_set && dosageTypeRequiresReps(resolvedDosageType)) {
-    return { error: `assignments[${index}] is missing required field: reps_per_set` };
-  }
-
-  if (!Number.isInteger(sets) || sets < 1) {
+  if (sets !== undefined && sets !== null && (!Number.isInteger(sets) || sets < 1)) {
     return { error: `assignments[${index}].sets must be a positive integer` };
   }
 
@@ -104,7 +101,7 @@ function validateAssignmentItem(item, index, patientId) {
       patient_id: patientId,
       exercise_id,
       dosage_type: resolvedDosageType,
-      sets,
+      sets: resolvedSets,
       reps_per_set: reps_per_set ?? null,
       seconds_per_rep: resolvedSecondsPerRep,
       seconds_per_set: resolvedSecondsPerSet,

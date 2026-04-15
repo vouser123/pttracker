@@ -79,7 +79,7 @@ export default function ProgramAssignmentWorkspace({
       onBatchAssign?.(
         selectedUnassigned.map((r) => ({
           exercise_id: r.exercise.id,
-          assignment_status: 'active',
+          assignment_status: pendingStatus || 'active',
         })),
       );
     }
@@ -173,10 +173,12 @@ export default function ProgramAssignmentWorkspace({
           {selectedUnassigned.length > 0 && (
             <p className={styles.panelNote}>
               {selectedUnassigned.length} unassigned exercise
-              {selectedUnassigned.length !== 1 ? 's' : ''} will be assigned as Active.
+              {selectedUnassigned.length !== 1 ? 's' : ''} will be assigned
+              {pendingStatus ? ` as ${BADGE_LABELS[pendingStatus] ?? pendingStatus}` : ' as Active'}
+              .
             </p>
           )}
-          {selectedAssigned.length > 0 && (
+          {hasSelection && (
             <div className={styles.editControls}>
               <label className={styles.fieldLabel}>
                 Status
