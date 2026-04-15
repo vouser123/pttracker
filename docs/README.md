@@ -33,6 +33,9 @@ Use this file to decide which doc to open next.
 - [`SCRIPTS_GUIDE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/SCRIPTS_GUIDE.md)
   - Open when: you need the current usage for analyzer helpers, commit preflight, Supabase backup, or other local helper scripts.
   - Answers: "How do I use the local scripts right now?"
+- [`VEXP_WORKFLOW.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/VEXP_WORKFLOW.md)
+  - Open when: you are using `vexp` for code search, index troubleshooting, manifest handling, or observation workflow.
+  - Answers: "What is the PT Tracker-specific `vexp` workflow?" and "When is a raw file read still allowed?"
 - [`OFFLINE_HANDLING_RESEARCH_2026-04-12.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/OFFLINE_HANDLING_RESEARCH_2026-04-12.md)
   - Open when: you need the durable April 2026 research note for protected-route offline behavior, service worker scope, shared connectivity, or tracker-triggered `/program` warmup.
   - Answers: "Why are we using shared connectivity plus offline-aware fetches instead of a service-worker-only fix?" and "How should `/program` warm from tracker opening without manual protected document and RSC fetches?"

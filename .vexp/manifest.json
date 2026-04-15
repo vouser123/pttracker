@@ -20,7 +20,7 @@
     "app/api/logs/route.js": "96313d5c5a4a36a9933d450abac36ab2ae859b2cda78f5bcc4cf0c21743d40f1",
     "app/api/messages/route.js": "17336bde49ce597ee0246438633dc096c1a9349fdd281b7a89884b739b29af45",
     "app/api/programs/[id]/route.js": "ef58c30147e87441271a992284a984209846c867951350420189fca6a21aa580",
-    "app/api/programs/batch/assign/route.js": "f5fa2abec1d233a034d8f81a176b83a3738ba0e243c71bf6db2ebbffd4563391",
+    "app/api/programs/batch/assign/route.js": "39fba9c7969cd6bfb25b2869249afb2aed6b0c3599ee1b94f429442882f58a85",
     "app/api/programs/batch/dates/route.js": "ded9d370ff8765a7bf2e0c0e69c528fbf9acdee7d11763a96d0cf13be39f29b6",
     "app/api/programs/batch/status/route.js": "9717c527d2059978d415d917fefbdc2a524bab95b4b6dd7d08aeda45c339c1a3",
     "app/api/programs/program-route-helpers.js": "1f173918f6dce308e36eddca15ee13a6a00ed6570871183a227ce9920c3861fa",
@@ -64,7 +64,7 @@
     "components/OfflineQueueBanner.js": "475b6902e0aa5321f3ec507fad0a7e3b8a695bbcf7c011ae779c1ddcc26f3106",
     "components/PatientNotes.js": "fb5a667540cf4201ae3a82f79d20ffa6de5d1d18f74271df052894ef841d695a",
     "components/PocketModeOverlay.js": "2282ec2772f31f90a1e18fb7327cb4fdbcb35fb7d5c1216a73344b9bcbff3288",
-    "components/ProgramAssignmentWorkspace.js": "ea152497d34aa068b46827d1e7687beff36bb524a5df2821a4b07e136c8d42c8",
+    "components/ProgramAssignmentWorkspace.js": "90625b9da3d44d61f1e71b933a3eea921d0d1651127c97fe5dbb03c10d21d72b",
     "components/ProgramDosageWorkspace.js": "ded04b30a228dbc6accfc9411e210ea9fe84802ffc103a15d5ee3bb9e89890ef",
     "components/ProgramExerciseSelector.js": "b018f16be9f67a0eb097866610460ff3a0039677066aed8cfdf8895321f0f608",
     "components/ProgramPatientSelector.js": "e7cd2aa8f4c0e0167260c757ad8fecb289463587dafe081cc317c4befda908ea",
@@ -214,11 +214,11 @@
     "test/programs-normalize.test.js": "cc52b9d66456be07c237a5cbfbc12f6fcd130c1463c482c66f6caf44216110a4",
     "tests/smoke.spec.js": "d1008df0df2e99acab18e4231b2ddb624823a292fa6be3b47a1c90fdb8f81c0d"
   },
-  "indexed_at_commit": "5575139006065accac69ce8bfe093f9d8c90282b",
-  "indexed_at_timestamp": "2026-04-15T00:51:37.898573600+00:00",
+  "indexed_at_commit": "a03a77399bab3461973b090e7aa094e8fcceebae",
+  "indexed_at_timestamp": "2026-04-15T01:26:26.671828+00:00",
   "schema_version": 3,
   "stats": {
-    "total_edges": 961,
+    "total_edges": 959,
     "total_files": 213,
     "total_nodes": 612
   },

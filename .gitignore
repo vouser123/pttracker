@@ -38,11 +38,5 @@ public/sw.js
 public/sw.js.map
 public/swe-worker*
 vexp.toml
-.vexp/.gitattributes
-.vexp/daemon.log
-.vexp/daemon.pid
-.vexp/daemon.pipe
-.vexp/healthy
-.vexp/index.db-shm
-.vexp/index.db-wal
 .vscode/mcp.json
+.vscode/settings.json

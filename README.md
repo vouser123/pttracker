@@ -288,6 +288,7 @@ For timer execution hook boundaries, see `Tracker Execution Stack` above.
 
 - [`AGENTS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/AGENTS.md): Workflow and operating rules for agents in this repo.
 - [`docs/README.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/README.md): Docs index explaining which project doc to open and when.
+- [`docs/VEXP_WORKFLOW.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/VEXP_WORKFLOW.md): Repo-specific `vexp` workflow guidance for agents. Use it for tool order, manifest expectations, index fallback, and the current distinction between indexed app code versus filtered docs/assets/agent-support files.
 - [`docs/AGENT_PLAYBOOK.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/AGENT_PLAYBOOK.md): Longer agent workflow detail that `AGENTS.md` points to only when the extra guidance is applicable.
 - [`docs/NEXTJS_CODE_STRUCTURE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/NEXTJS_CODE_STRUCTURE.md): Authoring rules for file structure, split decisions, and size guidance.
 - [`docs/NEXTJS_MIGRATION_STATUS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/NEXTJS_MIGRATION_STATUS.md): Migration-status context and broader rollout history. Do not treat it as the primary file-ownership map.

@@ -1,0 +1,13 @@
+# Local vexp runtime files
+daemon.log
+daemon.pid
+daemon.pipe
+healthy
+vexp.log
+mcp.port
+workspace.json
+parent_workspace.json
+index.db
+index.db-shm
+index.db-wal
+token-savings-report.md
