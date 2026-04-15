@@ -32,10 +32,6 @@ function validateAssignmentItem(item, index, patientId) {
     return { error: `assignments[${index}] is missing required field: exercise_id` };
   }
 
-  // sets is optional for batch assign (dosage is set later via the dosage editor).
-  // Default to 1 as a placeholder so the DB NOT NULL constraint is satisfied.
-  const resolvedSets = sets ?? 1;
-
   const resolvedDosageType = resolveProgramDosageType({
     dosage_type,
     distance_feet,
@@ -101,7 +97,7 @@ function validateAssignmentItem(item, index, patientId) {
       patient_id: patientId,
       exercise_id,
       dosage_type: resolvedDosageType,
-      sets: resolvedSets,
+      sets: sets ?? null,
       reps_per_set: reps_per_set ?? null,
       seconds_per_rep: resolvedSecondsPerRep,
       seconds_per_set: resolvedSecondsPerSet,
