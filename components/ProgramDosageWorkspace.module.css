@@ -19,6 +19,19 @@
   font-size: 0.9rem;
 }
 
+.patientSelectorRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.patientNameLabel {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
 .patientContextBanner {
   margin: 0 0 1rem;
   padding: 0.75rem 1rem;
@@ -81,8 +94,8 @@
 .btnDosage {
   padding: 0.5rem 1rem;
   background: var(--bg-primary);
-  color: var(--ios-blue, #007AFF);
-  border: 1px solid var(--ios-blue, #007AFF);
+  color: var(--ios-blue, #007aff);
+  border: 1px solid var(--ios-blue, #007aff);
   border-radius: 8px;
   font-size: 0.9rem;
   cursor: pointer;

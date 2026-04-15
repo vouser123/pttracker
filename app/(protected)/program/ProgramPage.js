@@ -14,6 +14,7 @@ import NavMenu from '../../../components/NavMenu';
 import ProgramDosageWorkspace from '../../../components/ProgramDosageWorkspace';
 import ProgramExerciseSelector from '../../../components/ProgramExerciseSelector';
 import Toast from '../../../components/Toast';
+import { useAllUsers } from '../../../hooks/useAllUsers';
 import { useAuth } from '../../../hooks/useAuth';
 import { useFormParameterActions } from '../../../hooks/useFormParameterActions';
 import { useProgramDataSnapshot } from '../../../hooks/useProgramDataSnapshot';
@@ -21,6 +22,7 @@ import { useProgramMutationActions } from '../../../hooks/useProgramMutationActi
 import { useProgramMutationUi } from '../../../hooks/useProgramMutationUi';
 import { useProgramOfflineQueue } from '../../../hooks/useProgramOfflineQueue';
 import { useProgramPageData } from '../../../hooks/useProgramPageData';
+import { useProgramPatientSelection } from '../../../hooks/useProgramPatientSelection';
 import { useProgramVocabActions } from '../../../hooks/useProgramVocabActions';
 import { useProgramWorkspaceState } from '../../../hooks/useProgramWorkspaceState';
 import { useToast } from '../../../hooks/useToast';
@@ -29,6 +31,7 @@ import { buildGroupedLifecycleOptions } from '../../../lib/exercise-lifecycle';
 import { getProgramMutationLabel } from '../../../lib/program-offline';
 import { supabase } from '../../../lib/supabase';
 import { mapVocabTermsToOptions } from '../../../lib/vocab-options';
+import ProgramBatchSection from './ProgramBatchSection';
 import styles from './ProgramPage.module.css';
 
 const ExerciseForm = dynamic(() => import('../../../components/ExerciseForm'), {
@@ -48,6 +51,11 @@ export default function ProgramPage({ initialAuthUserId = null }) {
   const { session, loading: authLoading, signIn, signOut } = useAuth();
   const [isVocabOpen, setIsVocabOpen] = useState(false);
   const [isFormParamOpen, setIsFormParamOpen] = useState(false);
+
+  const { allUsers } = useAllUsers({ session });
+  const { patientOptions, selectedPatientId, selectedPatientName, setSelectedPatientId } =
+    useProgramPatientSelection({ allUsers, authUserId: session?.user?.id });
+
   const {
     exercises,
     referenceData,
@@ -58,10 +66,9 @@ export default function ProgramPage({ initialAuthUserId = null }) {
     currentUserRole,
     accessError,
     programPatientId,
-    programPatientName,
     loadData,
     setProgramDataSnapshot,
-  } = useProgramPageData({ session, initialAuthUserId });
+  } = useProgramPageData({ session, patientId: selectedPatientId, initialAuthUserId });
   const { commitProgramData } = useProgramDataSnapshot({ setProgramDataSnapshot });
   const workspace = useProgramWorkspaceState({
     exercises,
@@ -297,7 +304,10 @@ export default function ProgramPage({ initialAuthUserId = null }) {
           />
 
           <ProgramDosageWorkspace
-            programPatientName={programPatientName}
+            patientOptions={patientOptions}
+            selectedPatientId={selectedPatientId}
+            selectedPatientName={selectedPatientName}
+            onPatientChange={setSelectedPatientId}
             dosageSearch={dosageSearch}
             onDosageSearchChange={setDosageSearch}
             dosageExerciseId={dosageExerciseId}
@@ -308,6 +318,16 @@ export default function ProgramPage({ initialAuthUserId = null }) {
             onEditDosage={() =>
               setDosageTarget({ exercise: dosageExercise, program: selectedProgram })
             }
+          />
+
+          <ProgramBatchSection
+            session={session}
+            exercises={exercises}
+            programs={programs}
+            programPatientId={programPatientId}
+            patientName={selectedPatientName}
+            enqueueMutation={enqueueMutation}
+            getSnapshot={getCurrentSnapshot}
           />
 
           <section className={styles.workspaceSection}>

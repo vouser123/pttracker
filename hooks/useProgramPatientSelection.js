@@ -1,5 +1,5 @@
 // hooks/useProgramPatientSelection.js — patient selection state for program page
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { formatDisplayName } from '../lib/users';
 
 /**
@@ -31,8 +31,14 @@ export function useProgramPatientSelection({ allUsers, authUserId }) {
           ]
         : [];
 
-  // Initialize with first patient if available
-  const [selectedPatientId, setSelectedPatientId] = useState(patientOptions[0]?.id ?? null);
+  const [selectedPatientId, setSelectedPatientId] = useState(null);
+
+  // Auto-select first patient once allUsers arrives (initial render has empty list)
+  useEffect(() => {
+    if (selectedPatientId === null && patientOptions.length > 0) {
+      setSelectedPatientId(patientOptions[0].id);
+    }
+  }, [patientOptions, selectedPatientId]);
 
   const selectedPatientName =
     patientOptions.find((opt) => opt.id === selectedPatientId)?.name ?? '';

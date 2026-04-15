@@ -2,9 +2,13 @@
 
 import NativeSelect from './NativeSelect';
 import styles from './ProgramDosageWorkspace.module.css';
+import ProgramPatientSelector from './ProgramPatientSelector';
 
 export default function ProgramDosageWorkspace({
-  programPatientName,
+  patientOptions,
+  selectedPatientId,
+  selectedPatientName,
+  onPatientChange,
   dosageSearch,
   onDosageSearchChange,
   dosageExerciseId,
@@ -20,10 +24,17 @@ export default function ProgramDosageWorkspace({
       <p className={styles.description}>
         <strong>Dosages</strong> are the prescribed sets, reps, and parameters for each exercise.
       </p>
-      {programPatientName && (
-        <p className={styles.patientContextBanner}>
-          Patient context for dosage: <strong>{programPatientName}</strong>
-        </p>
+      {patientOptions?.length > 0 && (
+        <div className={styles.patientSelectorRow}>
+          <ProgramPatientSelector
+            patientOptions={patientOptions}
+            selectedPatientId={selectedPatientId}
+            onChange={onPatientChange}
+          />
+          {selectedPatientName && (
+            <span className={styles.patientNameLabel}>{selectedPatientName}</span>
+          )}
+        </div>
       )}
       <div className={styles.selectorStack}>
         <input
