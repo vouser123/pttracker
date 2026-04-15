@@ -267,6 +267,8 @@ vexp costs roughly what Claude costs per month. It pays for itself only when age
 
 Every grep or raw read instead of a vexp call wastes two budgets simultaneously — Claude tokens and vexp trial usage — without delivering the savings vexp is designed to provide.
 
+The reported savings rate (typically 70-75%) only reflects calls where vexp was actually used. Every bypass costs 100% with no offset. The real effective savings rate across a session is always lower than the per-call average because of bypasses — and every bypass also wastes vexp capacity that was paid for.
+
 Compaction mid-task is expensive beyond the token cost: context is lost, the next conversation has to rebuild it, and the total session cost rises. Using vexp aggressively keeps conversations alive longer and makes it possible to complete multi-file tasks in a single session.
 
 Practical rule: treat the context window as a shared resource. Every unnecessary token call shortens the window for everyone in the session.
@@ -277,10 +279,16 @@ The MCP tools are still the primary agent interface.
 
 Safe local CLI checks are useful for troubleshooting:
 
-- `vexp savings`
-- `vexp index --status`
-- `vexp daemon-cmd status`
-- `vexp hooks check`
+- `vexp savings` — token savings report: total saved, average %, per-tool breakdown
+- `vexp index --status` — file/node/edge counts, stale node count; use to verify index health
+- `vexp daemon-cmd status` — same as index status; confirms daemon is aware of the index
+- `vexp daemon-cmd logs` — daemon log output; empty usually means daemon exited before writing
+- `vexp daemon-cmd start` / `vexp daemon-cmd stop` — start or stop the background daemon
+- `vexp hooks check` — verify git hooks (pre-commit, post-merge, post-checkout) are installed
+- `vexp hooks install` — install missing git hooks
+- `vexp reindex` — full re-index from scratch; use only when index is stale or corrupt
+
+**Windows note:** The vexp daemon uses a Unix domain socket (`.vexp/daemon.sock`) for IPC. This does not work natively on Windows outside WSL — the daemon starts, gets a PID, and exits immediately without writing to its log. The MCP server mode works correctly regardless. This means the `vexp-guard.sh` PreToolUse hook (which blocks Grep/Glob when the daemon is running) will always fail open on Windows, since the socket never appears. Enforcement on Windows relies on the doc and agent discipline, not the hook. WSL resolves this — with WSL the daemon runs correctly and the hook becomes active.
 
 Use CLI status commands for operator-style checks, not as a replacement for MCP workflow.
 
