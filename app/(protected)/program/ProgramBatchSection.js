@@ -10,6 +10,7 @@ import { useProgramBatchStatusActions } from '../../../hooks/useProgramBatchStat
 import {
   buildAssignmentStatusOptions,
   enrichExerciseAssignmentRows,
+  groupAndSortExerciseRows,
 } from '../../../lib/program-status-display';
 
 export default function ProgramBatchSection({
@@ -44,12 +45,12 @@ export default function ProgramBatchSection({
     getSnapshot,
   });
 
-  const exerciseRows = enrichExerciseAssignmentRows(exercises, programs);
+  const groups = groupAndSortExerciseRows(enrichExerciseAssignmentRows(exercises, programs));
   const statusOptions = buildAssignmentStatusOptions();
 
   return (
     <ProgramAssignmentWorkspace
-      exerciseRows={exerciseRows}
+      groups={groups}
       statusOptions={statusOptions}
       patientName={patientName}
       selectedExerciseIds={selectedExerciseIds}

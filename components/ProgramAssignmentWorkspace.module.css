@@ -1,5 +1,45 @@
 /* components/ProgramAssignmentWorkspace.module.css */
 
+.filterBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.filterPill {
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.filterPillOn {
+  background: var(--ios-blue, #007aff);
+  color: #fff;
+}
+
+.filterPillOff {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+  opacity: 0.55;
+}
+
+.groupHeader {
+  list-style: none;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  padding: 0.75rem 0 0.2rem;
+}
+
 .section {
   margin-bottom: 1.5rem;
   padding: 1.25rem;

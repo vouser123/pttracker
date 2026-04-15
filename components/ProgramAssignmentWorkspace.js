@@ -1,20 +1,25 @@
 // components/ProgramAssignmentWorkspace.js — batch assignment workspace for /program
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import styles from './ProgramAssignmentWorkspace.module.css';
 
 const BADGE_LABELS = {
-  assigned: 'Assigned',
+  active: 'Active',
+  as_needed: 'As Needed',
+  on_hold: 'On Hold',
+  inactive: 'Inactive',
   unassigned: 'Unassigned',
   archived: 'Archived',
   deprecated: 'Deprecated',
 };
 
+const ALL_STATUSES = new Set(Object.keys(BADGE_LABELS));
+
 /**
  * Batch assignment workspace. Pure UI — no lib or hook imports.
- * Selection state and domain transforms are owned by the caller.
+ * Grouping and sorting are done by the caller; this component manages filter state.
  *
  * @param {{
- *   exerciseRows: Array<{ exercise, program, badgeState, isSelectable, isAssigned }>,
+ *   groups: Array<{ status: string, label: string, rows: Array<{ exercise, program, badgeState, isSelectable, isAssigned }> }>,
  *   statusOptions: Array<{ value: string, label: string }>,
  *   patientName: string,
  *   selectedExerciseIds: Set<string>,
@@ -27,7 +32,7 @@ const BADGE_LABELS = {
  * }} props
  */
 export default function ProgramAssignmentWorkspace({
-  exerciseRows = [],
+  groups = [],
   statusOptions = [],
   patientName = '',
   selectedExerciseIds = new Set(),
@@ -41,8 +46,20 @@ export default function ProgramAssignmentWorkspace({
   const [pendingStatus, setPendingStatus] = useState('');
   const [pendingStartDate, setPendingStartDate] = useState('');
   const [pendingEndDate, setPendingEndDate] = useState('');
+  const [visibleStatuses, setVisibleStatuses] = useState(ALL_STATUSES);
 
-  const selectableIds = exerciseRows.filter((r) => r.isSelectable).map((r) => r.exercise.id);
+  function toggleStatusFilter(status) {
+    setVisibleStatuses((prev) => {
+      const next = new Set(prev);
+      if (next.has(status)) next.delete(status);
+      else next.add(status);
+      return next;
+    });
+  }
+
+  const filteredGroups = groups.filter((g) => visibleStatuses.has(g.status));
+  const visibleRows = filteredGroups.flatMap((g) => g.rows);
+  const selectableIds = visibleRows.filter((r) => r.isSelectable).map((r) => r.exercise.id);
   const isAllSelected =
     selectableIds.length > 0 && selectableIds.every((id) => selectedExerciseIds.has(id));
 
@@ -50,7 +67,9 @@ export default function ProgramAssignmentWorkspace({
     isAllSelected ? onClearAll?.() : onSelectAll?.(selectableIds);
   }
 
-  const selectedRows = exerciseRows.filter((r) => selectedExerciseIds.has(r.exercise.id));
+  // Bulk panel operates on all selected rows, regardless of active filter.
+  const allRows = groups.flatMap((g) => g.rows);
+  const selectedRows = allRows.filter((r) => selectedExerciseIds.has(r.exercise.id));
   const selectedUnassigned = selectedRows.filter((r) => !r.isAssigned);
   const selectedAssigned = selectedRows.filter((r) => r.isAssigned);
   const hasSelection = selectedRows.length > 0;
@@ -89,6 +108,21 @@ export default function ProgramAssignmentWorkspace({
         </p>
       )}
 
+      {groups.length > 0 && (
+        <div className={styles.filterBar}>
+          {groups.map((g) => (
+            <button
+              key={g.status}
+              type="button"
+              className={`${styles.filterPill} ${visibleStatuses.has(g.status) ? styles.filterPillOn : styles.filterPillOff}`}
+              onPointerUp={() => toggleStatusFilter(g.status)}
+            >
+              {g.label} ({g.rows.length})
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className={styles.selectAllRow}>
         <label className={styles.checkboxLabel}>
           <input
@@ -105,25 +139,33 @@ export default function ProgramAssignmentWorkspace({
       </div>
 
       <ul className={styles.exerciseList}>
-        {exerciseRows.map(({ exercise, badgeState, isSelectable }) => (
-          <li key={exercise.id} className={styles.exerciseRow}>
-            <label className={`${styles.checkboxLabel} ${!isSelectable ? styles.disabled : ''}`}>
-              <input
-                type="checkbox"
-                checked={selectedExerciseIds.has(exercise.id)}
-                onChange={() => onToggleExercise?.(exercise.id)}
-                disabled={!isSelectable}
-              />
-              <span className={styles.exerciseName}>{exercise.canonical_name}</span>
-            </label>
-            <span className={`${styles.statusBadge} ${styles[`status_${badgeState}`]}`}>
-              {BADGE_LABELS[badgeState] ?? badgeState}
-            </span>
-          </li>
-        ))}
-        {exerciseRows.length === 0 && (
-          <li className={styles.emptyState}>No exercises available.</li>
+        {groups.length === 0 && <li className={styles.emptyState}>No exercises available.</li>}
+        {groups.length > 0 && filteredGroups.length === 0 && (
+          <li className={styles.emptyState}>No exercises match the selected filters.</li>
         )}
+        {filteredGroups.map((group) => (
+          <Fragment key={group.status}>
+            <li className={styles.groupHeader}>{group.label}</li>
+            {group.rows.map(({ exercise, badgeState, isSelectable }) => (
+              <li key={exercise.id} className={styles.exerciseRow}>
+                <label
+                  className={`${styles.checkboxLabel} ${!isSelectable ? styles.disabled : ''}`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedExerciseIds.has(exercise.id)}
+                    onChange={() => onToggleExercise?.(exercise.id)}
+                    disabled={!isSelectable}
+                  />
+                  <span className={styles.exerciseName}>{exercise.canonical_name}</span>
+                </label>
+                <span className={`${styles.statusBadge} ${styles[`status_${badgeState}`]}`}>
+                  {BADGE_LABELS[badgeState] ?? badgeState}
+                </span>
+              </li>
+            ))}
+          </Fragment>
+        ))}
       </ul>
 
       {hasSelection && (
