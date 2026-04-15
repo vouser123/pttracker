@@ -5,6 +5,10 @@ Use this doc for repo-specific `vexp` workflow guidance that goes beyond the sho
 Use [`../README.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/README.md) for the live codebase map.
 Use [`README.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/README.md) to decide when to open this doc.
 
+## Privacy Note
+
+vexp is local-first. The index runs on the local machine — no code is uploaded to external servers. This matters for PT Tracker, which contains patient data. Using vexp does not expose that data to third parties.
+
 ## Why This Doc Exists
 
 PT Tracker pays real cost when agents skip `vexp`.
@@ -231,8 +235,10 @@ Repo docs such as [`AGENTS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttrack
   - Primary tool. It auto-detects intent (`debug`, `modify`, `refactor`, `explore`) from the task description and returns compressed results within a token budget.
 - `get_context_capsule`
   - Specialized follow-up tool. Use it when you need relevant code without the full pipeline.
+  - Supports `pivot_depth` to control how far to follow the dependency graph.
 - `get_impact_graph`
   - Best before refactoring exported functions, shared helpers, or public API surfaces.
+  - Supports `format: "list"`, `"tree"`, or `"mermaid"`. Use mermaid for visual blast-radius review.
 - `search_logic_flow`
   - Best for path tracing between two known symbols. Underused in current PT Tracker sessions, but still the right tool for flow questions.
 - `get_skeleton`
@@ -242,6 +248,7 @@ Repo docs such as [`AGENTS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttrack
   - Use to drill into a specific `[V-REF:xxxx]` hash returned by `run_pipeline` or other tools.
   - This is the surgical alternative to a raw `Read` when you need one specific block from a large file.
   - Prefer it over `Read` whenever a V-REF is available in the results.
+  - Agents are expected to call this when they encounter V-REF hashes — it is not an advanced or optional move. Treat V-REFs as pointers to follow.
 - `save_observation`
   - Use the right type — it affects survival through session compression:
     - `insight` — architectural or behavioral findings worth preserving across sessions
