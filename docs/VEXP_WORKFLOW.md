@@ -78,7 +78,8 @@ Use this decision order:
   - Use before shared-logic edits, refactors, or reviews where blast radius matters.
 - `search_logic_flow`
   - Use for targeted execution-path questions such as "how does A reach B?" or "what path gets this value here?"
-  - Important when needed, but not a routine first or second call on most PT Tracker tasks.
+  - More useful than it appears. Reach for it any time the question involves a connection between two known symbols — how a result gets consumed, how a mutation travels from hook to API, how a cache write reaches a reader. These are routine questions in PT Tracker, not exotic ones.
+  - Cheaper and more direct than re-running `run_pipeline` for a flow question. Underused in practice — consciously check whether your next question is a flow question before defaulting to pipeline.
 - `get_context_capsule`
   - Use for lightweight follow-up context when `run_pipeline` would be excessive.
   - It returns pivot files in full and supporting files as skeletons, and may include relevant memories from previous sessions.
