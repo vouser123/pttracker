@@ -17,23 +17,50 @@ bd create --title="Upgrade bd to vX.Y.Z" --type=task --priority=2
 bd update <id> --claim --status in_progress
 ```
 
-### 2. Upgrade the binary
+### 2. Preserve the current binary first
+
+```powershell
+$date = Get-Date -Format "yyyyMMdd-HHmmss"
+New-Item -ItemType Directory -Force "C:\Users\cindi\OneDrive\Documents\PT_Backup\bd-binary-backups" | Out-Null
+Copy-Item "C:\Users\cindi\go\bin\bd.exe" "C:\Users\cindi\OneDrive\Documents\PT_Backup\bd-binary-backups\bd-pre-upgrade-$date.exe"
+```
+
+### 3. Pull a fresh PT_Backup mirror
+
+```powershell
+# Rename old mirror as backup
+$date = Get-Date -Format "yyyyMMdd-HHmmss"
+Move-Item "C:\Users\cindi\OneDrive\Documents\PT_Backup\beads" "C:\Users\cindi\OneDrive\Documents\PT_Backup\beads-old-$date"
+
+# Clone fresh
+git clone https://github.com/gastownhall/beads.git "C:\Users\cindi\OneDrive\Documents\PT_Backup\beads"
+```
+
+### 4. Upgrade the binary
+
+For this workspace, prefer building from the refreshed mirror into the existing `go\bin` path:
 
 ```bash
-go install github.com/steveyegge/beads/cmd/bd@latest
+cd "C:\Users\cindi\OneDrive\Documents\PT_Backup\beads"
+go build -tags gms_pure_go -o "C:\Users\cindi\go\bin\bd.exe" ./cmd/bd
 ```
 
 **Install location:** `C:\Users\cindi\go\bin\bd.exe`
 
-**Do NOT use winget, scoop, chocolatey, or npm** — they install to different paths and create conflicting binaries. `go install` is the only approved method for this workspace.
+**Do NOT use winget, scoop, chocolatey, or npm** — they install to different paths and create conflicting binaries.
+
+Notes:
+- PT Tracker uses Dolt `server` mode, not embedded Dolt. Do not add `embeddeddolt` build tags for this workspace.
+- For the current `v1.0.2` release, `go install github.com/steveyegge/beads/cmd/bd@latest` may fail because the upstream tag includes `replace` directives. If `go install` succeeds in a later release, it is acceptable, but the source-build fallback remains the safe default here.
 
 Verify:
 ```bash
 where.exe bd        # Must resolve to go\bin\bd.exe only
 bd version          # Confirm new version
+bd context --json   # Confirm backend=dolt and dolt_mode=server still match this workspace
 ```
 
-### 3. Upgrade Dolt if needed
+### 5. Upgrade Dolt if needed
 
 Check if the release notes mention a Dolt version bump. If so:
 
@@ -48,18 +75,7 @@ winget upgrade --id DoltHub.Dolt --accept-package-agreements --accept-source-agr
 dolt version
 ```
 
-### 4. Pull fresh PT_Backup mirror
-
-```bash
-# Rename old mirror as backup
-$date = Get-Date -Format "yyyyMMdd-HHmmss"
-Rename-Item "C:\Users\cindi\OneDrive\Documents\PT_Backup\beads" "C:\Users\cindi\OneDrive\Documents\PT_Backup\beads-old-$date"
-
-# Clone fresh
-git clone https://github.com/steveyegge/beads "C:\Users\cindi\OneDrive\Documents\PT_Backup\beads"
-```
-
-### 5. Review the changelog
+### 6. Review the changelog
 
 ```bash
 # Diff changelog between old and new version
@@ -74,7 +90,7 @@ Look for:
 - Environment variable changes (e.g. `BD_ACTOR` → `BEADS_ACTOR`)
 - Windows-specific fixes relevant to this workspace
 
-### 6. Update repo docs if needed
+### 7. Update repo docs if needed
 
 Files to update based on changelog review:
 
@@ -83,9 +99,10 @@ Files to update based on changelog review:
 | `AGENTS.md` | New commands, flags, or workflow changes |
 | `docs/BEADS_WORKFLOW.md` | Lifecycle or workflow changes |
 | `docs/BEADS_OPERATIONS.md` | Command syntax, install method, Dolt changes |
+| `docs/README.md` | A Beads doc becomes newly relevant for routine maintenance |
 | `.gitignore` | New runtime files added by the release |
 
-### 7. Regenerate BEADS_QUICKREF
+### 8. Regenerate BEADS_QUICKREF
 
 ```bash
 cd .
@@ -94,7 +111,7 @@ npm run beads:quickref
 
 Verify the output looks correct before committing.
 
-### 8. Verify bd still works
+### 9. Verify bd still works
 
 ```bash
 cd .
@@ -103,7 +120,7 @@ bd ready --json
 bd stats
 ```
 
-### 9. Close bead and commit
+### 10. Close bead and commit
 
 ```bash
 bd close <id> --reason "Upgraded bd to vX.Y.Z via go install. Dolt: vA.B.C. Docs updated: [list]. Mirror refreshed."
@@ -128,4 +145,5 @@ Apply a strict bar. If resource usage is unclear, investigate before recommendin
 
 | Date | bd version | Dolt version | Method | Notes |
 |------|-----------|-------------|--------|-------|
+| 2026-04-15 | 1.0.2 | server mode active in workspace | fresh mirror + `go build -tags gms_pure_go` | Repo moved to `gastownhall/beads`; source build used because `go install ...@latest` failed on release replace directives |
 | 2026-03-22 | 0.62.0 | 1.84.0 | go install | Added bd note, --exclude-type, custom status categories, Windows Dolt lifecycle fixes |

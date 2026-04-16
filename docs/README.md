@@ -57,6 +57,9 @@ Use this file to decide which doc to open next.
 - [`BEADS_MOLECULES.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/BEADS_MOLECULES.md)
   - Open when: you need the repo-specific overview of Beads formulas, molecules, protos, wisps, or the current template inventory.
   - Answers: "How do Beads workflow templates work here?" and "Which formulas exist right now?"
+- [`BEADS_UPGRADE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/BEADS_UPGRADE.md)
+  - Open when: you are refreshing the PT_Backup Beads mirror, upgrading the local `bd.exe`, or reconciling Beads release notes with PT Tracker docs.
+  - Answers: "How do I upgrade Beads safely on this machine?" and "Which local docs should change after a new Beads release?"
 - [`DATA_VOCABULARIES.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/DATA_VOCABULARIES.md)
   - Open when: you need canonical field names, lifecycle terms, or controlled vocabulary guidance.
   - Answers: "What do we call this field or value?"

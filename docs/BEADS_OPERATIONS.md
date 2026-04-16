@@ -885,39 +885,48 @@ bd ready --json    # start using bd normally
 
 ### GitHub (authoritative, always current)
 
-- Repo: https://github.com/steveyegge/beads
+- Repo: https://github.com/gastownhall/beads
 - Key docs online:
-  - [AGENT_INSTRUCTIONS.md](https://github.com/steveyegge/beads/blob/main/AGENT_INSTRUCTIONS.md)
-  - [ADVANCED.md](https://github.com/steveyegge/beads/blob/main/docs/ADVANCED.md)
-  - [FAQ.md](https://github.com/steveyegge/beads/blob/main/docs/FAQ.md)
-  - [TROUBLESHOOTING.md](https://github.com/steveyegge/beads/blob/main/docs/TROUBLESHOOTING.md)
+  - [AGENT_INSTRUCTIONS.md](https://github.com/gastownhall/beads/blob/main/AGENT_INSTRUCTIONS.md)
+  - [ADVANCED.md](https://github.com/gastownhall/beads/blob/main/docs/ADVANCED.md)
+  - [FAQ.md](https://github.com/gastownhall/beads/blob/main/docs/FAQ.md)
+  - [TROUBLESHOOTING.md](https://github.com/gastownhall/beads/blob/main/docs/TROUBLESHOOTING.md)
 
 ### Local Mirror
 
 `C:\Users\cindi\OneDrive\Documents\PT_Backup\beads\` is a full git clone of the beads repo. Most operational guidance is already captured in this document — the local mirror is a fallback for edge cases not covered here.
 
-To refresh when bd has been updated with new features:
+For a normal docs-only refresh:
 
 ```bash
 cd "C:\Users\cindi\OneDrive\Documents\PT_Backup\beads"
 git pull
 ```
 
-**Who does this:** User or agent, on request only — not a regular session task. Pull when you notice bd has a new release or want to check updated docs for a specific feature.
+For a full mirror refresh during a Beads upgrade:
 
-This updates the docs only — it does not update the `bd` binary. To update the bd tool itself, use the established install method for this workspace:
+```powershell
+$date = Get-Date -Format "yyyyMMdd-HHmmss"
+Move-Item "C:\Users\cindi\OneDrive\Documents\PT_Backup\beads" "C:\Users\cindi\OneDrive\Documents\PT_Backup\beads-old-$date"
+git clone https://github.com/gastownhall/beads.git "C:\Users\cindi\OneDrive\Documents\PT_Backup\beads"
+```
+
+**Who does this:** User or agent, on request only — not a regular session task. Refresh the mirror when you notice a new release or need current upstream docs for a specific feature.
+
+This updates the docs/source mirror only — it does not update the `bd` binary. To update the bd tool itself for this workspace's current server-mode Dolt setup, build from the refreshed mirror:
 
 ```bash
 cd "C:\Users\cindi\OneDrive\Documents\PT_Backup\beads"
-CGO_ENABLED=1 CC=gcc go install -tags "embeddeddolt gms_pure_go" ./cmd/bd/
+go build -tags gms_pure_go -o "C:\Users\cindi\go\bin\bd.exe" ./cmd/bd
 ```
 
-This installs to `C:\Users\cindi\go\bin\bd.exe`. Do NOT use winget, scoop, or other package managers — they install to different paths and create conflicting binaries.
+This installs to `C:\Users\cindi\go\bin\bd.exe`. Do NOT use winget, scoop, chocolatey, or npm for the live `bd` binary in this workspace — those install to different paths and can create conflicting binaries.
 
 Important:
 
-- This repo is currently using a custom embedded-Dolt Windows build. Do not replace it with `go install ...@latest` unless the user explicitly asks for an official binary change.
+- This repo currently uses Dolt in `server` mode, not embedded Dolt. Verify with `bd context --json` before changing any binary guidance.
 - Before any reinstall or rebuild, preserve the current `bd.exe` and do not modify the live `.beads` store as part of the binary swap.
+- For `v1.0.2`, `go install github.com/steveyegge/beads/cmd/bd@latest` can fail because the tagged release currently includes module `replace` directives. If that happens, build from the refreshed source mirror instead of forcing a package-manager install.
 
 Key local docs for operational reference:
 - `AGENT_INSTRUCTIONS.md` — agent session workflow, session-end checklist
@@ -934,11 +943,11 @@ Three separate things — do not confuse them:
 | What | How | When |
 |------|-----|-------|
 | Issue database sync | `bd dolt pull` / `bd dolt push` | Every session |
-| Docs reference refresh | `git pull` in PT_Backup/beads | Periodically / before referencing docs |
-| bd binary update | `go install github.com/steveyegge/beads/cmd/bd@latest` | When new bd version is released |
+| Docs reference refresh | `git pull` in PT_Backup/beads or re-clone from `gastownhall/beads` for a full refresh | Periodically / before referencing docs |
+| bd binary update | `go build -tags gms_pure_go -o C:\Users\cindi\go\bin\bd.exe ./cmd/bd` from the PT_Backup mirror | When a new bd version is released |
 
 Current repo note:
 
-- As of March 31, 2026, local `bd` is `0.63.3`.
-- The local mirror at `C:\Users\cindi\OneDrive\Documents\PT_Backup\beads` was refreshed on March 31, 2026.
-- As of April 4, 2026, PT Tracker is intentionally using a custom Windows `bd.exe` build with embedded Dolt plus `gms_pure_go`. Do not assume the stock Windows/server-mode troubleshooting path in this repo.
+- As of April 15, 2026, local `bd` is `1.0.2`.
+- The local mirror at `C:\Users\cindi\OneDrive\Documents\PT_Backup\beads` was refreshed from `gastownhall/beads` on April 15, 2026.
+- As of April 15, 2026, PT Tracker is using Beads with Dolt `server` mode on Windows and a `gms_pure_go` source build. Do not assume embedded-Dolt guidance applies here.
