@@ -32,7 +32,7 @@ Use this file to decide which doc to open next.
   - Answers: "Which shared thing should I use here?" including current tracker picker, session logging, and `/program` queue ownership patterns.
 - [`SCRIPTS_GUIDE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/SCRIPTS_GUIDE.md)
   - Open when: you need the current usage for analyzer helpers, commit preflight, Supabase backup, or other local helper scripts.
-  - Answers: "How do I use the local scripts right now?"
+  - Answers: "How do I use the local scripts right now?" and "What does commit preflight print by default versus with `--verbose`?"
 - [`VEXP_WORKFLOW.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/VEXP_WORKFLOW.md)
   - Open when: you are using `vexp` for code search, index troubleshooting, manifest handling, or observation workflow.
   - Answers: "What is the PT Tracker-specific `vexp` workflow?" and "When is a raw file read still allowed?"

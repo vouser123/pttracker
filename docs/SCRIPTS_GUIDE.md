@@ -132,6 +132,8 @@ Usage pattern:
 
 ```bash
 npm run commit:preflight -- --message "Your title (pt-xxxx)" --trailer "Co-Authored-By: Codex GPT-5.4 <codex@openai.com>"
+npm run commit:preflight -- --message "Your title (pt-xxxx)" --verbose
+npm run commit:preflight -- --help
 ```
 
 What it checks:
@@ -153,6 +155,9 @@ Notes:
 
 - The commit title still needs at least one Beads ID such as `(pt-xxxx)`.
 - Use a recognized trailer email such as `codex@openai.com` or `noreply@anthropic.com` unless the one-time repo override is intentionally used.
+- Default output is quiet: passing runs print one summary line, and failing runs print only the blocking sections.
+- Use `--verbose` or `-v` when you want the full report including passing sections.
+- Use `--help` or `-h` to print the script's option summary.
 - This script helps surface blockers early; it does not replace the actual `git commit`.
 
 ## Quality And Guardrail Scripts

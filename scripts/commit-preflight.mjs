@@ -34,10 +34,20 @@ function parseArgs(argv) {
   const parsed = {
     message: '',
     trailers: [],
+    verbose: false,
+    help: false,
   };
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
+    if (arg === '--help' || arg === '-h') {
+      parsed.help = true;
+      continue;
+    }
+    if (arg === '--verbose' || arg === '-v') {
+      parsed.verbose = true;
+      continue;
+    }
     if (arg === '--message') {
       parsed.message = args[index + 1] ?? '';
       index += 1;
@@ -50,6 +60,22 @@ function parseArgs(argv) {
   }
 
   return parsed;
+}
+
+function printHelp() {
+  console.log(`Usage:
+  npm run commit:preflight -- --message "Your title (pt-xxxx)" --trailer "Co-Authored-By: Codex GPT-5.4 <codex@openai.com>"
+  npm run commit:preflight -- --message "Your title (pt-xxxx)" --verbose
+
+Options:
+  --message <title>     Commit title to validate before git commit
+  --trailer <text>      Commit trailer to validate before git commit (repeatable)
+  --verbose, -v         Show the full preflight report, including passing sections
+  --help, -h            Show this help text
+
+Default output:
+  Success prints a short one-line summary.
+  Failure prints only the blocking sections and their details.`);
 }
 
 function resolveBiomeBypassFile(stagedFiles) {
@@ -307,6 +333,11 @@ function formatSection(result) {
 }
 
 const args = parseArgs(process.argv);
+if (args.help) {
+  printHelp();
+  process.exit(0);
+}
+
 const stagedFiles = getStagedFiles();
 
 const results = [
@@ -331,18 +362,36 @@ if (stagedFiles.length > 0) {
 results.push(checkCommitMessage(args));
 
 const failed = results.filter((result) => !result.ok);
-console.log('Commit preflight report');
-console.log('');
-for (const result of results) {
-  console.log(formatSection(result));
-  console.log('');
-}
 
 if (failed.length === 0) {
+  if (args.verbose) {
+    console.log('Commit preflight report');
+    console.log('');
+    for (const result of results) {
+      console.log(formatSection(result));
+      console.log('');
+    }
+    console.log(
+      'Preflight passed. The current staged snapshot and supplied commit message look ready for git commit.',
+    );
+    process.exit(0);
+  }
+
+  const stageSummary =
+    stagedFiles.length > 0
+      ? `${stagedFiles.length} staged file${stagedFiles.length === 1 ? '' : 's'}`
+      : 'no staged files';
   console.log(
-    'Preflight passed. The current staged snapshot and supplied commit message look ready for git commit.',
+    `Preflight passed. ${stageSummary}; README/docs guards, Biome, structure, secret scan, and commit message checks all passed.`,
   );
   process.exit(0);
+}
+
+console.log('Commit preflight report');
+console.log('');
+for (const result of failed) {
+  console.log(formatSection(result));
+  console.log('');
 }
 
 console.error(
