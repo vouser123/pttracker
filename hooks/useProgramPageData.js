@@ -98,7 +98,7 @@ export function useProgramPageData({ session, patientId = null, initialAuthUserI
   );
 
   useEffect(() => {
-    if (session || !patientId) return;
+    if (session) return;
 
     let cancelled = false;
 
@@ -106,7 +106,13 @@ export function useProgramPageData({ session, patientId = null, initialAuthUserI
       const fallbackAuthUserId =
         initialAuthUserId ?? (await offlineCache.getAuthState('auth_user_id'));
       if (!fallbackAuthUserId || cancelled) return;
-      await restoreCachedProgramBootstrap(fallbackAuthUserId, patientId);
+      // patientId is null when offline (no session → useAllUsers returns [] → no selection).
+      // Fall back to the last patient stamped by warmup or a live /program visit.
+      const effectivePatientId =
+        patientId ??
+        (await offlineCache.getUiState(`last_program_patient_id:${fallbackAuthUserId}`, null));
+      if (!effectivePatientId || cancelled) return;
+      await restoreCachedProgramBootstrap(fallbackAuthUserId, effectivePatientId);
     })();
 
     return () => {
