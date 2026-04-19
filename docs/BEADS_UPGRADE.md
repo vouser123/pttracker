@@ -88,6 +88,7 @@ Look for:
 - Changed/removed commands → update any docs that reference them
 - New runtime files → add to `.beads/.gitignore`
 - Environment variable changes (e.g. `BD_ACTOR` → `BEADS_ACTOR`)
+- Transaction and scripting changes (for example `bd batch`, `bd config drift`, auto-export defaults) → update workflow docs and any repo scripts that assume older behavior
 - Windows-specific fixes relevant to this workspace
 
 ### 7. Update repo docs if needed
@@ -115,10 +116,13 @@ Verify the output looks correct before committing.
 
 ```bash
 cd .
-bd dolt start
+bd context --json
+bd dolt status
 bd ready --json
 bd stats
 ```
+
+If `bd context --json` no longer reports `dolt_mode=server`, or `bd dolt status` shows an unexpected backend state, stop and update the docs before treating the upgrade as complete.
 
 ### 10. Close bead and commit
 
@@ -145,5 +149,5 @@ Apply a strict bar. If resource usage is unclear, investigate before recommendin
 
 | Date | bd version | Dolt version | Method | Notes |
 |------|-----------|-------------|--------|-------|
-| 2026-04-15 | 1.0.2 | server mode active in workspace | fresh mirror + `go build -tags gms_pure_go` | Repo moved to `gastownhall/beads`; source build used because `go install ...@latest` failed on release replace directives |
+| 2026-04-15 | 1.0.2 | server mode active in workspace | fresh mirror + `go build -tags gms_pure_go` | Repo moved to `gastownhall/beads`; source build used because `go install ...@latest` failed on release replace directives. `bd batch` and related `1.0.1` changes are available in the live workspace. |
 | 2026-03-22 | 0.62.0 | 1.84.0 | go install | Added bd note, --exclude-type, custom status categories, Windows Dolt lifecycle fixes |

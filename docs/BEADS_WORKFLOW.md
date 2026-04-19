@@ -54,6 +54,8 @@ bd close <id> --reason "..."
 git commit -m "Your change (<id>)"
 ```
 
+When multiple already-scoped bead updates need to happen together, `bd batch` is acceptable for scripted cleanup as long as the lifecycle rules above still hold: claim first, record discoveries immediately, and close completed beads before the commit.
+
 ## Hard Rules
 
 - **Commits do not close beads.** Manual closure is always required. Assuming a commit is enough is what creates the backlog of stale open beads.

@@ -47,7 +47,7 @@ Use this file to decide which doc to open next.
   - Answers: "What exact order should I use for Beads work?"
 - [`BEADS_OPERATIONS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/BEADS_OPERATIONS.md)
   - Open when: you need detailed Beads workflow, Dolt sync, or recovery steps.
-  - Answers: "How do I operate the tracker safely?"
+  - Answers: "How do I operate the tracker safely?" and "Which current `bd` commands or version-specific workflow changes matter in this repo?"
 - [`BEADS_QUICKREF.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/BEADS_QUICKREF.md)
   - Open when: you need the short generated Beads command reference.
   - Answers: "What is the fast version of the Beads workflow?"
@@ -59,7 +59,7 @@ Use this file to decide which doc to open next.
   - Answers: "How do Beads workflow templates work here?" and "Which formulas exist right now?"
 - [`BEADS_UPGRADE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/BEADS_UPGRADE.md)
   - Open when: you are refreshing the PT_Backup Beads mirror, upgrading the local `bd.exe`, or reconciling Beads release notes with PT Tracker docs.
-  - Answers: "How do I upgrade Beads safely on this machine?" and "Which local docs should change after a new Beads release?"
+  - Answers: "How do I upgrade Beads safely on this machine?", "How should I validate the live backend after an upgrade?", and "Which local docs should change after a new Beads release?"
 - [`DATA_VOCABULARIES.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/DATA_VOCABULARIES.md)
   - Open when: you need canonical field names, lifecycle terms, or controlled vocabulary guidance.
   - Answers: "What do we call this field or value?"

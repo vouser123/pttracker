@@ -139,10 +139,39 @@ bd create --graph plan.json
 Practical notes:
 
 - New Beads installs now default to embedded Dolt, but this repo already has an established Beads store. Inspect the live backend with `bd context --json` before making mode assumptions.
-- Current PT Tracker repo note (April 4, 2026): this workspace is using a custom Windows `bd.exe` build with embedded Dolt, not the stock release binary. Treat the live behavior here as repo-specific until proven otherwise.
+- Current PT Tracker repo note (April 18, 2026): `bd context --json` reports `bd_version=1.0.2` and `dolt_mode=server` in this workspace. Treat the live command output as the source of truth if older notes disagree.
 - `bd create --graph` replaces the older standalone `graph-apply` flow upstream.
 - The top-level aliases are conveniences only. The longer forms (`bd update`, `bd dep add`, `bd comments add`) remain valid and may still be clearer in repo docs and handoff notes.
 - `bd info --whats-new` is the fastest way to get a human-readable summary after a version bump. `bd upgrade review` is useful once version tracking has a previous version recorded.
+
+### Additional `bd 1.0.1` and `1.0.2` commands
+
+These are the Beads changes most likely to matter in this workspace after the `1.0.1` and `1.0.2` updates:
+
+```bash
+# Fast release summary after an upgrade
+bd info --whats-new
+bd info --whats-new --json
+
+# Atomic multi-write batches (stdin or file input)
+bd batch
+bd batch -f operations.txt
+bd batch --dry-run -f operations.txt
+
+# Config drift and effective-config inspection
+bd config drift
+bd config apply
+bd config show
+```
+
+Practical notes:
+
+- `bd batch` is available in the live `1.0.2` workspace and is best for scripted bulk `create`, `update`, `close`, and `dep add/remove` operations that should succeed or fail together.
+- `bd batch` is intentionally narrow. It does not replace normal interactive commands such as `bd show`, `bd ready`, `bd list`, or richer `bd create` flows with many flags.
+- `bd batch` reads one command per line from stdin or `-f/--file`, and the whole set runs inside one Dolt transaction. If any line fails, the full batch rolls back.
+- Supported `bd batch` grammar is currently limited to `close`, `update`, `create`, `dep add`, and `dep remove`. Check `bd help batch` before relying on it in scripts.
+- `started_at` is now tracked when an issue first enters `in_progress`, which helps when reviewing stale claimed work.
+- Auto-export is now enabled by default upstream. In this repo, treat export side effects as normal Beads behavior and confirm staged-file ownership before any commit.
 
 ### Repo formulas and molecules
 
