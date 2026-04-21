@@ -11,23 +11,25 @@
  * Wires:
  *   Auth          → hooks/useAuth.js
  *   Data          → hooks/useRehabCoverageData.js
- *   UI            → components/NavMenu.js, components/AuthForm.js
+ *   UI            → app/(protected)/ProtectedPageHeader.js, components/AuthForm.js
  *   Styles        → RehabPage.module.css
  */
 import { useState } from 'react';
 import AuthForm from '../../../components/AuthForm';
 import CoverageMatrix from '../../../components/CoverageMatrix';
 import CoverageSummary from '../../../components/CoverageSummary';
-import NavMenu from '../../../components/NavMenu';
 import { useAuth } from '../../../hooks/useAuth';
+import { useEffectiveConnectivity } from '../../../hooks/useEffectiveConnectivity';
 import { useRehabCoverageData } from '../../../hooks/useRehabCoverageData';
 import { colorScoreToRGB } from '../../../lib/rehab-coverage-color';
 import { COVERAGE_CONSTANTS } from '../../../lib/rehab-coverage-constants';
 import { supabase } from '../../../lib/supabase';
+import ProtectedPageHeader from '../ProtectedPageHeader';
 import styles from './RehabPage.module.css';
 
 export default function RehabPage() {
   const { session, loading: authLoading, signIn } = useAuth();
+  const { effectiveOnline } = useEffectiveConnectivity();
   const { userRole, loading, error, coverageResult, offlineNotice, reload } = useRehabCoverageData(
     session?.access_token ?? null,
   );
@@ -71,30 +73,29 @@ export default function RehabPage() {
       {/* Main app — shown when signed in */}
       {session && (
         <>
-          <div className={styles.header}>
-            <h1>Rehab Coverage</h1>
-            <div className={styles['header-actions']}>
-              <button
-                type="button"
-                className={`${styles.btn} ${styles['btn-secondary']}`}
-                onPointerUp={reload}
-                aria-label="Refresh data"
-              >
-                ↻
-              </button>
-              {/* NavMenu renders the ☰ button + overlay + panel */}
-              <NavMenu
-                user={session.user}
-                isAdmin={userRole !== 'patient'}
-                onSignOut={() => supabase.auth.signOut()}
-                currentPage="rehab_coverage"
-                actions={[{ action: 'refresh-data', icon: '🔄', label: 'Refresh Data' }]}
-                onAction={(action) => {
-                  if (action === 'refresh-data') reload();
-                }}
-              />
-            </div>
-          </div>
+          <ProtectedPageHeader
+            title="Rehab Coverage"
+            isOnline={effectiveOnline}
+            actions={[
+              {
+                key: 'refresh-data',
+                icon: '↻',
+                label: 'Refresh data',
+                ariaLabel: 'Refresh data',
+                onPointerUp: reload,
+              },
+            ]}
+            navMenuProps={{
+              user: session.user,
+              isAdmin: userRole !== 'patient',
+              onSignOut: () => supabase.auth.signOut(),
+              currentPage: 'rehab_coverage',
+              actions: [{ action: 'refresh-data', icon: '🔄', label: 'Refresh Data' }],
+              onAction: (action) => {
+                if (action === 'refresh-data') reload();
+              },
+            }}
+          />
 
           {offlineNotice && <p className={styles['offline-notice']}>{offlineNotice}</p>}
 

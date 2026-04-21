@@ -2,9 +2,9 @@
 import BottomNav from '../../components/BottomNav';
 import ExercisePicker from '../../components/ExercisePicker';
 import HistoryPanel from '../../components/HistoryPanel';
-import NavMenu from '../../components/NavMenu';
 import OfflineQueueBanner from '../../components/OfflineQueueBanner';
 import Toast from '../../components/Toast';
+import ProtectedPageHeader from './ProtectedPageHeader';
 import styles from './TrackerPage.module.css';
 
 export default function TrackerRouteShell({
@@ -48,38 +48,20 @@ export default function TrackerRouteShell({
 }) {
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <h1 className={styles.title}>PT Tracker</h1>
-        <div className={styles.headerActions}>
-          <span
-            className={`${styles.connectivityIndicator} ${isOnline ? '' : styles.connectivityIndicatorOffline}`}
-            role="status"
-            aria-label={isOnline ? 'Online' : 'Offline'}
-            title={isOnline ? 'Online' : 'Offline'}
-          >
-            {isOnline ? '🛜' : '🚫'}
-          </span>
-          <div style={{ position: 'relative' }}>
-            <button
-              type="button"
-              className={styles.refreshButton}
-              onPointerUp={onOpenMessages}
-              aria-label="Open messages"
-            >
-              ✉️
-              {unreadCount > 0 && <span className={styles.messagesBadge}>{unreadCount}</span>}
-            </button>
-          </div>
-          <NavMenu
-            user={sessionUser}
-            isAdmin={true}
-            onSignOut={onSignOut}
-            currentPage="index"
-            actions={[{ action: 'manual-sync', label: 'Sync now' }]}
-            onAction={onManualSync}
-          />
-        </div>
-      </header>
+      <ProtectedPageHeader
+        title="PT Tracker"
+        isOnline={isOnline}
+        unreadCount={unreadCount}
+        onOpenMessages={onOpenMessages}
+        navMenuProps={{
+          user: sessionUser,
+          isAdmin: true,
+          onSignOut,
+          currentPage: 'index',
+          actions: [{ action: 'manual-sync', label: 'Sync now' }],
+          onAction: onManualSync,
+        }}
+      />
 
       {fromCache && !error && (
         <div className={styles.infoBanner} role="status">

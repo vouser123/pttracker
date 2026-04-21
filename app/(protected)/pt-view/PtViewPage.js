@@ -16,19 +16,20 @@
  *   Data helpers   → lib/pt-view.js (pure functions)
  *   Messages       → hooks/useMessages.js
  *   UI             → components/MessagesModal.js, components/ExerciseHistoryModal.js,
- *                    components/PtView*.js, components/NavMenu.js, components/AuthForm.js
+ *                    components/PtView*.js, app/(protected)/ProtectedPageHeader.js,
+ *                    components/AuthForm.js
  *   Styles         → PtViewPage.module.css
  */
 import dynamic from 'next/dynamic';
 import { useMemo, useState } from 'react';
 import AuthForm from '../../../components/AuthForm';
 import HistoryList from '../../../components/HistoryList';
-import NavMenu from '../../../components/NavMenu';
 import PatientNotes from '../../../components/PatientNotes';
 import PtViewFiltersPanel from '../../../components/PtViewFiltersPanel';
 import PtViewNeedsAttention from '../../../components/PtViewNeedsAttention';
 import PtViewSummaryStats from '../../../components/PtViewSummaryStats';
 import { useAuth } from '../../../hooks/useAuth';
+import { useEffectiveConnectivity } from '../../../hooks/useEffectiveConnectivity';
 import { useEmailNotifications } from '../../../hooks/useEmailNotifications';
 import { useMessages } from '../../../hooks/useMessages';
 import { usePtViewData } from '../../../hooks/usePtViewData';
@@ -42,6 +43,7 @@ import {
   groupLogsByDate,
   needsAttentionUrgency,
 } from '../../../lib/pt-view';
+import ProtectedPageHeader from '../ProtectedPageHeader';
 import styles from './PtViewPage.module.css';
 
 const MessagesModal = dynamic(() => import('../../../components/MessagesModal'), {
@@ -53,6 +55,7 @@ const ExerciseHistoryModal = dynamic(() => import('../../../components/ExerciseH
 
 export default function PtViewPage() {
   const { session, loading: authLoading, signIn, signOut } = useAuth();
+  const { effectiveOnline } = useEffectiveConnectivity();
 
   // User identity and messaging context — shared hook, reusable on any page.
   const userCtx = useUserContext(session);
@@ -128,35 +131,23 @@ export default function PtViewPage() {
 
   return (
     <>
-      <div className={styles.header}>
-        <h1>Rehab History</h1>
-        <div className={styles['header-actions']}>
-          {/* Messages button with badge */}
-          <div style={{ position: 'relative' }}>
-            <button
-              type="button"
-              className={`${styles.btn} ${styles['messages-header-btn']}`}
-              onPointerUp={() => {
-                setMessagesOpen(true);
-                msgs.markModalOpened();
-              }}
-            >
-              ✉️
-              {msgs.unreadCount > 0 && (
-                <span className={styles['messages-header-badge']}>{msgs.unreadCount}</span>
-              )}
-            </button>
-          </div>
-          <NavMenu
-            user={session.user}
-            isAdmin={userCtx.userRole !== 'patient'}
-            onSignOut={signOut}
-            currentPage="pt_view"
-            actions={[]}
-            onAction={() => {}}
-          />
-        </div>
-      </div>
+      <ProtectedPageHeader
+        title="Rehab History"
+        isOnline={effectiveOnline}
+        unreadCount={msgs.unreadCount}
+        onOpenMessages={() => {
+          setMessagesOpen(true);
+          msgs.markModalOpened();
+        }}
+        navMenuProps={{
+          user: session.user,
+          isAdmin: userCtx.userRole !== 'patient',
+          onSignOut: signOut,
+          currentPage: 'pt_view',
+          actions: [],
+          onAction: () => {},
+        }}
+      />
 
       {dataError && (
         <p style={{ color: 'red', padding: '1rem' }}>Error loading data: {dataError}</p>

@@ -18,7 +18,9 @@
 .headerActions {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 8px;
+  margin-bottom: 1rem;
 }
 
 .title {
@@ -43,7 +45,7 @@
 
 .btnPrimary {
   padding: 0.6rem 1.25rem;
-  background: var(--ios-blue, #007AFF);
+  background: var(--ios-blue, #007aff);
   color: white;
   border: none;
   border-radius: 8px;
@@ -58,7 +60,7 @@
 /* ── Feedback ── */
 
 .errorBanner {
-  background: var(--ios-red, #FF3B30);
+  background: var(--ios-red, #ff3b30);
   color: white;
   padding: 0.75rem 1rem;
   border-radius: 6px;
@@ -139,7 +141,6 @@
     color: #ffe6c2;
     border-color: #8d6231;
   }
-
 }
 
 .vocabDetails {

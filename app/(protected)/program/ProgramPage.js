@@ -10,12 +10,12 @@ import dynamic from 'next/dynamic';
 import { useCallback, useState } from 'react';
 import AuthForm from '../../../components/AuthForm';
 import ExerciseRolesWorkspace from '../../../components/ExerciseRolesWorkspace';
-import NavMenu from '../../../components/NavMenu';
 import ProgramDosageWorkspace from '../../../components/ProgramDosageWorkspace';
 import ProgramExerciseSelector from '../../../components/ProgramExerciseSelector';
 import Toast from '../../../components/Toast';
 import { useAllUsers } from '../../../hooks/useAllUsers';
 import { useAuth } from '../../../hooks/useAuth';
+import { useEffectiveConnectivity } from '../../../hooks/useEffectiveConnectivity';
 import { useFormParameterActions } from '../../../hooks/useFormParameterActions';
 import { useProgramDataSnapshot } from '../../../hooks/useProgramDataSnapshot';
 import { useProgramMutationActions } from '../../../hooks/useProgramMutationActions';
@@ -31,6 +31,7 @@ import { buildGroupedLifecycleOptions } from '../../../lib/exercise-lifecycle';
 import { getProgramMutationLabel } from '../../../lib/program-offline';
 import { supabase } from '../../../lib/supabase';
 import { mapVocabTermsToOptions } from '../../../lib/vocab-options';
+import ProtectedPageHeader from '../ProtectedPageHeader';
 import ProgramBatchSection from './ProgramBatchSection';
 import styles from './ProgramPage.module.css';
 
@@ -49,6 +50,7 @@ const FormParameterEditor = dynamic(() => import('../../../components/FormParame
 
 export default function ProgramPage({ initialAuthUserId = null }) {
   const { session, loading: authLoading, signIn, signOut } = useAuth();
+  const { effectiveOnline } = useEffectiveConnectivity();
   const [isVocabOpen, setIsVocabOpen] = useState(false);
   const [isFormParamOpen, setIsFormParamOpen] = useState(false);
 
@@ -242,27 +244,30 @@ export default function ProgramPage({ initialAuthUserId = null }) {
           )}
           <Toast message={toastMessage} type={toastType} visible={toastVisible} />
 
-          <div className={styles.header}>
-            <h1 className={styles.title}>PT Editor</h1>
-            <div className={styles.headerActions}>
-              <button
-                type="button"
-                className={styles.btnPrimary}
-                onPointerUp={() => setActiveExercise('new')}
-              >
-                ➕ New
-              </button>
-              {session && (
-                <NavMenu
-                  user={session.user}
-                  isAdmin={currentUserRole === 'therapist' || currentUserRole === 'admin'}
-                  onSignOut={() => signOut?.() ?? supabase.auth.signOut()}
-                  currentPage="pt_editor"
-                  actions={[]}
-                  onAction={() => {}}
-                />
-              )}
-            </div>
+          <ProtectedPageHeader
+            title="PT Editor"
+            isOnline={effectiveOnline}
+            navMenuProps={
+              session
+                ? {
+                    user: session.user,
+                    isAdmin: currentUserRole === 'therapist' || currentUserRole === 'admin',
+                    onSignOut: () => signOut?.() ?? supabase.auth.signOut(),
+                    currentPage: 'pt_editor',
+                    actions: [],
+                    onAction: () => {},
+                  }
+                : null
+            }
+          />
+          <div className={styles.headerActions}>
+            <button
+              type="button"
+              className={styles.btnPrimary}
+              onPointerUp={() => setActiveExercise('new')}
+            >
+              ➕ New
+            </button>
           </div>
 
           <ProgramExerciseSelector
