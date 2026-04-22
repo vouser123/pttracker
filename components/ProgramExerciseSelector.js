@@ -1,7 +1,6 @@
 // components/ProgramExerciseSelector.js — /program exercise selection workspace for opening or creating exercise forms
 
 import NativeSelect from './NativeSelect';
-import { buildGroupedLifecycleOptions } from '../lib/exercise-lifecycle';
 import styles from './ProgramExerciseSelector.module.css';
 
 export default function ProgramExerciseSelector({
@@ -36,7 +35,7 @@ export default function ProgramExerciseSelector({
         value={activeExerciseId}
         onChange={onExerciseChange}
         placeholder="-- Add New Exercise (leave blank) --"
-        options={buildGroupedLifecycleOptions(exerciseOptions)}
+        options={exerciseOptions.map((e) => ({ value: e.id, label: e.canonical_name }))}
       />
     </div>
   );

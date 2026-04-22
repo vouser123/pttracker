@@ -4,8 +4,6 @@ import {
   compareExercisesByLifecycle,
   isExerciseArchived,
   isExerciseDeprecated,
-  isExerciseOnHold,
-  isExercisePrn,
 } from '../lib/exercise-lifecycle';
 
 function matchesSearch(exercise, search) {
@@ -17,8 +15,6 @@ function applyFilters(exercises, search, showArchived, selectedId) {
     .filter((exercise) => {
       if (isExerciseDeprecated(exercise)) return false;
       if (!showArchived && isExerciseArchived(exercise) && exercise.id !== selectedId) return false;
-      if (isExerciseOnHold(exercise) && exercise.id !== selectedId) return false;
-      if (isExercisePrn(exercise) && exercise.id !== selectedId) return false;
       if (!matchesSearch(exercise, search)) return false;
       return true;
     })
