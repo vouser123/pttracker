@@ -57,7 +57,7 @@ export function useProgramQueueSync({
       }
 
       if (syncedCount > 0) {
-        await loadData(session.access_token, session.user.id);
+        await loadData(session.access_token, session.user.id, programPatientId);
         showToast(
           syncedCount === 1
             ? '1 pending program change synced.'

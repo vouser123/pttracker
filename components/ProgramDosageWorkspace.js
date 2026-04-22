@@ -7,7 +7,6 @@ import ProgramPatientSelector from './ProgramPatientSelector';
 export default function ProgramDosageWorkspace({
   patientOptions,
   selectedPatientId,
-  selectedPatientName,
   onPatientChange,
   dosageSearch,
   onDosageSearchChange,
@@ -31,9 +30,6 @@ export default function ProgramDosageWorkspace({
             selectedPatientId={selectedPatientId}
             onChange={onPatientChange}
           />
-          {selectedPatientName && (
-            <span className={styles.patientNameLabel}>{selectedPatientName}</span>
-          )}
         </div>
       )}
       <div className={styles.selectorStack}>

@@ -4,6 +4,8 @@ import {
   compareExercisesByLifecycle,
   isExerciseArchived,
   isExerciseDeprecated,
+  isExerciseOnHold,
+  isExercisePrn,
 } from '../lib/exercise-lifecycle';
 
 function matchesSearch(exercise, search) {
@@ -11,21 +13,27 @@ function matchesSearch(exercise, search) {
 }
 
 function applyFilters(exercises, search, showArchived, selectedId) {
-  return exercises.filter((exercise) => {
-    if (isExerciseDeprecated(exercise)) return false;
-    if (!showArchived && isExerciseArchived(exercise) && exercise.id !== selectedId) return false;
-    if (!matchesSearch(exercise, search)) return false;
-    return true;
-  }).sort(compareExercisesByLifecycle);
+  return exercises
+    .filter((exercise) => {
+      if (isExerciseDeprecated(exercise)) return false;
+      if (!showArchived && isExerciseArchived(exercise) && exercise.id !== selectedId) return false;
+      if (isExerciseOnHold(exercise) && exercise.id !== selectedId) return false;
+      if (isExercisePrn(exercise) && exercise.id !== selectedId) return false;
+      if (!matchesSearch(exercise, search)) return false;
+      return true;
+    })
+    .sort(compareExercisesByLifecycle);
 }
 
 function filterWorkspaceOptions(exercises, selectedId, search) {
-  return exercises.filter((exercise) => {
-    if (isExerciseDeprecated(exercise)) return false;
-    if (isExerciseArchived(exercise) && exercise.id !== selectedId) return false;
-    if (!matchesSearch(exercise, search)) return false;
-    return true;
-  }).sort(compareExercisesByLifecycle);
+  return exercises
+    .filter((exercise) => {
+      if (isExerciseDeprecated(exercise)) return false;
+      if (isExerciseArchived(exercise) && exercise.id !== selectedId) return false;
+      if (!matchesSearch(exercise, search)) return false;
+      return true;
+    })
+    .sort(compareExercisesByLifecycle);
 }
 
 /**
@@ -52,16 +60,26 @@ export function useProgramWorkspaceState({ exercises, programs, enabled }) {
   }, [activeExercise, exercises]);
 
   const handleCancel = useCallback(() => setActiveExercise(null), []);
-  const handleSelectExercise = useCallback((exerciseId) => {
-    setActiveExercise(exercises.find((exercise) => exercise.id === exerciseId) ?? null);
-  }, [exercises]);
+  const handleSelectExercise = useCallback(
+    (exerciseId) => {
+      setActiveExercise(exercises.find((exercise) => exercise.id === exerciseId) ?? null);
+    },
+    [exercises],
+  );
 
   const filtered = useMemo(
-    () => (enabled ? applyFilters(exercises, search, showArchived, activeExercise?.id ?? null) : []),
-    [activeExercise?.id, enabled, exercises, search, showArchived]
+    () =>
+      enabled ? applyFilters(exercises, search, showArchived, activeExercise?.id ?? null) : [],
+    [activeExercise?.id, enabled, exercises, search, showArchived],
   );
-  const roleExerciseOptions = useMemo(() => (enabled ? filterWorkspaceOptions(exercises, roleExerciseId, roleSearch) : []), [enabled, exercises, roleExerciseId, roleSearch]);
-  const dosageExerciseOptions = useMemo(() => (enabled ? filterWorkspaceOptions(exercises, dosageExerciseId, dosageSearch) : []), [enabled, exercises, dosageExerciseId, dosageSearch]);
+  const roleExerciseOptions = useMemo(
+    () => (enabled ? filterWorkspaceOptions(exercises, roleExerciseId, roleSearch) : []),
+    [enabled, exercises, roleExerciseId, roleSearch],
+  );
+  const dosageExerciseOptions = useMemo(
+    () => (enabled ? filterWorkspaceOptions(exercises, dosageExerciseId, dosageSearch) : []),
+    [enabled, exercises, dosageExerciseId, dosageSearch],
+  );
   const formExercise = activeExercise === 'new' ? null : activeExercise;
   const roleExercise = exercises.find((exercise) => exercise.id === roleExerciseId) ?? null;
   const dosageExercise = exercises.find((exercise) => exercise.id === dosageExerciseId) ?? null;
