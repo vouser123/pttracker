@@ -5,6 +5,7 @@ daemon.pipe
 healthy
 vexp.log
 mcp.port
+mcp.token
 workspace.json
 parent_workspace.json
 index.db

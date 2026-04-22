@@ -88,6 +88,7 @@ This project is operated by a non-technical user. Agents must not assume technic
 - Ask clarifying questions only when ambiguity changes behavior, data safety, or UX semantics.
 - When asking for user input, state exactly what decision is needed and provide a recommended option.
 - Surface risk proactively (security, data loss, UX drift, deployment impact) without waiting for the user to ask.
+- MUST NOT suggest, run, or ask the operator to run `netsh winsock reset`, network adapter resets, DNS resets, or similar Windows network-stack reset commands. These commands previously caused severe connectivity loss on this machine. Treat them as explicitly forbidden unless the operator overrides this rule in writing for a specific recovery session.
 - If a change can alter UX behavior, call it out explicitly before merge and obtain approval.
 - For every completed task, provide: what changed, how to verify, known gaps, and rollback path.
 - Never use dismissive phrasing or imply user error due to missing technical background.
@@ -296,7 +297,7 @@ For more details, see README.md and docs/QUICKSTART.md.
 <!-- END BEADS INTEGRATION -->
 
 
-## vexp <!-- vexp v1.3.11 -->
+## vexp <!-- vexp v2.0.12 -->
 
 **MANDATORY: use `run_pipeline` — do NOT grep or glob the codebase.**
 vexp returns pre-indexed, graph-ranked context in a single call.
@@ -314,9 +315,11 @@ vexp returns pre-indexed, graph-ranked context in a single call.
 - `search_logic_flow` — execution paths between functions
 - `get_skeleton` — compact file structure
 - `index_status` — indexing status
+- `workspace_setup` — bootstrap config
 - `get_session_context` — recall observations from sessions
 - `search_memory` — cross-session search
 - `save_observation` — persist insights (prefer run_pipeline's observation param)
+- `expand_vexp_ref` — expand V-REF placeholders in v2 output
 
 ### Agentic search
 - Do NOT use built-in file search, grep, or codebase indexing — always call `run_pipeline` first

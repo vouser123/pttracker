@@ -1,6 +1,7 @@
 {
   "file_hashes": {
     "app/(protected)/ProtectedClientWarmers.js": "d9d34996ede590498ca19b5f54081e451e8a3b910be3fc15060b2f94d04eb701",
+    "app/(protected)/ProtectedPageHeader.js": "6ce4ae5227acfa513c8b625ef01c2f32c134448091224b7fe00e2b8b02c91128",
     "app/(protected)/TrackerOverlays.js": "dc4d508a4d064e2667c14acff023b2e7b4076a9f3518e111604c714b0d6e4ca8",
     "app/(protected)/TrackerPage.js": "85998d56de08313caa1947850ff097928374e80f53491a7f40503ab3fb8ccdac",
     "app/(protected)/TrackerRouteShell.js": "e3185e1c667de277757a13dd08b7a78e65b0de04bc19f1b70a9a48551206e3f9",
@@ -114,7 +115,7 @@
     "hooks/useProgramMutationQueueActions.js": "181cde414191fe935bfc0da362f2bf653fa8f4412189d9e875b1f6c0d9791a91",
     "hooks/useProgramMutationUi.js": "2d9d3d1f5a7c749f41247f127eed83d31dee51fe72d1d31c1a9368f0fc9097d3",
     "hooks/useProgramOfflineQueue.js": "249e99517c76fe244c1ae5f16f50f867ad0813622f4f1506a89ed71204522d1e",
-    "hooks/useProgramPageData.js": "4221bf3d11519139a45cc21c68a07cc7b33bc30725ef6b770f2088a0c24cfa01",
+    "hooks/useProgramPageData.js": "6a54235877fd26c59ec10f3ba219fcf2fe4bedd90de91ae51583e11ea0bf9ae1",
     "hooks/useProgramPatientSelection.js": "7e2457496e9dacd31d9e4aef23ef57e86289a6154ff76ffc87197c1ddcf5c015",
     "hooks/useProgramQueueSync.js": "c2f2a170b23704ccd21e54d6978f07e1f3f9ce95a94b8b69201bfa84cce6c286",
     "hooks/useProgramVocabActions.js": "a73dd3dfe42d5a70b2be4a9fa59c79e475944bf18bcc7c402a6da64e44b54deb",
@@ -161,10 +162,10 @@
     "lib/network-status.js": "2e6693b3b19bbbb1b3e8fdbc1011175f093124ab7904b66477cb6b56089bb979",
     "lib/offline-cache.js": "28dcbd57f5ba45a97fd72eceba5728c61e8c3011946149a2cf4d7aa3276ea1c7",
     "lib/program-assignment-optimistic.js": "504d98f71a9d44f63e4eac5cffa83ec4b4b769c14d81cca97b9eea49f0274ef2",
-    "lib/program-bootstrap-warmup.js": "95d46fdac2ffceea139971c26fb47412c6260688685aac3ff50caa76fae2838d",
+    "lib/program-bootstrap-warmup.js": "ad5750428b1fb1f59915f9c70635c7471586f1dd642f20ce054ae1290a3501c4",
     "lib/program-offline.js": "83292620851811ba1ff01e49a80e5c4251d88e0ce07f46be2247bb3f4a3c0dfc",
     "lib/program-optimistic.js": "42a257d9bf8ad6ec228a57cbbdd80356c5b5852179e130c061429720a1a0bfdc",
-    "lib/program-page-data.js": "ef3710f2876149f65ab00257d493c63ad42bac489a1fcfde14ddcc51ef9a9a5f",
+    "lib/program-page-data.js": "37911aa08caf33033e8ad73c0821120b412a250f310602a21cf976c984abc720",
     "lib/program-status-display.js": "05b88d6d3ac734775c0941ff3bf76ec7102b34662aefc79814e07cda0116953c",
     "lib/program-status.js": "4bb6b8ee0ed38d269af0569a48fc4a46137c9a5dbe8555a6447bb961da097e97",
     "lib/programs-utils.js": "38255fb684710f4d8477f33dd3f73e0b80750514443dfdf6a86f228f745a3413",
@@ -201,7 +202,7 @@
     "scripts/check-docs-readme-update.mjs": "340af8628e4a88cd7b95edb85ffa32022d12dab4128ca84c1fe5f85eda3b3aea",
     "scripts/check-readme-update.mjs": "e47046f84c36bdc86caf949f92ad7d4fa520b9b4d11fb7517899a3d8360c0046",
     "scripts/check-structure.mjs": "54daf9fbb98d898f9f64290144196c8864102c2cfc58e50a05d729b742353a5c",
-    "scripts/commit-preflight.mjs": "975b8279a9641b9c1de4169b337e97f09fd1dcae5f657609e78d823eabf211a4",
+    "scripts/commit-preflight.mjs": "d027fe8aae64007543b9732e661d5b1083c8dcd688267d72134d15051a5c407e",
     "scripts/dump-analyzer-module-graph.mjs": "cffca0d2acc4b215687f584104e976a1242374771654ffea21555c77a63cf463",
     "scripts/dump-analyzer-paths.mjs": "adcbe4f23ab5d9d9953cfc3d4dfb743094ad6b850181b5781de9a33777b6ad97",
     "scripts/generate-ai-context.mjs": "ec6c54fd4d29801ac60e0180f359cad8d0c41b35e69bee5b5da873d441057d44",
@@ -214,13 +215,13 @@
     "test/programs-normalize.test.js": "cc52b9d66456be07c237a5cbfbc12f6fcd130c1463c482c66f6caf44216110a4",
     "tests/smoke.spec.js": "d1008df0df2e99acab18e4231b2ddb624823a292fa6be3b47a1c90fdb8f81c0d"
   },
-  "indexed_at_commit": "a03a77399bab3461973b090e7aa094e8fcceebae",
-  "indexed_at_timestamp": "2026-04-15T01:26:26.671828+00:00",
+  "indexed_at_commit": "8f3bdf44d2a29a2c3e96f0ca079cf5df4d96c9c1",
+  "indexed_at_timestamp": "2026-04-21T23:17:46.641347900+00:00",
   "schema_version": 3,
   "stats": {
-    "total_edges": 959,
-    "total_files": 213,
-    "total_nodes": 612
+    "total_edges": 962,
+    "total_files": 214,
+    "total_nodes": 614
   },
-  "vexp_version": "1.3.11"
+  "vexp_version": "2.0.12"
 }
