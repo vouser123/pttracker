@@ -135,10 +135,13 @@ Use this decision order:
   - Use before opening full files when you need file structure, signatures, or a narrower read.
 - `get_impact_graph`
   - Use before shared-logic edits, refactors, or reviews where blast radius matters.
+  - Most useful on exported/public symbols such as hooks, components, route handlers, and shared helpers.
+  - If a private helper reports 0 dependents but capsule/skeleton shows callers, move up to the owning exported hook/component or file-level entry point and run impact there.
 - `search_logic_flow`
   - Use for targeted execution-path questions such as "how does A reach B?" or "what path gets this value here?"
   - More useful than it appears. Reach for it any time the question involves a connection between two known symbols — how a result gets consumed, how a mutation travels from hook to API, how a cache write reaches a reader. These are routine questions in PT Tracker, not exotic ones.
   - After `run_pipeline`, if the result leaves a connection unclear between two known symbols, use this rather than running pipeline again. Underused in practice — consciously check whether your follow-up question is a flow question before reaching for another tool.
+  - Flow is strongest at explicit call/import boundaries such as component → hook. Callback-local helper chains may require capsule or detailed skeleton after a 0-path result.
   - 0 paths does not always mean disconnected. It can mean the connection is through prop injection, shared state, or IndexedDB rather than a direct call edge. Flow only traces static call graphs.
   - When flow returns 0 paths, `get_skeleton` with `detail: "detailed"` is the right next move — it quickly reveals whether a function arrives as a prop rather than a direct call.
 - `get_context_capsule`
