@@ -26,7 +26,8 @@ Treat the static legacy surface as frozen for routine cleanup. Only apply these 
 - `on_hold` means the exercise is paused for now, stays visible in `/program`, and stays out of tracker, rehab, and PT-review routine surfaces.
 - `as_needed` means the exercise is still selectable and loggable, but routine-counting and routine-attention surfaces should exclude it.
 - Keep lifecycle-aware option construction and label formatting in shared helpers instead of repeating archived-only or PRN-only logic inline in components.
-- For `/program`, show routine exercises first, then On Hold, then PRN, each with a visible prefix and grouping separator when the surface uses a native select.
+- For the `/program` global exercise list (`ProgramExerciseSelector`), show all non-deprecated exercises with plain `canonical_name` labels only — no lifecycle prefixes or group separators. Lifecycle grouping (`buildGroupedLifecycleOptions`) applies only to role and dosage exercise selectors where the exercise's lifecycle context still matters for selection.
+- `on_hold` and `as_needed` (PRN) statuses exist at two independent levels: the global exercise `lifecycle_status` field (managed in the exercise editor) and the patient-scoped `patient_programs.assignment_status` field (managed in the batch assignment panel). Do not conflate them — the global list reflects the exercise definition, the patient panel reflects per-patient assignment state.
 - For `/tracker`, keep PRN visible in the picker only when the session-scoped visibility control includes it, and use a distinct badge in the custom card UI.
 - Avoid adding new behavior decisions around the legacy boolean `archived` field on surfaces that are moving to lifecycle-first rules.
 
