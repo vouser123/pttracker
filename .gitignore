@@ -5,6 +5,7 @@
 .agents/
 skills-lock.json
 .beads/*
+!.beads/issues.jsonl
 !.beads/config.yaml
 !.beads/formulas/
 !.beads/formulas/*.formula.json
