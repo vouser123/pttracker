@@ -29,6 +29,8 @@ function hasUnstagedChanges(file) {
   return readGitLines(['diff', '--name-only', '--', file]).length > 0;
 }
 
+const HELP_TOPICS = ['biome', 'envvars', 'trailers', 'structure'];
+
 function parseArgs(argv) {
   const args = argv.slice(2);
   const parsed = {
@@ -36,12 +38,18 @@ function parseArgs(argv) {
     trailers: [],
     verbose: false,
     help: false,
+    helpTopic: '',
   };
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
     if (arg === '--help' || arg === '-h') {
       parsed.help = true;
+      const next = args[index + 1];
+      if (next && !next.startsWith('-')) {
+        parsed.helpTopic = next;
+        index += 1;
+      }
       continue;
     }
     if (arg === '--verbose' || arg === '-v') {
@@ -62,20 +70,163 @@ function parseArgs(argv) {
   return parsed;
 }
 
-function printHelp() {
+function printHelpOverview() {
   console.log(`Usage:
-  npm run commit:preflight -- --message "Your title (pt-xxxx)" --trailer "Co-Authored-By: Codex GPT-5.4 <codex@openai.com>"
+  npm run commit:preflight -- --message "Your title (pt-xxxx)" --trailer "Co-Authored-By: <Name> <noreply@anthropic.com>"
   npm run commit:preflight -- --message "Your title (pt-xxxx)" --verbose
 
 Options:
-  --message <title>     Commit title to validate before git commit
-  --trailer <text>      Commit trailer to validate before git commit (repeatable)
-  --verbose, -v         Show the full preflight report, including passing sections
-  --help, -h            Show this help text
+  --message <title>     Commit title to validate
+  --trailer <text>      Commit trailer to validate (repeatable)
+  --verbose, -v         Show all sections including passing ones
+  --help [topic], -h    Overview (default) or topic detail
 
-Default output:
-  Success prints a short one-line summary.
-  Failure prints only the blocking sections and their details.`);
+Topics:
+  --help biome          How to fix Biome format/lint errors
+  --help envvars        All env var overrides with bash + PowerShell syntax
+  --help trailers       Recognized AI trailers and when to skip
+  --help structure      Structure rules and how to read failures
+
+Checks run (in order):
+  1. README guard       staged lib/hook/route files → README.md must be staged or PT_README_OK=1
+  2. Docs README guard  staged docs/ files → docs/README.md may need staging
+  3. Biome              format + lint on staged files
+  4. Structure          file caps and layer rules
+  5. Gitleaks           secret scan on staged snapshot
+  6. Commit message     Beads ID in title + recognized AI trailer
+
+Quick fixes:
+  Biome FIXABLE error → npx biome check --write <files>, re-stage, rerun
+  README guard         → stage README.md or: PT_README_OK=1 git commit ...
+  No AI trailer        → add --trailer "Co-Authored-By: <Name> <noreply@anthropic.com>"`);
+}
+
+function printHelpBiome() {
+  console.log(`Biome — format and lint checks on staged files
+
+The commit hook auto-applies Biome fixes at commit time. Preflight lets you
+see and fix errors before hitting the hook.
+
+If preflight shows FIXABLE or "Safe fix":
+  Bash/zsh:
+    npx biome check --write <staged-file1> <staged-file2>
+    git add <those files>
+    npm run commit:preflight -- --message "..." --trailer "..."
+
+  PowerShell:
+    npx biome check --write <staged-file1> <staged-file2>
+    git add <those files>
+    npm run commit:preflight -- --message "..." --trailer "..."
+
+If errors are not auto-fixable (real lint violations):
+  Fix the code, re-stage, and rerun preflight.
+
+Partially-staged files:
+  Biome stops if a staged file also has unstaged changes.
+  Either stage the full file or stash the unstaged changes first.
+
+Emergency bypass (one file, requires user approval):
+  See --help envvars for PT_BIOME_SKIP_AUTOWRITE vars.`);
+}
+
+function printHelpEnvvars() {
+  console.log(`Environment variable overrides — set inline for the single command only.
+
+PT_README_OK=1
+  Skip the README guard when README.md is already accurate.
+  Bash/zsh:   PT_README_OK=1 git commit -m "..."
+  PowerShell: $env:PT_README_OK="1"; git commit -m "..."
+
+PT_AI_TRAILER_OK=1
+  Skip the AI trailer requirement when no agent attribution applies.
+  Bash/zsh:   PT_AI_TRAILER_OK=1 git commit -m "..."
+  PowerShell: $env:PT_AI_TRAILER_OK="1"; git commit -m "..."
+
+Biome auto-write bypass (emergency only — all four required, user approval needed):
+  PT_BIOME_SKIP_AUTOWRITE=1
+  PT_BIOME_SKIP_AUTOWRITE_APPROVED=1
+  PT_BIOME_SKIP_AUTOWRITE_REASON="<reason>"
+  PT_BIOME_SKIP_AUTOWRITE_FILE=<path/to/exactly-one-staged-file>
+
+  Bash/zsh (one line):
+    PT_BIOME_SKIP_AUTOWRITE=1 PT_BIOME_SKIP_AUTOWRITE_APPROVED=1 \\
+      PT_BIOME_SKIP_AUTOWRITE_REASON="reason" PT_BIOME_SKIP_AUTOWRITE_FILE=path/to/file \\
+      git commit -m "..."
+
+  PowerShell:
+    $env:PT_BIOME_SKIP_AUTOWRITE="1"
+    $env:PT_BIOME_SKIP_AUTOWRITE_APPROVED="1"
+    $env:PT_BIOME_SKIP_AUTOWRITE_REASON="reason"
+    $env:PT_BIOME_SKIP_AUTOWRITE_FILE="path/to/file"
+    git commit -m "..."`);
+}
+
+function printHelpTrailers() {
+  console.log(`AI trailers — one required per commit unless PT_AI_TRAILER_OK=1.
+
+Accepted email domains: noreply@anthropic.com, codex@openai.com
+Any agent name is accepted with those domains.
+
+Examples:
+  Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+  Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>
+  Co-Authored-By: Codex <codex@openai.com>
+
+Pass via preflight:
+  --trailer "Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+
+Pass via git commit (heredoc recommended to avoid shell quoting issues):
+  git commit -m "$(cat <<'EOF'
+  Your title (pt-xxxx)
+
+  Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+  EOF
+  )"
+
+Skip trailer requirement (no agent attribution for this commit):
+  Bash/zsh:   PT_AI_TRAILER_OK=1 git commit -m "..."
+  PowerShell: $env:PT_AI_TRAILER_OK="1"; git commit -m "..."`);
+}
+
+function printHelpStructure() {
+  console.log(`Structure check — file caps and layer rules on staged files.
+
+Rules enforced (machine-checkable subset):
+  - Required file header comments
+  - File size caps (see docs/NEXTJS_CODE_STRUCTURE.md for thresholds)
+  - Thin app/**/page.tsx constraints (no useState/useEffect/lib imports)
+  - Forbidden import-layer crossings (lib importing hooks/components, etc.)
+
+Full rules: docs/NEXTJS_CODE_STRUCTURE.md
+Escalation: docs/STRUCTURE_REVIEW_ESCALATION.md
+
+Structure failures cannot be bypassed via env var.
+Fix the violation or consult the user before committing.`);
+}
+
+function printHelp(topic) {
+  if (!topic) {
+    printHelpOverview();
+    return;
+  }
+  if (topic === 'biome') {
+    printHelpBiome();
+    return;
+  }
+  if (topic === 'envvars') {
+    printHelpEnvvars();
+    return;
+  }
+  if (topic === 'trailers') {
+    printHelpTrailers();
+    return;
+  }
+  if (topic === 'structure') {
+    printHelpStructure();
+    return;
+  }
+  console.error(`Unknown help topic: "${topic}". Available topics: ${HELP_TOPICS.join(', ')}`);
+  process.exit(1);
 }
 
 function resolveBiomeBypassFile(stagedFiles) {
@@ -219,10 +370,23 @@ function checkBiome(stagedFiles) {
       ...autoWriteTargets,
     ]);
     if (!checkResult.ok) {
+      const output = summarizeOutput(checkResult);
+      const combined = [checkResult.stdout, checkResult.stderr].join('\n');
+      const hasFixable = /FIXABLE|Safe fix/i.test(combined);
       return {
         name: 'Biome staged checks',
         ok: false,
-        details: summarizeOutput(checkResult),
+        details: [
+          ...output,
+          ...(hasFixable
+            ? [
+                '',
+                'Some errors are auto-fixable. Run:',
+                `  npx biome check --write ${autoWriteTargets.join(' ')}`,
+                'Then re-stage the rewritten files and rerun preflight.',
+              ]
+            : []),
+        ],
       };
     }
     details.push('Biome check would pass for the files eligible for auto-write.');
@@ -263,7 +427,9 @@ function checkStructure() {
   return {
     name: 'Structure check',
     ok: result.ok,
-    details: result.ok ? ['Structure check would pass.'] : summarizeOutput(result),
+    details: result.ok
+      ? ['Structure check would pass.']
+      : [...summarizeOutput(result), 'See docs/NEXTJS_CODE_STRUCTURE.md for structure rules.'],
   };
 }
 
@@ -308,7 +474,11 @@ function checkCommitMessage({ message, trailers }) {
     const hasRecognizedTrailer = trailers.some((trailer) => trailerPattern.test(trailer.trim()));
     if (!hasRecognizedTrailer) {
       details.push(
-        'No recognized AI trailer was provided. Add --trailer "Co-Authored-By: Codex GPT-5.4 <codex@openai.com>" or set PT_AI_TRAILER_OK=1 for the commit only when no agent attribution should be recorded.',
+        'No recognized AI trailer was provided.',
+        'Add --trailer "Co-Authored-By: <Agent Name> <noreply@anthropic.com>" (Anthropic agents)',
+        '  or --trailer "Co-Authored-By: <Agent Name> <codex@openai.com>" (Codex agents)',
+        '  or set PT_AI_TRAILER_OK=1 when no agent attribution should be recorded.',
+        'Run with --help trailers for accepted emails, heredoc syntax, and env var overrides.',
       );
     }
   }
@@ -334,7 +504,7 @@ function formatSection(result) {
 
 const args = parseArgs(process.argv);
 if (args.help) {
-  printHelp();
+  printHelp(args.helpTopic);
   process.exit(0);
 }
 
@@ -394,7 +564,20 @@ for (const result of failed) {
   console.log('');
 }
 
+const topicHints = failed
+  .map((r) => {
+    if (r.name === 'Biome staged checks') return '--help biome';
+    if (r.name === 'README guard' || r.name === 'Docs README guard') return '--help envvars';
+    if (r.name === 'Commit message requirements') return '--help trailers';
+    if (r.name === 'Structure check') return '--help structure';
+    return null;
+  })
+  .filter(Boolean);
+const uniqueTopics = [...new Set(topicHints)];
 console.error(
-  'Preflight found blockers. Fix the failed sections above, then rerun this command before git commit.',
+  'Preflight found blockers. Fix the failed sections above, then rerun before git commit.',
 );
+if (uniqueTopics.length > 0) {
+  console.error(`For fix guidance: npm run commit:preflight -- ${uniqueTopics.join(' or ')}`);
+}
 process.exit(1);
