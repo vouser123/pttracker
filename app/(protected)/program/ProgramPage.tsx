@@ -35,6 +35,14 @@ import ProtectedPageHeader from '../ProtectedPageHeader';
 import ProgramBatchSection from './ProgramBatchSection';
 import styles from './ProgramPage.module.css';
 
+interface ProgramSnapshot {
+  exercises: unknown[];
+  referenceData: Record<string, unknown>;
+  vocabularies: Record<string, unknown>;
+  programs: Record<string, unknown>;
+  activeExercise: Record<string, unknown> | string | null;
+}
+
 const ExerciseForm = dynamic(() => import('../../../components/ExerciseForm'), {
   loading: () => null,
 });
@@ -129,7 +137,7 @@ export default function ProgramPage({
   );
 
   const commitSnapshot = useCallback(
-    (snapshot: any) => {
+    (snapshot: ProgramSnapshot) => {
       commitProgramData(snapshot);
       setActiveExercise(snapshot.activeExercise);
     },

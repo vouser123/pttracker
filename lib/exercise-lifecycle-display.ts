@@ -1,12 +1,19 @@
 import {
   compareExercisesByLifecycle,
+  type ExerciseWithLifecycle,
   isExerciseArchived,
   isExerciseDeprecated,
   isExerciseOnHold,
   isExercisePrn,
 } from './exercise-lifecycle';
 
-export function formatExerciseLifecycleLabel(exercise: any): string {
+export interface ExerciseOption {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
+
+export function formatExerciseLifecycleLabel(exercise: ExerciseWithLifecycle): string {
   const prefixes = [];
   if (isExerciseArchived(exercise)) prefixes.push('[archived]');
   if (isExerciseOnHold(exercise)) prefixes.push('[On Hold]');
@@ -15,19 +22,21 @@ export function formatExerciseLifecycleLabel(exercise: any): string {
   return `${prefix}${exercise?.canonical_name ?? ''}`;
 }
 
-export function buildGroupedLifecycleOptions(exercises: any[] = []) {
+export function buildGroupedLifecycleOptions(
+  exercises: ExerciseWithLifecycle[] = [],
+): ExerciseOption[] {
   const visibleExercises = exercises
-    .filter((exercise: any) => !isExerciseDeprecated(exercise))
+    .filter((exercise) => !isExerciseDeprecated(exercise))
     .sort(compareExercisesByLifecycle);
 
-  const activeOptions = [];
-  const onHoldOptions = [];
-  const prnOptions = [];
-  const archivedOptions = [];
+  const activeOptions: ExerciseOption[] = [];
+  const onHoldOptions: ExerciseOption[] = [];
+  const prnOptions: ExerciseOption[] = [];
+  const archivedOptions: ExerciseOption[] = [];
 
   for (const exercise of visibleExercises) {
-    const option = {
-      value: exercise.id,
+    const option: ExerciseOption = {
+      value: exercise.id ?? '',
       label: formatExerciseLifecycleLabel(exercise),
     };
     if (isExerciseOnHold(exercise)) {
