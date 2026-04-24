@@ -1,6 +1,6 @@
 'use client';
 /**
- * app/program/ProgramPage.js — Exercise editor route host (Client Component).
+ * app/program/ProgramPage.tsx — Exercise editor route host (Client Component).
  * Migrated from pages/program.js. App Router metadata now lives in app/program/page.js.
  *
  * ORCHESTRATOR ONLY — this file wires auth, bootstrap hooks, offline queue hooks,
@@ -27,7 +27,7 @@ import { useProgramVocabActions } from '../../../hooks/useProgramVocabActions';
 import { useProgramWorkspaceState } from '../../../hooks/useProgramWorkspaceState';
 import { useToast } from '../../../hooks/useToast';
 import { formatDosageSummary } from '../../../lib/dosage-summary';
-import { buildGroupedLifecycleOptions } from '../../../lib/exercise-lifecycle';
+import { buildGroupedLifecycleOptions } from '../../../lib/exercise-lifecycle-display';
 import { getProgramMutationLabel } from '../../../lib/program-offline';
 import { supabase } from '../../../lib/supabase';
 import { mapVocabTermsToOptions } from '../../../lib/vocab-options';
@@ -48,7 +48,11 @@ const FormParameterEditor = dynamic(() => import('../../../components/FormParame
   loading: () => null,
 });
 
-export default function ProgramPage({ initialAuthUserId = null }) {
+export default function ProgramPage({
+  initialAuthUserId = null,
+}: {
+  initialAuthUserId: string | null;
+}) {
   const { session, loading: authLoading, signIn, signOut } = useAuth();
   const { effectiveOnline } = useEffectiveConnectivity();
   const [isVocabOpen, setIsVocabOpen] = useState(false);
@@ -125,7 +129,7 @@ export default function ProgramPage({ initialAuthUserId = null }) {
   );
 
   const commitSnapshot = useCallback(
-    (snapshot) => {
+    (snapshot: any) => {
       commitProgramData(snapshot);
       setActiveExercise(snapshot.activeExercise);
     },
