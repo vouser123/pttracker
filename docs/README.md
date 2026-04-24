@@ -30,6 +30,9 @@ Use this file to decide which doc to open next.
 - [`IMPLEMENTATION_PATTERNS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/IMPLEMENTATION_PATTERNS.md)
   - Open when: you need the approved shared helper, component, or do-this-not-that implementation pattern.
   - Answers: "Which shared thing should I use here?" including current tracker picker, session logging, and `/program` queue ownership patterns.
+- [`TYPESCRIPT_POLICY.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/TYPESCRIPT_POLICY.md)
+  - Open when: you need the canonical rules for new TypeScript work, JavaScript conversion requirements, or the allowed exceptions.
+  - Answers: "When must a touched JavaScript file be converted?" and "What counts as a small patch or external-library edge case?"
 - [`SCRIPTS_GUIDE.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/SCRIPTS_GUIDE.md)
   - Open when: you need the current usage for analyzer helpers, commit preflight, Supabase backup, or other local helper scripts.
   - Answers: "How do I use the local scripts right now?" and "What does commit preflight print by default versus with `--verbose`?"
