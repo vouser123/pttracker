@@ -9,14 +9,21 @@
 // all offline data. See docs/PWA_SERWIST_MIGRATION.md for architecture rationale.
 
 import { defaultCache } from '@serwist/turbopack/worker';
-import { Serwist } from 'serwist';
+import { NetworkOnly, Serwist } from 'serwist';
 
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
-  runtimeCaching: defaultCache,
+  runtimeCaching: [
+    {
+      // Never cache Vercel Speed Insights / Analytics beacons — let them reach the network.
+      matcher: ({ url }) => url.hostname === 'va.vercel-insights.com',
+      handler: new NetworkOnly(),
+    },
+    ...defaultCache,
+  ],
   fallbacks: {
     entries: [
       {
