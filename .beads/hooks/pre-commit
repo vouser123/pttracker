@@ -62,9 +62,11 @@ if [ "${PT_README_OK:-0}" != "1" ]; then
     printf '%s\n' >&2 ""
     printf '%s\n' >&2 "Stage README.md if the ownership map, route map, or shared-file guidance changed."
     printf '%s\n' >&2 "If the README remains accurate without edits, retry with:"
-    printf '%s\n' >&2 '  $env:PT_README_OK="1"; git commit ...'
-    printf '%s\n' >&2 'Before retrying, run:'
-    printf '%s\n' >&2 '  npm run commit:preflight -- --message "Your title (pt-xxxx)" --trailer "Co-Authored-By: Codex GPT-5.4 <codex@openai.com>"'
+    printf '%s\n' >&2 '  PowerShell : $env:PT_README_OK="1"; git commit ...'
+    printf '%s\n' >&2 '  bash/sh    : PT_README_OK=1 git commit ...'
+    printf '%s\n' >&2 "Before retrying, run preflight to catch other blockers:"
+    printf '%s\n' >&2 '  npm run commit:preflight -- --message "Your title (pt-xxxx)"'
+    printf '%s\n' >&2 '  npm run commit:preflight -- --help   (show all checks and env-var overrides)'
     printf '%s\n' >&2 ""
     printf '%s\n' >&2 "See README.md and AGENTS.md."
     exit 1
