@@ -1,7 +1,7 @@
 // app/api/exercises/route.js — GET (list all exercises), POST (create exercise).
 
 import { getSupabaseWithAuth } from '../../../lib/db.js';
-import { buildExerciseLifecycle } from '../../../lib/exercise-lifecycle.js';
+import { buildExerciseLifecycle } from '../../../lib/exercise-lifecycle';
 import {
   authenticateRoute,
   badRequest,
