@@ -154,5 +154,5 @@ Apply a strict bar. If resource usage is unclear, investigate before recommendin
 | 2026-04-15 | 1.0.2 | server mode active in workspace | fresh mirror + `go build -tags gms_pure_go` | Repo moved to `gastownhall/beads`; source build used because `go install ...@latest` failed on release replace directives. `bd batch` and related `1.0.1` changes are available in the live workspace. |
 | 2026-03-22 | 0.62.0 | 1.84.0 | go install | Added bd note, --exclude-type, custom status categories, Windows Dolt lifecycle fixes |
 
-Mirror-only refresh note:
-- 2026-04-29: refreshed `C:\Users\cindi\OneDrive\Documents\PT_Backup\beads` to upstream tag `v1.0.3` for source/docs review. The live `bd` binary in this workspace was not upgraded as part of that refresh and remains `1.0.2`.
+Mirror/current-state note:
+- 2026-04-29: refreshed `C:\Users\cindi\OneDrive\Documents\PT_Backup\beads` to upstream tag `v1.0.3` for source/docs review. In the same session, `bd context --json` showed the live workspace binary already reporting `bd_version: 1.0.3`, so the mirror refresh did not newly upgrade the binary; it confirmed the source/docs state and the current live version.

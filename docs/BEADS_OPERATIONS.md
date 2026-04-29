@@ -977,6 +977,6 @@ Three separate things — do not confuse them:
 
 Current repo note:
 
-- As of April 29, 2026, the live local `bd` binary in this workspace is still `1.0.2`.
+- As of April 29, 2026, `bd context --json` reports the live local `bd` binary in this workspace as `1.0.3`.
 - The local mirror at `C:\Users\cindi\OneDrive\Documents\PT_Backup\beads` was refreshed from `gastownhall/beads` to upstream tag `v1.0.3` on April 29, 2026.
 - As of April 29, 2026, PT Tracker is still using Beads with Dolt `server` mode on Windows and a `gms_pure_go` source build. Do not assume embedded-Dolt guidance applies here.
