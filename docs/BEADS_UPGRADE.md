@@ -51,7 +51,8 @@ go build -tags gms_pure_go -o "C:\Users\cindi\go\bin\bd.exe" ./cmd/bd
 
 Notes:
 - PT Tracker uses Dolt `server` mode, not embedded Dolt. Do not add `embeddeddolt` build tags for this workspace.
-- For the current `v1.0.2` release, `go install github.com/steveyegge/beads/cmd/bd@latest` may fail because the upstream tag includes `replace` directives. If `go install` succeeds in a later release, it is acceptable, but the source-build fallback remains the safe default here.
+- For the `v1.0.2` release, `go install github.com/steveyegge/beads/cmd/bd@latest` may fail because the upstream tag includes `replace` directives.
+- Upstream `v1.0.3` includes packaging and Windows install regression fixes, so `go install` is worth re-testing during a future binary upgrade, but the source-build fallback remains the safe default here.
 
 Verify:
 ```bash
@@ -90,6 +91,7 @@ Look for:
 - Environment variable changes (e.g. `BD_ACTOR` → `BEADS_ACTOR`)
 - Transaction and scripting changes (for example `bd batch`, `bd config drift`, auto-export defaults) → update workflow docs and any repo scripts that assume older behavior
 - Windows-specific fixes relevant to this workspace
+- `v1.0.3`-specific workflow changes that matter here, such as `bd prune`, `--exclude-label` support on `bd ready`/`bd list`, worktree fixes, and the upstream shift to explicit opt-in for Dolt auto-push
 
 ### 7. Update repo docs if needed
 
@@ -151,3 +153,6 @@ Apply a strict bar. If resource usage is unclear, investigate before recommendin
 |------|-----------|-------------|--------|-------|
 | 2026-04-15 | 1.0.2 | server mode active in workspace | fresh mirror + `go build -tags gms_pure_go` | Repo moved to `gastownhall/beads`; source build used because `go install ...@latest` failed on release replace directives. `bd batch` and related `1.0.1` changes are available in the live workspace. |
 | 2026-03-22 | 0.62.0 | 1.84.0 | go install | Added bd note, --exclude-type, custom status categories, Windows Dolt lifecycle fixes |
+
+Mirror-only refresh note:
+- 2026-04-29: refreshed `C:\Users\cindi\OneDrive\Documents\PT_Backup\beads` to upstream tag `v1.0.3` for source/docs review. The live `bd` binary in this workspace was not upgraded as part of that refresh and remains `1.0.2`.

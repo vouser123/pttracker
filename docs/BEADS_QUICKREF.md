@@ -171,7 +171,7 @@ Practical notes:
 - `bd batch` reads one command per line from stdin or `-f/--file`, and the whole set runs inside one Dolt transaction. If any line fails, the full batch rolls back.
 - Supported `bd batch` grammar is currently limited to `close`, `update`, `create`, `dep add`, and `dep remove`. Check `bd help batch` before relying on it in scripts.
 - `started_at` is now tracked when an issue first enters `in_progress`, which helps when reviewing stale claimed work.
-- Auto-export is now enabled by default upstream. In this repo, treat export side effects as normal Beads behavior and confirm staged-file ownership before any commit.
+- Auto-export is now enabled by default upstream. In this repo, `.beads/issues.jsonl` is intentionally tracked as the Git-visible Beads export snapshot, while runtime, credential, Dolt, backup, lock, log, and interaction files remain ignored. Treat export side effects as normal Beads behavior and confirm staged-file ownership before any commit.
 
 ### Repo formulas and molecules
 
