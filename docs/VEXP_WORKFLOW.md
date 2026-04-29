@@ -66,66 +66,62 @@ Practical takeaway:
 2. Make the smallest targeted follow-up call that answers the next question.
 3. Read raw file text only when the `vexp` output is still not enough to place an exact patch safely.
 
-## Expected MCP Tool Surface
+## How To Use vexp
 
-PT Tracker expects the full `vexp` MCP tool surface, not a reduced subset.
+## Quick Tool Guide
 
-Expected tools:
+Read this section first when you need to choose a `vexp` tool quickly.
+
+### Start Here
 
 - `run_pipeline`
-- `get_context_capsule`
-- `get_impact_graph`
-- `search_logic_flow`
+  - Default first call for nearly every codebase task.
+  - Best for: bug work, refactors, feature work, ownership questions, and general exploration.
+  - Why: it combines context search, impact analysis, and memory recall in one call.
 - `get_skeleton`
+  - Default follow-up when you need file structure or function signatures before opening raw text.
+  - Best for: confirming file ownership, narrowing a patch location, or checking surrounding declarations.
 - `index_status`
+  - Use when `vexp` results look incomplete or stale.
+  - Best for: coverage checks, index-health questions, and multi-repo alias discovery.
+
+### Tool-by-Tool Map
+
+- `run_pipeline`
+  - Use first for almost everything.
+  - Prefer the `observation` parameter when the same step produced a durable finding worth saving.
+- `get_context_capsule`
+  - Use for a lighter follow-up when `run_pipeline` would be more than you need.
+  - Best for: quick context pulls with pivot files plus supporting skeletons.
+- `get_impact_graph`
+  - Use before shared-logic edits or refactors where blast radius matters.
+  - Best for: exported hooks, components, route handlers, and shared helpers.
+- `search_logic_flow`
+  - Use when the question is “how does this reach that?”
+  - Best for: tracing call paths, mutation paths, and reader/writer connections between known symbols.
+- `get_skeleton`
+  - Preferred file-inspection tool before raw reads.
+  - Best for: signatures, declarations, and compact file structure.
+- `index_status`
+  - Use when expected files or symbols are missing from `vexp` results.
+  - Best for: confirming repo aliases, index freshness, and daemon/index health.
 - `workspace_setup`
+  - Use when preparing `vexp` for a new repo or checking generated agent config behavior.
+  - Best for: setup and MCP wiring tasks, not ordinary product-code work.
 - `get_session_context`
+  - Use to review what this session or a recent one already explored.
+  - Best for: chronological recall of observations and prior investigation steps.
 - `search_memory`
+  - Use for cross-session lookup by topic or question.
+  - Best for: finding previous findings, decisions, or repeated patterns.
 - `save_observation`
+  - Use when a finding should survive compaction and is not already being saved by `run_pipeline`.
+  - Best for: durable insights, decisions, and confirmed failure patterns.
 - `expand_vexp_ref`
+  - Use when a result includes a `[V-REF:xxxx]` placeholder and you need that exact block.
+  - Best for: surgical expansion of one referenced section instead of a full raw read.
 
-Repo-specific note:
-
-- If an agent only sees the 4-tool subset (`run_pipeline`, `get_skeleton`, `index_status`, `expand_vexp_ref`), treat that as a `vexp-cli` package/config regression, not intended PT Tracker behavior.
-- Do not rewrite PT Tracker workflow around the reduced list. Fix the local `vexp` installation or MCP launch path instead.
-- Do not normalize or accept the reduced 4-tool mode as "good enough" for PT Tracker. Restore the expected full tool surface first.
-
-Repair path on this machine:
-
-1. Check the installed MCP server at `C:\Users\cindi\AppData\Roaming\npm\node_modules\vexp-cli\mcp\mcp-server.cjs`.
-2. Confirm the tool-registration block does not still contain the reduced fallback list (`r7=[Vm,Bm,Hm,Gm]`) or the `VEXP_ALL_TOOLS` gate.
-3. The server should advertise the full list directly from the single `t7` array.
-4. If the package still contains the reduced branch, patch the installed `vexp-cli` package so the MCP server always returns the full tool list for every client.
-5. Also align `C:\Users\cindi\AppData\Roaming\npm\node_modules\vexp-cli\dist\agent-config.js` so its `VEXP_TOOLS` list matches the server tool list. It should include `expand_vexp_ref` and should not claim tools the server does not expose.
-6. Restart the client after patching so it reconnects to the updated MCP server.
-
-Exact local repair:
-
-- Make a same-directory backup of `mcp-server.cjs` first.
-- In `mcp-server.cjs`, replace the gated registration block so the server always advertises the full `t7` tool list.
-- Remove the reduced fallback list (`r7`) and the `VEXP_ALL_TOOLS` helper from that block.
-- Leave the rest of the server behavior unchanged.
-- If needed, align `dist/agent-config.js` so any generated `VEXP_TOOLS` list reflects the actual server tool surface.
-
-How to reapply after a reinstall or update:
-
-1. Back up `mcp-server.cjs`.
-2. Re-open the installed file.
-3. Replace `tools:n7()?t7:r7` with `tools:t7`.
-4. Remove the now-unused reduced list and `VEXP_ALL_TOOLS` gate helper from the same block.
-5. Restart the client so it reconnects to the updated MCP server.
-
-How to revert:
-
-1. Restore the same-directory backup of `mcp-server.cjs`, if present.
-2. Or reinstall `vexp-cli` to restore the published package version.
-3. After revert, expect the package to return to the default gated behavior unless upstream changes it.
-
-Important local note:
-
-- A `vexp-cli` reinstall or update can overwrite this repair. If the reduced 4-tool subset returns after an update, re-check the installed package files before changing PT Tracker docs or workflow.
-
-Use this decision order:
+## Choosing The Next Tool
 
 - `run_pipeline`
   - Start here for any code task, bug, refactor, review, or ownership question.
@@ -294,7 +290,7 @@ Repo takeaway:
 Do not rely on project rules as the only source of truth for PT Tracker conventions.
 Repo docs such as [`AGENTS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/AGENTS.md), [`README.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/README.md), and [`IMPLEMENTATION_PATTERNS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttracker/docs/IMPLEMENTATION_PATTERNS.md) still remain canonical.
 
-## Tool Notes
+## Detailed Tool Notes
 
 - `run_pipeline`
   - Primary tool. It auto-detects intent (`debug`, `modify`, `refactor`, `explore`) from the task description and returns compressed results within a token budget.
@@ -322,6 +318,94 @@ Repo docs such as [`AGENTS.md`](C:/Users/cindi/OneDrive/Documents/GitHub/pttrack
     - `manual` — anything that doesn't fit the above but should persist
   - `tool_call` observations are ephemeral and pruned on compression; the above types are not.
   - Link symbols by FQN when available so staleness tracking works after code changes.
+
+## How To Fix vexp
+
+Use this section only when `vexp` itself appears incomplete, stale, or misconfigured. Do not mix these repair steps into normal day-to-day tool usage.
+
+### Expected MCP Tool Surface
+
+PT Tracker expects the full `vexp` MCP tool surface, not a reduced subset.
+
+Expected tools:
+
+- `run_pipeline`
+- `get_context_capsule`
+- `get_impact_graph`
+- `search_logic_flow`
+- `get_skeleton`
+- `index_status`
+- `workspace_setup`
+- `get_session_context`
+- `search_memory`
+- `save_observation`
+- `expand_vexp_ref`
+
+Repo-specific note:
+
+- If an agent only sees the 4-tool subset (`run_pipeline`, `get_skeleton`, `index_status`, `expand_vexp_ref`), do not accept that as normal PT Tracker behavior.
+- Do not rewrite PT Tracker workflow around the reduced list. Fix the local `vexp` installation or MCP launch path instead.
+- Do not normalize or accept the reduced 4-tool mode as "good enough" for PT Tracker. Restore the expected full tool surface first.
+
+### First Distinguish Discovery From A Real Reduced Server Surface
+
+The same visible 4-tool symptom can come from two different causes:
+
+1. Codex has not loaded deferred MCP metadata yet.
+2. The installed `vexp-cli` server is truly advertising only the reduced subset.
+
+Use this order before patching anything:
+
+1. In Codex, run `tool_search` for `vexp`.
+2. If the full `mcp__vexp__` namespace appears after that, treat the issue as deferred discovery or stale client metadata, not a package regression.
+3. Only move to package inspection if the tool list stays reduced after discovery or reconnect behavior has been ruled out.
+
+What this means in practice:
+
+- A live Codex session can begin with the visible 4-tool subset and still have access to the full server-backed tool surface after deferred tool discovery loads.
+- Do not patch `vexp-cli` just because the first visible list is short.
+
+### True Server-Side Repair Path On This Machine
+
+Use this only when Codex discovery behavior has been ruled out and the server still advertises a reduced list.
+
+1. Check the installed MCP server at `C:\Users\cindi\AppData\Roaming\npm\node_modules\vexp-cli\mcp\mcp-server.cjs`.
+2. Confirm whether the tool-registration block still contains the reduced fallback list (`r7=[Vm,Bm,Hm,Gm]`) and the `VEXP_ALL_TOOLS` gate.
+3. Check whether current environment values are actually forcing that gate off.
+4. If the package is truly returning the reduced list after discovery checks, patch the installed `vexp-cli` package so the MCP server always returns the full tool list for every client.
+5. Also align `C:\Users\cindi\AppData\Roaming\npm\node_modules\vexp-cli\dist\agent-config.js` so its `VEXP_TOOLS` list matches the server tool list. It should include `expand_vexp_ref` and should not claim tools the server does not expose.
+6. Restart the client after patching so it reconnects to the updated MCP server.
+
+Important current local note:
+
+- In the current PT Tracker environment, `vexp-cli` `2.0.12` still contains both the full `t7` list and the reduced fallback branch.
+- The generated agent-config or instruction text can also lag behind the real server surface. Treat that wording as a clue, not final proof of what the server is advertising.
+
+### Exact Local Repair
+
+- Make a same-directory backup of `mcp-server.cjs` first.
+- In `mcp-server.cjs`, replace the gated registration block so the server always advertises the full `t7` tool list.
+- Remove the reduced fallback list (`r7`) and the `VEXP_ALL_TOOLS` helper from that block.
+- Leave the rest of the server behavior unchanged.
+- If needed, align `dist/agent-config.js` so any generated `VEXP_TOOLS` list reflects the actual server tool surface.
+
+### Reapply After A Reinstall Or Update
+
+1. Back up `mcp-server.cjs`.
+2. Re-open the installed file.
+3. Replace `tools:n7()?t7:r7` with `tools:t7`.
+4. Remove the now-unused reduced list and `VEXP_ALL_TOOLS` gate helper from the same block.
+5. Restart the client so it reconnects to the updated MCP server.
+
+### Revert
+
+1. Restore the same-directory backup of `mcp-server.cjs`, if present.
+2. Or reinstall `vexp-cli` to restore the published package version.
+3. After revert, expect the package to return to the default gated behavior unless upstream changes it.
+
+### Repair Persistence Note
+
+- A `vexp-cli` reinstall or update can overwrite this repair. If the reduced 4-tool subset returns after an update, re-check the installed package files before changing PT Tracker docs or workflow.
 
 ## Token Budget and Compaction
 
