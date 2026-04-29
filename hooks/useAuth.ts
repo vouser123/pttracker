@@ -24,8 +24,9 @@ import {
 } from '../lib/network-status';
 import { offlineCache } from '../lib/offline-cache';
 import { supabase } from '../lib/supabase';
+import type { AuthHookResultLike, AuthSessionLike } from './program-route-types';
 
-function persistAuthUserId(userId) {
+function persistAuthUserId(userId: string | null | undefined) {
   if (typeof window === 'undefined') return;
   void offlineCache.setAuthState('auth_user_id', userId);
 }
@@ -35,8 +36,8 @@ function clearAuthUserId() {
   void offlineCache.removeAuthState('auth_user_id');
 }
 
-export function useAuth() {
-  const [session, setSession] = useState(null);
+export function useAuth(): AuthHookResultLike {
+  const [session, setSession] = useState<AuthSessionLike | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -49,53 +50,55 @@ export function useAuth() {
     // bootstrap from cache first, then validate with getUser() in the background. If
     // validation fails for a non-network reason, sign out to clear the stale session
     // and let the page fall through to AuthForm.
-    supabase.auth.getSession().then(async ({ data: { session: sess } }) => {
-      if (!sess) {
-        setSession(null);
+    supabase.auth
+      .getSession()
+      .then(async ({ data: { session: sess } }: { data: { session: AuthSessionLike | null } }) => {
+        if (!sess) {
+          setSession(null);
+          setLoading(false);
+          return;
+        }
+
+        setSession(sess);
+        persistAuthUserId(sess.user.id);
         setLoading(false);
-        return;
-      }
 
-      setSession(sess);
-      persistAuthUserId(sess.user.id);
-      setLoading(false);
+        const { error: userError } = await supabase.auth.getUser();
+        if (!userError) {
+          markNetworkSuccess();
+          return;
+        }
 
-      const { error: userError } = await supabase.auth.getUser();
-      if (!userError) {
-        markNetworkSuccess();
-        return;
-      }
+        if (markNetworkFailure(userError)) {
+          // Network is down — keep the locally-restored session active and let
+          // page-level data hooks decide whether to use cached or fresh data.
+          return;
+        }
 
-      if (markNetworkFailure(userError)) {
-        // Network is down — keep the locally-restored session active and let
-        // page-level data hooks decide whether to use cached or fresh data.
-        return;
-      }
+        // Supabase refresh token errors (400 Invalid Refresh Token) occur when the
+        // token was rotated by another tab or SW instance. If we're offline we can't
+        // distinguish a genuinely revoked token from a network-blocked refresh, so
+        // keep the session alive and let the user continue with cached data.
+        const isRefreshTokenError =
+          userError.message?.includes('refresh_token') ||
+          userError.message?.includes('Refresh Token');
+        if (isRefreshTokenError && isEffectivelyOffline()) {
+          return;
+        }
 
-      // Supabase refresh token errors (400 Invalid Refresh Token) occur when the
-      // token was rotated by another tab or SW instance. If we're offline we can't
-      // distinguish a genuinely revoked token from a network-blocked refresh, so
-      // keep the session alive and let the user continue with cached data.
-      const isRefreshTokenError =
-        userError.message?.includes('refresh_token') ||
-        userError.message?.includes('Refresh Token');
-      if (isRefreshTokenError && isEffectivelyOffline()) {
-        return;
-      }
-
-      // Token is actually invalid (revoked, password changed, etc.)
-      // Sign out to clear stale IndexedDB state and prompt re-login.
-      await supabase.auth.signOut();
-      clearAuthUserId();
-      setSession(null);
-    });
+        // Token is actually invalid (revoked, password changed, etc.)
+        // Sign out to clear stale IndexedDB state and prompt re-login.
+        await supabase.auth.signOut();
+        clearAuthUserId();
+        setSession(null);
+      });
 
     // Keep session state in sync with Supabase auth events.
     // Only clear session on an explicit SIGNED_OUT event — not on transient null
     // values that can occur during token refresh cycles.
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, sess) => {
+    } = supabase.auth.onAuthStateChange((event: string, sess: AuthSessionLike | null) => {
       if (event === 'SIGNED_OUT') {
         // A SIGNED_OUT event while offline is almost certainly a failed background
         // token refresh, not an explicit sign-out. Clearing the session offline
@@ -119,7 +122,7 @@ export function useAuth() {
    * @param {string} password
    * @returns {Promise<string|null>} error message, or null on success
    */
-  async function signIn(email, password) {
+  async function signIn(email: string, password: string): Promise<string | null> {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (!error) {
       markNetworkSuccess();
@@ -131,11 +134,11 @@ export function useAuth() {
       return 'Signing in requires an internet connection. If you already signed in on this device before going offline, reopen the app and it should restore your saved session.';
     }
 
-    return error.message;
+    return error.message ?? 'Sign-in failed.';
   }
 
   /** Sign out the current user and redirect to sign-in. */
-  async function signOut() {
+  async function signOut(): Promise<void> {
     await supabase.auth.signOut();
     clearAuthUserId();
     window.location.href = '/sign-in';

@@ -1,18 +1,29 @@
 // hooks/useProgramPatientSelection.js — patient selection state for program page
 import { useCallback, useEffect, useState } from 'react';
 import { formatDisplayName } from '../lib/users';
+import type {
+  ProgramPatientOptionLike,
+  ProgramPatientSelectionLike,
+  UserLike,
+} from './program-route-types';
 
 /**
  * Derives patient options from therapist's patient list and manages selected patient state.
  * @param {{ allUsers: array, authUserId: string }} params
  * @returns {{ patientOptions: array, selectedPatientId: string|null, selectedPatientName: string, setSelectedPatientId: function }}
  */
-export function useProgramPatientSelection({ allUsers, authUserId }) {
+export function useProgramPatientSelection({
+  allUsers,
+  authUserId,
+}: {
+  allUsers: UserLike[];
+  authUserId: string;
+}): ProgramPatientSelectionLike {
   const currentUser = (allUsers ?? []).find((user) => user.auth_id === authUserId);
 
   // For therapist: get list of patients assigned to them
   // For admin/patient: use current user as the patient
-  const patientOptions =
+  const patientOptions: ProgramPatientOptionLike[] =
     currentUser?.role === 'therapist'
       ? (allUsers ?? [])
           .filter((user) => user.therapist_id === currentUser.id)
@@ -31,7 +42,7 @@ export function useProgramPatientSelection({ allUsers, authUserId }) {
           ]
         : [];
 
-  const [selectedPatientId, setSelectedPatientId] = useState(null);
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
 
   // Auto-select first patient once allUsers arrives (initial render has empty list)
   useEffect(() => {
@@ -47,6 +58,6 @@ export function useProgramPatientSelection({ allUsers, authUserId }) {
     patientOptions,
     selectedPatientId,
     selectedPatientName,
-    setSelectedPatientId: useCallback((id) => setSelectedPatientId(id), []),
+    setSelectedPatientId: useCallback((id: string | null) => setSelectedPatientId(id), []),
   };
 }

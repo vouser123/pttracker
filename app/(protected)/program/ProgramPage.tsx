@@ -13,6 +13,7 @@ import ExerciseRolesWorkspace from '../../../components/ExerciseRolesWorkspace';
 import ProgramDosageWorkspace from '../../../components/ProgramDosageWorkspace';
 import ProgramExerciseSelector from '../../../components/ProgramExerciseSelector';
 import Toast from '../../../components/Toast';
+import type { ProgramSnapshotLike } from '../../../hooks/program-route-types';
 import { useAllUsers } from '../../../hooks/useAllUsers';
 import { useAuth } from '../../../hooks/useAuth';
 import { useEffectiveConnectivity } from '../../../hooks/useEffectiveConnectivity';
@@ -34,14 +35,6 @@ import { mapVocabTermsToOptions } from '../../../lib/vocab-options';
 import ProtectedPageHeader from '../ProtectedPageHeader';
 import ProgramBatchSection from './ProgramBatchSection';
 import styles from './ProgramPage.module.css';
-
-interface ProgramSnapshot {
-  exercises: unknown[];
-  referenceData: Record<string, unknown>;
-  vocabularies: Record<string, unknown>;
-  programs: Record<string, unknown>;
-  activeExercise: Record<string, unknown> | string | null;
-}
 
 const ExerciseForm = dynamic(() => import('../../../components/ExerciseForm'), {
   loading: () => null,
@@ -65,10 +58,11 @@ export default function ProgramPage({
   const { effectiveOnline } = useEffectiveConnectivity();
   const [isVocabOpen, setIsVocabOpen] = useState(false);
   const [isFormParamOpen, setIsFormParamOpen] = useState(false);
+  const authUserId = session?.user?.id ?? '';
 
   const { allUsers } = useAllUsers({ session });
   const { patientOptions, selectedPatientId, selectedPatientName, setSelectedPatientId } =
-    useProgramPatientSelection({ allUsers, authUserId: session?.user?.id });
+    useProgramPatientSelection({ allUsers, authUserId });
 
   const {
     exercises,
@@ -124,6 +118,8 @@ export default function ProgramPage({
   const focusOptions = mapVocabTermsToOptions(vocabularies?.focus ?? []);
   const contributionOptions = mapVocabTermsToOptions(vocabularies?.contribution ?? []);
   const dosageSummary = formatDosageSummary(selectedProgram, { exercise: dosageExercise });
+  const activeExerciseId =
+    activeExercise && typeof activeExercise !== 'string' ? (activeExercise.id ?? '') : '';
 
   const getCurrentSnapshot = useCallback(
     () => ({
@@ -137,7 +133,7 @@ export default function ProgramPage({
   );
 
   const commitSnapshot = useCallback(
-    (snapshot: ProgramSnapshot) => {
+    (snapshot: ProgramSnapshotLike) => {
       commitProgramData(snapshot);
       setActiveExercise(snapshot.activeExercise);
     },
@@ -287,7 +283,7 @@ export default function ProgramPage({
             onSearchChange={setSearch}
             showArchived={showArchived}
             onShowArchivedChange={setShowArchived}
-            activeExerciseId={activeExercise?.id ?? ''}
+            activeExerciseId={activeExerciseId}
             onExerciseChange={handleSelectExercise}
             exerciseOptions={filtered}
           />
@@ -323,7 +319,6 @@ export default function ProgramPage({
           <ProgramDosageWorkspace
             patientOptions={patientOptions}
             selectedPatientId={selectedPatientId}
-            selectedPatientName={selectedPatientName}
             onPatientChange={setSelectedPatientId}
             dosageSearch={dosageSearch}
             onDosageSearchChange={setDosageSearch}

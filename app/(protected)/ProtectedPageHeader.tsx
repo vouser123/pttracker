@@ -1,6 +1,25 @@
 // app/(protected)/ProtectedPageHeader.js — shared protected-route header chrome for title, connectivity, optional actions, messages, and nav
+import type { ReactNode } from 'react';
+import type { NavMenuProps } from '../../components/NavMenu';
 import NavMenu from '../../components/NavMenu';
 import styles from './ProtectedPageHeader.module.css';
+
+interface HeaderAction {
+  key: string;
+  onPointerUp: () => void;
+  ariaLabel?: string;
+  label: string;
+  icon: ReactNode;
+}
+
+interface ProtectedPageHeaderProps {
+  title: string;
+  isOnline: boolean;
+  unreadCount?: number;
+  onOpenMessages?: () => void;
+  actions?: HeaderAction[];
+  navMenuProps?: NavMenuProps | null;
+}
 
 export default function ProtectedPageHeader({
   title,
@@ -9,7 +28,7 @@ export default function ProtectedPageHeader({
   onOpenMessages,
   actions = [],
   navMenuProps,
-}) {
+}: ProtectedPageHeaderProps) {
   return (
     <header className={styles.header}>
       <h1 className={styles.title}>{title}</h1>

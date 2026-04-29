@@ -14,7 +14,7 @@ export interface ExerciseOption {
 }
 
 export function formatExerciseLifecycleLabel(exercise: ExerciseWithLifecycle): string {
-  const prefixes = [];
+  const prefixes: string[] = [];
   if (isExerciseArchived(exercise)) prefixes.push('[archived]');
   if (isExerciseOnHold(exercise)) prefixes.push('[On Hold]');
   if (isExercisePrn(exercise)) prefixes.push('[PRN]');
