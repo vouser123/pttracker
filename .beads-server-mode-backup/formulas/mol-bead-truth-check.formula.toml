@@ -1,0 +1,112 @@
+formula = "mol-bead-truth-check"
+description = "Per-bead truth-check arm for ambiguous open work: inspect current state, capture concrete evidence, and leave a recommendation."
+version = 1
+type = "workflow"
+phase = "vapor"
+
+[vars.target_bead]
+description = "Bead id under investigation"
+default = ""
+
+[vars.target_title]
+description = "Short scope reminder for the target bead"
+default = "ambiguous open bead"
+
+[vars.evidence_scope]
+description = "Current-state evidence to inspect"
+default = "current code, docs, related beads, and current repo shape"
+
+[vars.candidate_reason]
+description = "Why this bead was selected for truth-check"
+default = "remaining open work requires current-state verification"
+
+[vars.current_status]
+description = "Current bead status at the start of the truth-check"
+default = "open"
+
+[vars.current_parent]
+description = "Current parent bead if one exists"
+default = ""
+
+[vars.current_assignee]
+description = "Current assignee if one exists"
+default = ""
+
+[[steps]]
+id = "confirm-target"
+title = "Confirm truth-check target {{target_bead}}"
+type = "task"
+description = """
+Confirm the bead and scope before gathering evidence.
+
+- Target bead: {{target_bead}}
+- Scope reminder: {{target_title}}
+- Candidate reason: {{candidate_reason}}
+- Starting status: {{current_status}}
+- Starting parent: {{current_parent}}
+- Starting assignee: {{current_assignee}}
+- Do not close, relabel, or reparent the target bead in this step.
+"""
+labels = ["cleanup:truth-check", "cleanup:phase:scope"]
+
+[[steps]]
+id = "inspect-current-state"
+title = "Inspect current-state evidence for {{target_bead}}"
+type = "task"
+needs = ["confirm-target"]
+description = """
+Inspect current repo reality for the target bead.
+
+Evidence scope:
+- {{evidence_scope}}
+
+Required finding:
+- still_real
+- appears_done
+- obsolete_context
+- unclear
+
+Keep the investigation output in this workflow run first.
+"""
+labels = ["cleanup:truth-check", "cleanup:phase:inspect"]
+
+[[steps]]
+id = "record-finding"
+title = "Record evidence-backed finding for {{target_bead}}"
+type = "task"
+needs = ["inspect-current-state"]
+description = """
+Record a fixed output block on the workflow run.
+
+Required output:
+- target_bead
+- target_title
+- finding: still_real | appears_done | obsolete_context | unclear
+- recommended_disposition: keep_open | close_completed | close_obsolete | elevate
+- evidence
+- reasoning
+- question_for_user (only if needed)
+
+Evidence requirements:
+- Use concrete file evidence such as [file]:line plus what it shows.
+- Use explicit absence evidence such as [file] no longer references X when that is the basis for the finding.
+- Use doc or bead evidence only when code evidence is insufficient.
+
+Keep the record short, searchable, and decision-oriented.
+"""
+labels = ["cleanup:truth-check", "cleanup:phase:record"]
+
+[[steps]]
+id = "recommend-next-action"
+title = "Recommend next action for {{target_bead}}"
+type = "human"
+needs = ["record-finding"]
+description = """
+Leave a concrete recommendation based on the evidence-backed finding.
+
+- If the finding is strong and non-controversial, recommend the target-bead action directly.
+- If the finding is unclear or changes product/process intent, recommend elevation.
+- Do not close, relabel, or reparent the target bead in this step.
+- Do not squash or burn this run inside this workflow.
+"""
+labels = ["cleanup:truth-check", "cleanup:phase:decision"]
