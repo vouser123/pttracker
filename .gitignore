@@ -41,3 +41,4 @@ public/swe-worker*
 vexp.toml
 .vscode/mcp.json
 .vscode/settings.json
+.beads-server-mode-backup/
