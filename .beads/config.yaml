@@ -53,8 +53,4 @@
 # - github.org
 # - github.repo
 
-create:
-  require-description: true
-
-validation:
-  on-create: warn
+sync.remote: "git+https://github.com/vouser123/pttracker.git"
